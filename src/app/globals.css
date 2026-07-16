@@ -381,6 +381,84 @@ a {
   }
 }
 
+/* timeline / 拾光 */
+.timeline-spine {
+  background: linear-gradient(
+    180deg,
+    rgb(var(--primary-rgb) / 0.35),
+    color-mix(in oklab, var(--n-2) 90%, transparent) 18%,
+    color-mix(in oklab, var(--n-2) 70%, transparent) 70%,
+    transparent
+  );
+}
+
+.timeline-item {
+  animation: home-feed-item-reveal 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transition: transform 0.2s ease;
+}
+
+.timeline-item:hover {
+  transform: translateX(2px);
+}
+
+.timeline-dot {
+  box-shadow: 0 0 0 4px rgb(var(--primary-rgb) / 0.08);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.timeline-item:hover .timeline-dot {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 5px rgb(var(--primary-rgb) / 0.14);
+}
+
+.timeline-kind-post {
+  border-color: rgb(var(--primary-rgb) / 0.45);
+  color: var(--primary);
+}
+
+.timeline-kind-update {
+  border-color: color-mix(in oklab, var(--n-3) 80%, transparent);
+  color: var(--n-5);
+}
+
+.timeline-kind-glimpse {
+  border-color: rgb(20 184 166 / 0.45);
+  color: rgb(20 184 166);
+}
+
+.timeline-dot.timeline-kind-post {
+  border-color: rgb(var(--primary-rgb) / 0.5);
+  background: color-mix(in oklab, var(--background) 70%, var(--primary));
+}
+
+.timeline-dot.timeline-kind-update {
+  border-color: color-mix(in oklab, var(--n-3) 90%, transparent);
+}
+
+.timeline-dot.timeline-kind-glimpse {
+  border-color: rgb(20 184 166 / 0.55);
+  background: color-mix(in oklab, var(--background) 75%, rgb(20 184 166));
+}
+
+.timeline-year-col {
+  position: sticky;
+  top: 7.5rem;
+  align-self: start;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .timeline-item {
+    animation: none;
+  }
+  .timeline-item:hover {
+    transform: none;
+  }
+}
+
 @media (min-width: 640px) {
   .site-title-hero {
     font-size: clamp(2.5rem, 4.5vw, 3.25rem);
