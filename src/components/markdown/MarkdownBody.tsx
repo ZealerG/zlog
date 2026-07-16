@@ -99,7 +99,6 @@ export function MarkdownBody({
       {lightbox ? (
         <ImageLightbox
           src={lightbox.src}
-          alt={lightbox.alt}
           onClose={() => setLightbox(null)}
         />
       ) : null}

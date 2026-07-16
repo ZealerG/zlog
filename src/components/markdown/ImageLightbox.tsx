@@ -1,7 +1,7 @@
 "use client"
 
 import { X } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 
 export function ImageLightbox({
   src,
@@ -9,7 +9,7 @@ export function ImageLightbox({
   onClose,
 }: {
   src: string
-  alt: string
+  alt?: string
   onClose: () => void
 }) {
   useEffect(() => {
@@ -29,57 +29,36 @@ export function ImageLightbox({
     <div
       role="dialog"
       aria-modal="true"
-      aria-label={alt || "图片预览"}
-      className="lightbox-overlay fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm animate-[lightbox-in_0.18s_ease-out]"
+      aria-label="图片预览"
+      className="lightbox-overlay fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-8"
       onClick={onClose}
     >
+      <div className="lightbox-backdrop absolute inset-0" aria-hidden />
+
       <button
         type="button"
         aria-label="关闭预览"
         onClick={onClose}
-        className="absolute right-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+        className="lightbox-close absolute right-4 top-4 z-10 inline-flex h-11 w-11 items-center justify-center rounded-full sm:right-6 sm:top-6"
       >
-        <X className="h-5 w-5" />
+        <X className="h-4.5 w-4.5" strokeWidth={1.75} />
       </button>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={src}
-        alt={alt}
-        className="lightbox-image max-h-[88vh] max-w-[min(96vw,72rem)] rounded-xl object-contain shadow-2xl"
+
+      {/* double-bezel frame — no caption / filename */}
+      <div
+        className="lightbox-frame relative z-[1] max-h-[min(90vh,56rem)] max-w-[min(96vw,72rem)]"
         onClick={(e) => e.stopPropagation()}
-        draggable={false}
-      />
-      {alt ? (
-        <p className="pointer-events-none absolute bottom-5 left-1/2 max-w-[min(90vw,40rem)] -translate-x-1/2 truncate rounded-full bg-black/50 px-3 py-1 text-center text-xs text-white/90">
-          {alt}
-        </p>
-      ) : null}
+      >
+        <div className="lightbox-frame-inner">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={src}
+            alt=""
+            className="lightbox-image block max-h-[min(86vh,54rem)] max-w-full object-contain"
+            draggable={false}
+          />
+        </div>
+      </div>
     </div>
   )
-}
-
-export function useImageLightbox(root: HTMLElement | null) {
-  const [state, setState] = useState<{ src: string; alt: string } | null>(null)
-
-  useEffect(() => {
-    if (!root) return
-    const onClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement | null
-      const img = target?.closest?.("img") as HTMLImageElement | null
-      if (!img || !root.contains(img)) return
-      // skip tiny icons / avatars
-      if (img.closest("a.surface-shell") || img.classList.contains("no-lightbox"))
-        return
-      if (img.naturalWidth > 0 && img.naturalWidth < 48) return
-      e.preventDefault()
-      setState({ src: img.currentSrc || img.src, alt: img.alt || "" })
-    }
-    root.addEventListener("click", onClick)
-    return () => root.removeEventListener("click", onClick)
-  }, [root])
-
-  return {
-    lightbox: state,
-    close: () => setState(null),
-  }
 }
