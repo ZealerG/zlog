@@ -36,6 +36,7 @@ const themeInitScript = `
     var root = document.documentElement;
     if (theme === 'dark') root.classList.add('dark');
     else root.classList.remove('dark');
+    root.dataset.theme = theme;
     root.style.colorScheme = theme;
   } catch (e) {}
 })();

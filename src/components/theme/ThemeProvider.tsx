@@ -24,6 +24,8 @@ const STORAGE_KEY = "zlog-theme"
 function applyTheme(theme: Theme) {
   const root = document.documentElement
   root.classList.toggle("dark", theme === "dark")
+  // xiami-compatible attribute used by image-viewer / shared CSS
+  root.dataset.theme = theme
   root.style.colorScheme = theme
 }
 
@@ -41,7 +43,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
           : "dark"
     setThemeState(preferred)
     applyTheme(preferred)
+    // enable transitions after first paint to avoid FOUC flash
+    const id = window.requestAnimationFrame(() => {
+      document.documentElement.dataset.themeTransitionReady = "true"
+    })
     setReady(true)
+    return () => window.cancelAnimationFrame(id)
   }, [])
 
   const setTheme = useCallback((next: Theme) => {
