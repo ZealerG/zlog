@@ -121,7 +121,7 @@ export function NavLinks({
 
       {openHref && previewData[openHref] ? (
         <div
-          className="absolute left-1/2 top-[calc(100%+0.75rem)] z-50 w-[min(30rem,calc(100vw-2rem))] -translate-x-1/2 animate-[nav-preview-in_0.2s_cubic-bezier(0.22,1,0.36,1)]"
+          className="absolute left-1/2 top-[calc(100%+0.75rem)] z-50 w-[min(28rem,calc(100vw-2rem))] max-w-[calc(100vw-2rem)] -translate-x-1/2 animate-[nav-preview-in_0.2s_cubic-bezier(0.22,1,0.36,1)]"
           onMouseEnter={clearLeave}
           onMouseLeave={scheduleLeave}
         >

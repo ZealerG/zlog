@@ -91,7 +91,8 @@ export function getNavPreviewData(): NavPreviewData {
       mode: "list",
       items: updates.slice(0, 6).map((u) => ({
         href: `/updates#${u.slug}`,
-        title: plainTextSnippet(u.body, 56) || "动态",
+        // keep short so title + date fit the panel
+        title: plainTextSnippet(u.body, 36) || "动态",
         date: relativeish(u.date),
         compact: true,
       })),
@@ -102,11 +103,10 @@ export function getNavPreviewData(): NavPreviewData {
       mode: "timeline",
       items: timeline.slice(0, 6).map((e) => ({
         href: e.href,
-        title: plainTextSnippet(e.title, 56),
+        title: plainTextSnippet(e.title, 34),
         kind: e.kind === "post" ? "篇章" : e.kind === "update" ? "足迹" : "影像",
-        category: e.summary
-          ? plainTextSnippet(e.summary, 40)
-          : undefined,
+        // avoid second long line under title in compact panel
+        category: undefined,
         date: relativeish(e.date),
       })),
       footer: [

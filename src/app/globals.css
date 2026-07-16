@@ -859,10 +859,24 @@ a {
 
 .menu-shell {
   min-width: 16rem;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .menu-section {
   min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.nav-preview-panel {
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.nav-preview-panel a {
+  max-width: 100%;
 }
 
 .menu-eyebrow {
