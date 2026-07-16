@@ -486,9 +486,12 @@ export function FriendFloatPool({ friends }: { friends: Friend[] }) {
 
   if (friends.length === 0) {
     return (
-      <p className="site-meta text-n-5">
-        还没有友链。在 <code>content/friends/</code> 新增笔记即可。
-      </p>
+      <div className="rounded-2xl border border-dashed border-n-2 px-6 py-14 text-center">
+        <p className="site-meta text-n-5">还没有友链。</p>
+        <p className="site-meta mt-2 text-n-4">
+          在 <code>content/friends/</code> 新增笔记即可。
+        </p>
+      </div>
     )
   }
 
@@ -496,7 +499,7 @@ export function FriendFloatPool({ friends }: { friends: Friend[] }) {
     <section className="mt-0">
       <div
         ref={containerRef}
-        className="relative min-h-[28rem] overflow-hidden rounded-[2.5rem] bg-transparent sm:min-h-[34rem] lg:min-h-[38rem]"
+        className="relative min-h-[28rem] overflow-hidden rounded-[2rem] bg-transparent sm:min-h-[34rem] lg:min-h-[38rem]"
       >
         {friends.map((friend) => (
           <Link
@@ -515,7 +518,7 @@ export function FriendFloatPool({ friends }: { friends: Friend[] }) {
               )
               if (until > Date.now()) e.preventDefault()
             }}
-            className="surface-shell surface-shell-hover absolute left-0 top-0 inline-flex w-auto max-w-[calc(100vw-4rem)] rounded-full py-0 pl-0 pr-4 opacity-0 transition-[border-color,box-shadow] duration-300 will-change-transform sm:max-w-[24rem] lg:max-w-[28rem]"
+            className="friend-bubble surface-shell surface-shell-hover absolute left-0 top-0 inline-flex w-auto max-w-[calc(100vw-4rem)] rounded-full py-0 pl-0 pr-4 opacity-0 transition-[border-color,box-shadow] duration-300 will-change-transform sm:max-w-[24rem] lg:max-w-[28rem]"
           >
             <div className="flex items-center gap-2.5">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -525,7 +528,7 @@ export function FriendFloatPool({ friends }: { friends: Friend[] }) {
                 className="h-14 w-14 rounded-full object-cover ring-1 ring-n-2 dark:ring-white/14"
                 draggable={false}
               />
-              <div className="min-w-0 max-w-[11rem] sm:max-w-[14rem] lg:max-w-[17rem]">
+              <div className="min-w-0 max-w-[11rem] py-2 sm:max-w-[14rem] lg:max-w-[17rem]">
                 <h2 className="break-words text-sm font-semibold tracking-tight text-primary">
                   {friend.title}
                 </h2>
