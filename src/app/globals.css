@@ -203,13 +203,65 @@ html[data-theme="dark"] .site-film-grain {
   mix-blend-mode: soft-light;
 }
 
-/* elevated surfaces — light paper / dark zinc glass */
+/*
+  Glass system (design-taste: frosted layers + hairline + soft highlight)
+  Prefer transform/opacity motion; blur only on elevated fixed/floating shells.
+*/
+.glass-panel {
+  border: 1px solid color-mix(in oklab, #0f172a 9%, transparent);
+  background: linear-gradient(
+    165deg,
+    rgb(255 255 255 / 0.72),
+    rgb(255 255 255 / 0.48)
+  );
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  backdrop-filter: blur(22px) saturate(160%);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.7) inset,
+    0 14px 40px rgb(15 23 42 / 0.07);
+}
+
+.dark .glass-panel,
+html[data-theme="dark"] .glass-panel {
+  border-color: rgb(255 255 255 / 0.12);
+  background: linear-gradient(
+    165deg,
+    rgb(39 39 42 / 0.55),
+    rgb(24 24 27 / 0.62)
+  );
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  backdrop-filter: blur(28px) saturate(180%);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.08) inset,
+    0 16px 44px rgb(0 0 0 / 0.35);
+}
+
+.glass-chip {
+  border: 1px solid color-mix(in oklab, #0f172a 8%, transparent);
+  background: rgb(255 255 255 / 0.55);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.55) inset;
+}
+
+.dark .glass-chip,
+html[data-theme="dark"] .glass-chip {
+  border-color: rgb(255 255 255 / 0.1);
+  background: rgb(39 39 42 / 0.55);
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.06) inset;
+}
+
+/* elevated surfaces — frosted shell */
 .surface-shell {
   border: 1px solid var(--hairline);
-  background: color-mix(in oklab, var(--n-0) 88%, transparent);
+  background: linear-gradient(
+    165deg,
+    rgb(255 255 255 / 0.78),
+    rgb(255 255 255 / 0.52)
+  );
   box-shadow: var(--shadow-soft);
-  backdrop-filter: blur(20px) saturate(1.15);
-  -webkit-backdrop-filter: blur(20px) saturate(1.15);
+  backdrop-filter: blur(22px) saturate(1.25);
+  -webkit-backdrop-filter: blur(22px) saturate(1.25);
   border-radius: 1rem;
   transition:
     border-color 0.45s var(--ease-premium),
@@ -218,19 +270,29 @@ html[data-theme="dark"] .site-film-grain {
     background-color 0.45s var(--ease-premium);
 }
 
-/* xiami: dark surface-shell is soft white glass, not heavy solid plate */
+/* xiami: dark surface-shell is soft white glass */
 .dark .surface-shell,
 html[data-theme="dark"] .surface-shell {
   border-color: #ffffff24;
-  background: #ffffff0f;
-  -webkit-backdrop-filter: blur(24px);
-  backdrop-filter: blur(24px);
-  box-shadow: 0 18px 45px #0206170f;
+  background: linear-gradient(
+    165deg,
+    rgb(255 255 255 / 0.09),
+    rgb(255 255 255 / 0.04)
+  );
+  -webkit-backdrop-filter: blur(26px) saturate(160%);
+  backdrop-filter: blur(26px) saturate(160%);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.06) inset,
+    0 18px 45px #02061722;
 }
 
 .dark .surface-shell-hover:hover,
 html[data-theme="dark"] .surface-shell-hover:hover {
-  background: #ffffff14;
+  background: linear-gradient(
+    165deg,
+    rgb(255 255 255 / 0.12),
+    rgb(255 255 255 / 0.06)
+  );
   border-color: #ffffff30;
 }
 
@@ -238,6 +300,29 @@ html[data-theme="dark"] .surface-shell-hover:hover {
   border-color: rgb(var(--primary-rgb) / 0.28);
   box-shadow: var(--shadow-lift);
   transform: translateY(-1px);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass-panel,
+  .glass-chip,
+  .surface-shell,
+  .posts-sidebar-card,
+  .site-nav-capsule-scrolled,
+  .site-nav-capsule-preview,
+  .site-theme-capsule {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  .glass-panel,
+  .surface-shell {
+    background: var(--n-0);
+  }
+  .dark .glass-panel,
+  .dark .surface-shell,
+  html[data-theme="dark"] .glass-panel,
+  html[data-theme="dark"] .surface-shell {
+    background: var(--n-1);
+  }
 }
 
 .bezel {
@@ -368,27 +453,40 @@ html[data-theme="dark"] .surface-shell-hover:hover {
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  border: 1px solid var(--n-2);
-  background: transparent;
+  border: 1px solid color-mix(in oklab, #0f172a 8%, transparent);
+  background: rgb(255 255 255 / 0.45);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  backdrop-filter: blur(12px) saturate(140%);
   padding: 0.28rem 0.7rem;
   font-size: 0.72rem;
   letter-spacing: 0.04em;
   color: var(--n-5);
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.45) inset;
   transition:
-    color 0.15s ease,
-    border-color 0.15s ease,
-    background-color 0.15s ease;
+    color 0.3s var(--ease-premium),
+    border-color 0.3s var(--ease-premium),
+    background-color 0.3s var(--ease-premium),
+    box-shadow 0.3s var(--ease-premium);
+}
+
+.dark .tag-chip,
+html[data-theme="dark"] .tag-chip {
+  border-color: rgb(255 255 255 / 0.1);
+  background: rgb(255 255 255 / 0.06);
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.05) inset;
 }
 
 .tag-chip:hover {
   color: var(--primary);
   border-color: rgb(var(--primary-rgb) / 0.35);
+  background: rgb(var(--primary-rgb) / 0.08);
 }
 
 .tag-chip-active {
   color: var(--primary);
   border-color: rgb(var(--primary-rgb) / 0.4);
-  background: rgb(var(--primary-rgb) / 0.1);
+  background: rgb(var(--primary-rgb) / 0.14);
+  box-shadow: 0 0 0 1px rgb(var(--primary-rgb) / 0.08);
 }
 
 .post-summary-card {
@@ -589,15 +687,43 @@ html[data-theme="dark"] .surface-shell-hover:hover {
 /* more hub + projects / friends / bookmarks */
 .more-hub-card {
   animation: home-feed-item-reveal 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+  background: linear-gradient(
+    165deg,
+    rgb(255 255 255 / 0.55),
+    rgb(255 255 255 / 0.28)
+  );
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.5) inset;
+}
+
+.dark .more-hub-card,
+html[data-theme="dark"] .more-hub-card {
+  background: linear-gradient(
+    165deg,
+    rgb(255 255 255 / 0.06),
+    rgb(255 255 255 / 0.03)
+  );
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.05) inset;
 }
 
 .more-hub-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 14px 36px rgb(15 23 42 / 0.06);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.55) inset,
+    0 14px 36px rgb(15 23 42 / 0.08);
 }
 
-.dark .more-hub-card:hover {
-  box-shadow: 0 16px 40px rgb(2 6 23 / 0.28);
+.dark .more-hub-card:hover,
+html[data-theme="dark"] .more-hub-card:hover {
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.08) inset,
+    0 16px 40px rgb(2 6 23 / 0.32);
+}
+
+.more-hub-icon {
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 
 .projects-avatar-ring {
@@ -1080,29 +1206,45 @@ html[data-theme="dark"] .surface-shell-hover:hover {
   }
 }
 
-/* posts page polish */
+/* posts page polish — frosted sidebar cards */
 .posts-sidebar-card {
   border: 1px solid var(--hairline);
   border-radius: 1.15rem;
-  background: color-mix(in oklab, var(--n-1) 32%, transparent);
   padding: 1rem;
-  box-shadow: 0 1px 0 rgb(255 255 255 / 0.4) inset;
+  background: linear-gradient(
+    165deg,
+    rgb(255 255 255 / 0.7),
+    rgb(255 255 255 / 0.42)
+  );
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  backdrop-filter: blur(18px) saturate(150%);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.55) inset,
+    0 10px 28px rgb(15 23 42 / 0.05);
   transition:
     border-color 0.4s var(--ease-premium),
-    background-color 0.4s var(--ease-premium),
+    background 0.4s var(--ease-premium),
     box-shadow 0.4s var(--ease-premium),
     transform 0.4s var(--ease-premium);
 }
 
 .posts-sidebar-card:hover {
-  border-color: rgb(var(--primary-rgb) / 0.18);
+  border-color: rgb(var(--primary-rgb) / 0.2);
   box-shadow: var(--shadow-soft);
   transform: translateY(-1px);
 }
 
-.dark .posts-sidebar-card {
-  background: color-mix(in oklab, var(--n-1) 50%, transparent);
-  box-shadow: 0 1px 0 rgb(255 255 255 / 0.03) inset;
+.dark .posts-sidebar-card,
+html[data-theme="dark"] .posts-sidebar-card {
+  background: linear-gradient(
+    165deg,
+    rgb(39 39 42 / 0.55),
+    rgb(24 24 27 / 0.62)
+  );
+  border-color: rgb(255 255 255 / 0.1);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.06) inset,
+    0 12px 32px rgb(0 0 0 / 0.28);
 }
 
 .post-list-item {

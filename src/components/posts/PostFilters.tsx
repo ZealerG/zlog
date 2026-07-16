@@ -31,7 +31,7 @@ export function PostFilters({
   tags?: string[]
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-1 rounded-full border border-n-2/80 bg-n-1/30 p-1 dark:bg-n-1/20">
+    <div className="glass-chip flex flex-wrap items-center gap-1 rounded-full p-1">
       {SORTS.map((item) => {
         const active = state.sort === item.value
         return (

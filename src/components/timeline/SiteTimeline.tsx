@@ -77,7 +77,7 @@ export function SiteTimeline({
   return (
     <div className="mt-8">
       <div className="flex flex-wrap items-end gap-x-4 gap-y-3">
-        <div className="rounded-2xl border border-n-2 bg-n-1/35 px-4 py-3 dark:bg-n-1/25">
+        <div className="glass-panel rounded-2xl px-4 py-3">
           <p className="text-[0.7rem] uppercase tracking-[0.16em] text-n-4">
             Total
           </p>
@@ -94,7 +94,7 @@ export function SiteTimeline({
       </div>
 
       <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-        <div className="flex flex-wrap items-center gap-1 rounded-full border border-n-2/80 bg-n-1/30 p-1 dark:bg-n-1/20">
+        <div className="glass-chip flex flex-wrap items-center gap-1 rounded-full p-1">
           {(
             [
               ["all", "全部"],

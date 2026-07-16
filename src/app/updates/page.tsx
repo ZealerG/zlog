@@ -69,7 +69,7 @@ export default async function UpdatesPage({
               <span className="font-medium text-n-6">{items.length}</span> updates
               total
             </p>
-            <div className="flex flex-wrap items-center gap-1 rounded-full border border-n-2/80 bg-n-1/30 p-1 dark:bg-n-1/20">
+            <div className="glass-chip flex flex-wrap items-center gap-1 rounded-full p-1">
               <Link
                 href="/updates"
                 className={
