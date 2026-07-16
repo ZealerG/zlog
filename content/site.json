@@ -1,0 +1,23 @@
+{
+  "name": "zealerg",
+  "brand": "zlog",
+  "title": "zlog",
+  "description": "兴趣驱动的记录与写作",
+  "tagline": "<Developer / >",
+  "lead": "builder and writer exploring products, technology, and personal expression.",
+  "summary": "This is where I share projects, experiments, and reflections on building, learning, and the things that keep me curious.",
+  "author": "zealerg",
+  "avatar": "/avatar.png",
+  "locale": "zh-CN",
+  "social": {
+    "email": "",
+    "github": ""
+  },
+  "nav": [
+    { "href": "/", "label": "起点", "icon": "home" },
+    { "href": "/posts", "label": "篇章", "icon": "book" },
+    { "href": "/updates", "label": "足迹", "icon": "footprints" },
+    { "href": "/timeline", "label": "拾光", "icon": "images" },
+    { "href": "/more", "label": "远方", "icon": "compass" }
+  ]
+}
