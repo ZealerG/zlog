@@ -1,6 +1,7 @@
 "use client"
 
 import { ChevronDown, Mail } from "lucide-react"
+import { useEffect, useRef } from "react"
 import type { SiteConfig } from "@/lib/content/types"
 import { Typewriter } from "./Typewriter"
 
@@ -19,25 +20,58 @@ export function Hero({ site }: { site: SiteConfig }) {
   const summary =
     site.summary ??
     "This is where I share projects, experiments, and reflections on building, learning, and the things that keep me curious."
+  const sectionRef = useRef<HTMLElement>(null)
+  const avatarRef = useRef<HTMLDivElement>(null)
+
+  // parallax avatar with rAF (no React state thrash)
+  useEffect(() => {
+    const section = sectionRef.current
+    const avatar = avatarRef.current
+    if (!section || !avatar) return
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+
+    let raf = 0
+    const onScroll = () => {
+      window.cancelAnimationFrame(raf)
+      raf = window.requestAnimationFrame(() => {
+        const rect = section.getBoundingClientRect()
+        const progress = Math.min(1, Math.max(0, -rect.top / Math.max(rect.height, 1)))
+        const y = progress * 28
+        const scale = 1 - progress * 0.04
+        avatar.style.transform = `translate3d(0, ${y}px, 0) scale(${scale})`
+      })
+    }
+    window.addEventListener("scroll", onScroll, { passive: true })
+    onScroll()
+    return () => {
+      window.cancelAnimationFrame(raf)
+      window.removeEventListener("scroll", onScroll)
+    }
+  }, [])
 
   return (
-    <section className="relative z-10 mx-auto grid min-h-[calc(100dvh-6rem)] w-full max-w-5xl items-center gap-10 py-[clamp(1.5rem,5vh,3.5rem)] sm:min-h-[calc(100dvh-7rem)] lg:grid-cols-[minmax(18rem,24rem)_minmax(24rem,34rem)] lg:justify-center lg:gap-10 xl:grid-cols-[minmax(20rem,26rem)_minmax(26rem,36rem)] xl:gap-12">
+    <section
+      ref={sectionRef}
+      className="relative z-10 mx-auto grid min-h-[calc(100dvh-6rem)] w-full max-w-5xl items-center gap-10 overflow-x-clip py-[clamp(1.5rem,5vh,3.5rem)] sm:min-h-[calc(100dvh-7rem)] lg:grid-cols-[minmax(18rem,24rem)_minmax(24rem,34rem)] lg:justify-center lg:gap-10 xl:grid-cols-[minmax(20rem,26rem)_minmax(26rem,36rem)] xl:gap-12"
+    >
       <div className="hero-avatar flex justify-center">
-        <div className="hero-avatar-ring relative">
-          <div className="relative h-[18rem] w-[18rem] overflow-hidden rounded-full sm:h-[22rem] sm:w-[22rem] lg:h-[24rem] lg:w-[24rem] xl:h-[26rem] xl:w-[26rem]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={site.avatar}
-              alt={`${site.name} avatar`}
-              className="h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform group-hover:scale-[1.02]"
-              draggable={false}
-            />
+        <div ref={avatarRef} className="hero-avatar-parallax will-change-transform">
+          <div className="hero-avatar-ring relative">
+            <div className="relative h-[18rem] w-[18rem] overflow-hidden rounded-full sm:h-[22rem] sm:w-[22rem] lg:h-[24rem] lg:w-[24rem] xl:h-[26rem] xl:w-[26rem]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={site.avatar}
+                alt={`${site.name} avatar`}
+                className="h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]"
+                draggable={false}
+              />
+            </div>
           </div>
         </div>
       </div>
 
       <div className="hero-copy max-w-3xl">
-        <h1 className="hero-copy-title site-title-hero tracking-tight text-n-6">
+        <h1 className="hero-copy-title site-title-hero max-w-none tracking-tight text-n-6">
           {site.name}
         </h1>
 
@@ -68,7 +102,7 @@ export function Hero({ site }: { site: SiteConfig }) {
                 title="Email"
                 className="hero-social-btn"
               >
-                <Mail className="block h-[18px] w-[18px] shrink-0" strokeWidth={1.9} />
+                <Mail className="block h-[18px] w-[18px] shrink-0" strokeWidth={1.75} />
               </a>
             ) : null}
             {github ? (
@@ -93,7 +127,7 @@ export function Hero({ site }: { site: SiteConfig }) {
           aria-label="Scroll to home feed"
           className="hero-scroll-btn pointer-events-auto"
         >
-          <ChevronDown className="h-6 w-6" strokeWidth={2.2} />
+          <ChevronDown className="h-6 w-6" strokeWidth={2} />
         </a>
       </div>
     </section>

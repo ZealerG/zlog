@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import Link from "next/link"
+import { ScrollReveal } from "@/components/effects/ScrollReveal"
 import { UpdateTimeline } from "@/components/updates/UpdateTimeline"
 import { getAllUpdates } from "@/lib/content/load"
 import { markdownToHtml } from "@/lib/content/markdown"
@@ -40,59 +41,63 @@ export default async function UpdatesPage({
   )
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-4xl px-6 py-16 sm:px-10">
-      <header>
-        <p className="site-eyebrow uppercase tracking-[0.28em] text-n-5">
-          Updates
-        </p>
-        <h1 className="site-title-page mt-4 flex flex-wrap items-baseline gap-3 tracking-tight text-n-6">
-          <span>足迹</span>
-          <span className="site-body tracking-normal text-n-4">·</span>
-          <span className="site-body tracking-normal text-n-5">最近动态</span>
-        </h1>
-        <p className="site-meta mt-3 max-w-xl text-n-5">
-          短笔记与日常片段。完整写作在{" "}
-          <Link href="/posts" className="text-primary transition hover:opacity-80">
-            篇章
-          </Link>
-          。
-        </p>
-      </header>
-
-      <div className="mt-8">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="site-meta text-n-5">
-            <span className="font-medium text-n-6">{items.length}</span> updates
-            total
+    <main className="mx-auto min-h-screen w-full max-w-4xl overflow-x-hidden px-6 py-16 sm:px-10">
+      <ScrollReveal y={14}>
+        <header>
+          <p className="site-eyebrow uppercase tracking-[0.28em] text-n-5">
+            Updates
           </p>
-          <div className="flex flex-wrap items-center gap-1 rounded-full border border-n-2/80 bg-n-1/30 p-1 dark:bg-n-1/20">
-            <Link
-              href="/updates"
-              className={
-                sort === "latest"
-                  ? "rounded-full bg-background px-3 py-1.5 text-xs font-medium text-primary shadow-sm transition dark:bg-n-0/80"
-                  : "rounded-full px-3 py-1.5 text-xs text-n-5 transition hover:text-primary"
-              }
-            >
-              Latest
+          <h1 className="site-title-page mt-4 flex flex-wrap items-baseline gap-3 tracking-tight text-n-6">
+            <span>足迹</span>
+            <span className="site-body tracking-normal text-n-4">·</span>
+            <span className="site-body tracking-normal text-n-5">最近动态</span>
+          </h1>
+          <p className="site-meta mt-3 max-w-xl text-n-5">
+            短笔记与日常片段。完整写作在{" "}
+            <Link href="/posts" className="text-primary transition hover:opacity-80">
+              篇章
             </Link>
-            <Link
-              href="/updates?sort=earliest"
-              className={
-                sort === "earliest"
-                  ? "rounded-full bg-background px-3 py-1.5 text-xs font-medium text-primary shadow-sm transition dark:bg-n-0/80"
-                  : "rounded-full px-3 py-1.5 text-xs text-n-5 transition hover:text-primary"
-              }
-            >
-              Earliest
-            </Link>
+            。
+          </p>
+        </header>
+      </ScrollReveal>
+
+      <ScrollReveal y={18} delay={50}>
+        <div className="mt-8">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="site-meta text-n-5">
+              <span className="font-medium text-n-6">{items.length}</span> updates
+              total
+            </p>
+            <div className="flex flex-wrap items-center gap-1 rounded-full border border-n-2/80 bg-n-1/30 p-1 dark:bg-n-1/20">
+              <Link
+                href="/updates"
+                className={
+                  sort === "latest"
+                    ? "rounded-full bg-background px-3 py-1.5 text-xs font-medium text-primary shadow-sm transition dark:bg-n-0/80"
+                    : "rounded-full px-3 py-1.5 text-xs text-n-5 transition hover:text-primary"
+                }
+              >
+                Latest
+              </Link>
+              <Link
+                href="/updates?sort=earliest"
+                className={
+                  sort === "earliest"
+                    ? "rounded-full bg-background px-3 py-1.5 text-xs font-medium text-primary shadow-sm transition dark:bg-n-0/80"
+                    : "rounded-full px-3 py-1.5 text-xs text-n-5 transition hover:text-primary"
+                }
+              >
+                Earliest
+              </Link>
+            </div>
+          </div>
+
+          <div className="mt-10">
+            <UpdateTimeline items={items} author={site.author} />
           </div>
         </div>
-
-        <div className="mt-10">
-          <UpdateTimeline items={items} author={site.author} />
-        </div>
-      </div>
+      </ScrollReveal>
     </main>
   )
 }

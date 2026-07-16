@@ -72,8 +72,8 @@ export function NavLinks({
       <nav
         className={
           showCapsule
-            ? "site-nav-capsule site-nav-capsule-scrolled site-nav-capsule-preview relative flex items-center justify-center overflow-hidden rounded-full px-1.5 py-0.5 text-sm font-medium text-n-5 transition-all duration-300"
-            : "site-nav-capsule relative flex items-center justify-center overflow-hidden rounded-full bg-transparent px-1.5 py-0.5 text-sm font-medium text-n-5 transition-all duration-300"
+            ? "site-nav-capsule site-nav-capsule-scrolled site-nav-capsule-preview relative flex items-center justify-center overflow-hidden rounded-full px-1.5 py-0.5 text-sm font-medium text-n-5 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]"
+            : "site-nav-capsule relative flex items-center justify-center overflow-hidden rounded-full bg-transparent px-1.5 py-0.5 text-sm font-medium text-n-5 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]"
         }
       >
         {items.map((item) => {

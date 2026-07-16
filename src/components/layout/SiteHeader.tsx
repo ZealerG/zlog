@@ -34,7 +34,7 @@ export function SiteHeader({
       */}
       <div
         data-mobile-state={scrolled ? "scrolled" : "top"}
-        className="pointer-events-none relative mx-auto flex w-full max-w-6xl items-center justify-between gap-4 border border-transparent bg-transparent px-4 py-3 shadow-none transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] md:grid md:grid-cols-[1fr_auto_1fr] md:justify-normal sm:px-6"
+        className="pointer-events-none relative mx-auto flex w-full max-w-6xl items-center justify-between gap-4 border border-transparent bg-transparent px-4 py-3 shadow-none transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] md:grid md:grid-cols-[1fr_auto_1fr] md:justify-normal sm:px-6"
         style={
           {
             "--site-header-brand-scale": scrolled ? "1" : "1.08",
