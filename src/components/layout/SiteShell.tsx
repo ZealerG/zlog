@@ -16,6 +16,7 @@ export function SiteShell({
   return (
     <div className="site-shell-surface relative flex min-h-full flex-col text-n-6">
       <AmbientCanvas />
+      <div className="site-film-grain" aria-hidden />
       <SiteHeader site={site} previewData={previewData} />
       <div className="site-layout-content relative z-10 flex-1">
         {children}
