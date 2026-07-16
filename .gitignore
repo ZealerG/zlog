@@ -44,6 +44,7 @@ next-env.d.ts
 # project
 .superpowers
 public/search-index.json
+tmp/
 
 # local agent skills (npx skills add) — do not commit
 .agents/

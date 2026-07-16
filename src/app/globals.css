@@ -1028,7 +1028,7 @@ html[data-theme="dark"] .surface-shell-hover:hover {
 /* light: xiami glass gradient */
 .site-nav-capsule-scrolled,
 .site-nav-capsule-preview {
-  border-color: rgb(15 23 42 / 0.12);
+  border-color: rgb(15 23 42 / 0.1);
   background: linear-gradient(180deg, #fffffff0, #f4f4f5e0);
   backdrop-filter: blur(18px) saturate(140%);
   -webkit-backdrop-filter: blur(18px) saturate(140%);
@@ -1037,25 +1037,35 @@ html[data-theme="dark"] .surface-shell-hover:hover {
     0 14px 36px rgb(15 23 42 / 0.1);
 }
 
-.site-nav-capsule .nav-link {
+/* active/hover pill lives on the link itself (xiami: soft island inside capsule) */
+.site-nav-capsule a {
   position: relative;
+  z-index: 1;
 }
 
-.site-nav-capsule .nav-link::before {
+.site-nav-capsule a::before {
   content: "";
   position: absolute;
-  inset: 3px 1px;
+  inset: 4px 2px;
   border-radius: 999px;
   background: transparent;
-  transition: background-color 0.2s ease, transform 0.2s ease;
+  transition:
+    background-color 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.22s cubic-bezier(0.22, 1, 0.36, 1);
   z-index: -1;
 }
 
-.site-nav-capsule .nav-link:hover::before {
-  background: rgb(var(--primary-rgb) / 0.07);
+.site-nav-capsule a:hover::before {
+  background: rgb(var(--primary-rgb) / 0.08);
 }
 
-.site-nav-capsule .nav-link:active {
+.site-nav-capsule a.is-active::before,
+.site-nav-capsule a[data-active="true"]::before {
+  background: rgb(var(--primary-rgb) / 0.12);
+  box-shadow: 0 0 0 1px rgb(var(--primary-rgb) / 0.1);
+}
+
+.site-nav-capsule a:active {
   transform: scale(0.98);
 }
 
@@ -1118,28 +1128,46 @@ html[data-theme="dark"] .surface-shell-hover:hover {
 }
 
 /*
-  Dark nav capsule — xiami-aligned:
-  zinc gradient glass (not pure white/8%, not solid plate).
-  Matches content-gallery dark button language on xiami.
+  Dark nav — matched to xiami screenshot:
+  soft frosted pill, translucent charcoal + strong blur,
+  content soft-blends behind edges (not a solid slab).
 */
 .dark .site-nav-capsule-scrolled,
 .dark .site-nav-capsule-preview,
 html[data-theme="dark"] .site-nav-capsule-scrolled,
 html[data-theme="dark"] .site-nav-capsule-preview {
   isolation: isolate;
-  border-color: #ffffff24;
-  background: linear-gradient(180deg, #27272ae6, #18181bd9);
-  backdrop-filter: blur(24px) saturate(150%);
-  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  border-color: rgb(255 255 255 / 0.1);
+  /* soft multi-stop glass — denser center, still translucent */
+  background:
+    linear-gradient(
+      180deg,
+      rgb(39 39 42 / 0.72),
+      rgb(24 24 27 / 0.78)
+    );
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
   box-shadow:
-    0 1px 0 #ffffff14 inset,
-    0 18px 40px #00000042;
+    0 1px 0 rgb(255 255 255 / 0.1) inset,
+    0 0 0 0.5px rgb(255 255 255 / 0.06),
+    0 12px 40px rgb(0 0 0 / 0.35);
   color: #a1a1aa;
 }
 
-.dark .site-nav-capsule .nav-link:hover::before,
-html[data-theme="dark"] .site-nav-capsule .nav-link:hover::before {
-  background: rgb(var(--primary-rgb) / 0.16);
+/* active island inside capsule (xiami: soft lighter pill under 篇章) */
+.dark .site-nav-capsule a:hover::before,
+html[data-theme="dark"] .site-nav-capsule a:hover::before {
+  background: rgb(255 255 255 / 0.06);
+}
+
+.dark .site-nav-capsule a.is-active::before,
+.dark .site-nav-capsule a[data-active="true"]::before,
+html[data-theme="dark"] .site-nav-capsule a.is-active::before,
+html[data-theme="dark"] .site-nav-capsule a[data-active="true"]::before {
+  background: rgb(255 255 255 / 0.1);
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.06),
+    0 4px 16px rgb(0 0 0 / 0.2);
 }
 
 .site-nav-capsule-preview:not(.site-nav-capsule-scrolled),
@@ -1147,25 +1175,21 @@ html[data-theme="dark"] .site-nav-capsule .nav-link:hover::before {
   transform: translateZ(0);
 }
 
-/* preview dropdown — xiami surface-shell dark */
+/* preview dropdown — soft glass, not solid */
 .dark .menu-shell.surface-shell,
 html[data-theme="dark"] .menu-shell.surface-shell {
-  background: #ffffff0f;
-  border-color: #ffffff24;
-  -webkit-backdrop-filter: blur(24px);
-  backdrop-filter: blur(24px);
-  box-shadow: 0 18px 45px #02061755;
+  background: rgb(24 24 27 / 0.82);
+  border-color: rgb(255 255 255 / 0.12);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  backdrop-filter: blur(28px) saturate(160%);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.06) inset,
+    0 20px 50px rgb(0 0 0 / 0.45);
 }
 
-.dark .menu-shell.surface-shell:hover,
-html[data-theme="dark"] .menu-shell.surface-shell:hover {
-  background: #ffffff14;
-  border-color: #ffffff30;
-}
-
-/* theme toggle — same dark glass language as capsule */
+/* theme toggle — round soft glass chip (xiami moon button) */
 .site-theme-capsule {
-  border: 1px solid rgb(15 23 42 / 0.12);
+  border: 1px solid rgb(15 23 42 / 0.1);
   background: linear-gradient(180deg, #fffffff0, #f4f4f5e0);
   backdrop-filter: blur(18px) saturate(140%);
   -webkit-backdrop-filter: blur(18px) saturate(140%);
@@ -1186,11 +1210,18 @@ html[data-theme="dark"] .menu-shell.surface-shell:hover {
 
 .dark .site-theme-capsule,
 html[data-theme="dark"] .site-theme-capsule {
-  border-color: #ffffff24;
-  background: linear-gradient(180deg, #27272ae6, #18181bd9);
+  border-color: rgb(255 255 255 / 0.1);
+  background: linear-gradient(
+    180deg,
+    rgb(39 39 42 / 0.72),
+    rgb(24 24 27 / 0.78)
+  );
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
   box-shadow:
-    0 1px 0 #ffffff14 inset,
-    0 14px 32px #00000042;
+    0 1px 0 rgb(255 255 255 / 0.1) inset,
+    0 0 0 0.5px rgb(255 255 255 / 0.06),
+    0 12px 32px rgb(0 0 0 / 0.35);
 }
 
 .site-header-mobile-frame {

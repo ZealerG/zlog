@@ -42,7 +42,6 @@ export function NavLinks({
   const [navHover, setNavHover] = useState(false)
   const leaveTimer = useRef<number | null>(null)
 
-  // xiami: capsule glass when scrolled OR hovering nav
   const showCapsule = scrolled || navHover
   const openHref = hovered
 
@@ -73,8 +72,8 @@ export function NavLinks({
       <nav
         className={
           showCapsule
-            ? "relative flex items-center justify-center overflow-hidden rounded-full text-sm font-medium text-n-5 transition-all duration-300 dark:text-n-5 site-nav-capsule site-nav-capsule-scrolled site-nav-capsule-preview md:flex"
-            : "relative flex items-center justify-center overflow-hidden rounded-full bg-transparent text-sm font-medium text-n-5 transition-all duration-300 dark:text-n-5 site-nav-capsule md:flex"
+            ? "site-nav-capsule site-nav-capsule-scrolled site-nav-capsule-preview relative flex items-center justify-center overflow-hidden rounded-full text-sm font-medium text-n-5 transition-all duration-300 dark:text-n-5 md:flex"
+            : "site-nav-capsule relative flex items-center justify-center overflow-hidden rounded-full bg-transparent text-sm font-medium text-n-5 transition-all duration-300 dark:text-n-5 md:flex"
         }
       >
         {items.map((item) => {
@@ -86,6 +85,7 @@ export function NavLinks({
               key={item.href}
               tabIndex={-1}
               href={item.href}
+              data-active={active ? "true" : "false"}
               onMouseEnter={() => {
                 clearLeave()
                 setHovered(item.href)
@@ -120,7 +120,6 @@ export function NavLinks({
         })}
       </nav>
 
-      {/* bridge hit area into panel */}
       {openHref ? (
         <div className="absolute left-0 right-0 top-full h-3" aria-hidden />
       ) : null}
