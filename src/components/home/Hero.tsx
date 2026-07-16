@@ -21,16 +21,18 @@ export function Hero({ site }: { site: SiteConfig }) {
     "This is where I share projects, experiments, and reflections on building, learning, and the things that keep me curious."
 
   return (
-    <section className="relative z-10 mx-auto grid min-h-[calc(100dvh-6rem)] w-full max-w-5xl items-center gap-10 py-[clamp(1.5rem,6vh,4rem)] sm:min-h-[calc(100dvh-7rem)] lg:grid-cols-[minmax(18rem,24rem)_minmax(24rem,34rem)] lg:justify-center lg:gap-10 xl:grid-cols-[minmax(20rem,26rem)_minmax(26rem,36rem)] xl:gap-12">
+    <section className="relative z-10 mx-auto grid min-h-[calc(100dvh-6rem)] w-full max-w-5xl items-center gap-10 py-[clamp(1.5rem,5vh,3.5rem)] sm:min-h-[calc(100dvh-7rem)] lg:grid-cols-[minmax(18rem,24rem)_minmax(24rem,34rem)] lg:justify-center lg:gap-10 xl:grid-cols-[minmax(20rem,26rem)_minmax(26rem,36rem)] xl:gap-12">
       <div className="hero-avatar flex justify-center">
-        <div className="relative h-[20rem] w-[20rem] overflow-hidden rounded-full sm:h-[24rem] sm:w-[24rem] lg:h-[24rem] lg:w-[24rem] xl:h-[26rem] xl:w-[26rem]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={site.avatar}
-            alt={`${site.name} avatar`}
-            className="h-full w-full object-cover"
-            draggable={false}
-          />
+        <div className="hero-avatar-ring relative">
+          <div className="relative h-[18rem] w-[18rem] overflow-hidden rounded-full sm:h-[22rem] sm:w-[22rem] lg:h-[24rem] lg:w-[24rem] xl:h-[26rem] xl:w-[26rem]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={site.avatar}
+              alt={`${site.name} avatar`}
+              className="h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform group-hover:scale-[1.02]"
+              draggable={false}
+            />
+          </div>
         </div>
       </div>
 
@@ -39,55 +41,57 @@ export function Hero({ site }: { site: SiteConfig }) {
           {site.name}
         </h1>
 
-        <p className="hero-copy-body reading-copy site-lead mt-6 text-n-5">
+        <p className="hero-copy-body reading-copy site-lead mt-5 text-n-5 sm:mt-6">
           Hi, I&apos;m {site.author}, an interest-driven{" "}
           <Typewriter text={tagline} />
         </p>
 
-        <p className="hero-copy-body reading-copy site-lead mt-3 text-n-5">
+        <p className="hero-copy-body reading-copy site-lead mt-2.5 text-n-5 sm:mt-3">
           <span className="hero-copy-emphasis font-medium italic text-n-6">
             builder and writer
           </span>{" "}
           exploring products, technology, and personal expression.
         </p>
 
-        <p className="hero-copy-summary reading-copy site-body mt-5 max-w-2xl text-n-5">
+        <p className="hero-copy-summary reading-copy site-body mt-5 max-w-[36rem] text-pretty text-n-5">
           {summary}
         </p>
 
-        <div className="hero-copy-social mt-7 flex flex-wrap items-center gap-4">
-          {email ? (
-            <a
-              href={`mailto:${email}`}
-              target="_blank"
-              rel="noreferrer noopener"
-              aria-label="Email"
-              title="Email"
-              className="inline-flex items-center justify-center text-n-6/85 transition hover:-translate-y-0.5 hover:text-n-6 dark:text-n-5 dark:hover:text-n-6"
-            >
-              <Mail className="block h-[18px] w-[18px] shrink-0" strokeWidth={1.9} />
-            </a>
-          ) : null}
-          {github ? (
-            <a
-              href={github}
-              target="_blank"
-              rel="noreferrer noopener"
-              aria-label="GitHub"
-              title="GitHub"
-              className="inline-flex items-center justify-center text-n-6/85 transition hover:-translate-y-0.5 hover:text-n-6 dark:text-n-5 dark:hover:text-n-6"
-            >
-              <GitHubIcon className="block h-[18px] w-[18px] shrink-0" />
-            </a>
-          ) : null}
-        </div>
+        {(email || github) && (
+          <div className="hero-copy-social mt-7 flex flex-wrap items-center gap-3">
+            {email ? (
+              <a
+                href={`mailto:${email}`}
+                target="_blank"
+                rel="noreferrer noopener"
+                aria-label="Email"
+                title="Email"
+                className="hero-social-btn"
+              >
+                <Mail className="block h-[18px] w-[18px] shrink-0" strokeWidth={1.9} />
+              </a>
+            ) : null}
+            {github ? (
+              <a
+                href={github}
+                target="_blank"
+                rel="noreferrer noopener"
+                aria-label="GitHub"
+                title="GitHub"
+                className="hero-social-btn"
+              >
+                <GitHubIcon className="block h-[18px] w-[18px] shrink-0" />
+              </a>
+            ) : null}
+          </div>
+        )}
       </div>
 
-      <div className="hero-scroll pointer-events-none absolute inset-x-0 bottom-6 hidden justify-center lg:flex">
+      <div className="hero-scroll pointer-events-none absolute inset-x-0 bottom-5 hidden justify-center lg:flex">
         <a
           href="#home-feed"
           aria-label="Scroll to home feed"
-          className="pointer-events-auto inline-flex items-center justify-center p-2 text-primary transition hover:opacity-80"
+          className="hero-scroll-btn pointer-events-auto"
         >
           <ChevronDown className="h-6 w-6" strokeWidth={2.2} />
         </a>

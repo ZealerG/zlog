@@ -11,11 +11,18 @@ export default function Home() {
 
   return (
     <main className="relative w-full px-6 sm:px-12 lg:px-24">
-      <div className="pointer-events-none absolute left-1/2 top-3 z-20 hidden h-16 w-[min(42rem,calc(100vw-1.5rem))] -translate-x-1/2 rounded-full bg-[rgba(2,6,23,0.26)] opacity-90 blur-xl dark:block sm:top-4 sm:w-[min(44rem,calc(100vw-3rem))]" />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 top-3 z-20 hidden h-16 w-[min(42rem,calc(100vw-1.5rem))] -translate-x-1/2 rounded-full bg-[rgba(2,6,23,0.26)] opacity-90 blur-xl dark:block sm:top-4 sm:w-[min(44rem,calc(100vw-3rem))]"
+      />
+
       <Hero site={site} />
+
+      <div className="home-feed-rule mx-auto w-full max-w-5xl" aria-hidden />
+
       <section
         id="home-feed"
-        className="home-feed mx-auto grid w-full max-w-5xl gap-12 py-14 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)] lg:gap-16"
+        className="home-feed mx-auto grid w-full max-w-5xl gap-12 py-14 lg:grid-cols-[minmax(0,1.2fr)_minmax(16rem,0.8fr)] lg:gap-16 xl:gap-20"
       >
         <LatestWriting posts={posts} />
         <LatestUpdates updates={updates} />

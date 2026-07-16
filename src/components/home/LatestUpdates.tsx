@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { ArrowUpRight } from "lucide-react"
 import type { Update } from "@/lib/content/types"
 import { plainTextSnippet } from "@/lib/content/plain-text"
 
@@ -18,36 +19,45 @@ function snippet(body: string, max = 42): string {
 
 export function LatestUpdates({ updates }: { updates: Update[] }) {
   return (
-    <div className="home-feed-block" style={{ animationDelay: "0.3s" }}>
+    <div className="home-feed-block" style={{ animationDelay: "0.28s" }}>
       <section>
-        <div className="mb-3">
-          <p className="home-feed-eyebrow font-normal uppercase text-n-5">
-            Field notes
-          </p>
-          <p className="home-feed-title mt-1 font-bold text-n-6">最近动态</p>
+        <div className="mb-4 flex items-end justify-between gap-4">
+          <div>
+            <p className="home-feed-eyebrow font-normal uppercase text-n-5">
+              Field notes
+            </p>
+            <p className="home-feed-title mt-1 font-bold text-n-6">最近动态</p>
+          </div>
+          <Link
+            href="/updates"
+            className="group/all inline-flex items-center gap-1 site-meta text-n-5 transition-colors hover:text-primary"
+          >
+            View all
+            <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover/all:translate-x-0.5 group-hover/all:-translate-y-0.5" />
+          </Link>
         </div>
 
         {updates.length === 0 ? (
           <p className="site-meta text-n-5">暂无动态</p>
         ) : (
-          <div className="grid gap-1">
+          <div className="grid gap-0">
             {updates.map((update, index) => (
               <div
                 key={update.slug}
                 className="home-feed-item"
-                style={{ animationDelay: `${0.34 + index * 0.07}s` }}
+                style={{ animationDelay: `${0.3 + index * 0.06}s` }}
               >
-                <article className="group relative -mx-3 rounded-md border-b border-n-2 px-3 py-4 transition-colors duration-200 last:border-b-0 hover:bg-primary/[0.03] dark:border-n-2">
+                <article className="home-feed-row group relative -mx-3 rounded-lg border-b border-n-2 px-3 py-4 last:border-b-0 dark:border-n-2">
                   <Link
-                    href="/updates"
-                    aria-label="Open updates"
-                    className="absolute inset-0 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                    href={`/updates#${update.slug}`}
+                    aria-label="Open update"
+                    className="absolute inset-0 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                   />
                   <div className="pointer-events-none relative flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
-                    <p className="home-feed-item-title min-w-0 flex-1 truncate whitespace-nowrap text-n-6 transition group-hover:text-primary dark:text-n-6">
+                    <p className="home-feed-item-title min-w-0 flex-1 truncate whitespace-nowrap text-n-6 transition duration-200 group-hover:text-primary dark:text-n-6">
                       {snippet(update.body)}
                     </p>
-                    <p className="home-feed-date text-n-5">
+                    <p className="home-feed-date shrink-0 text-n-5 transition duration-200 group-hover:text-n-4">
                       <time
                         dateTime={update.date}
                         title={formatDate(update.date)}
