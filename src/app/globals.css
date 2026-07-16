@@ -1395,102 +1395,234 @@ a {
   box-shadow: var(--shadow-lift);
 }
 
-/* high-end lightbox */
-.lightbox-overlay {
-  animation: lightbox-fade-in 0.28s var(--ease-out-expo) both;
+/* xiami image-viewer (faithful) */
+.image-viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483646;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  isolation: isolate;
+  pointer-events: auto;
+  overscroll-behavior: none;
+  touch-action: none;
+  background: #f4f6f9e0;
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
 }
 
-.lightbox-backdrop {
-  background:
-    radial-gradient(ellipse 70% 55% at 50% 45%, rgb(0 0 0 / 0.35), transparent 70%),
-    rgb(0 0 0 / 0.78);
-  backdrop-filter: blur(18px) saturate(120%);
-  -webkit-backdrop-filter: blur(18px) saturate(120%);
+.dark .image-viewer {
+  background: #09090bdb;
 }
 
-.lightbox-close {
-  border: 1px solid rgb(255 255 255 / 0.14);
-  background: rgb(255 255 255 / 0.08);
-  color: rgb(255 255 255 / 0.92);
-  box-shadow:
-    0 1px 0 rgb(255 255 255 / 0.12) inset,
-    0 10px 30px rgb(0 0 0 / 0.25);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  transition:
-    background-color 0.35s var(--ease-premium),
-    transform 0.35s var(--ease-premium),
-    border-color 0.35s var(--ease-premium);
-}
-
-.lightbox-close:hover {
-  background: rgb(255 255 255 / 0.14);
-  border-color: rgb(255 255 255 / 0.22);
-  transform: scale(1.04);
-}
-
-.lightbox-close:active {
-  transform: scale(0.97);
-}
-
-.lightbox-frame {
-  padding: 0.35rem;
-  border-radius: 1.35rem;
-  border: 1px solid rgb(255 255 255 / 0.12);
-  background: rgb(255 255 255 / 0.06);
-  box-shadow:
-    0 1px 0 rgb(255 255 255 / 0.1) inset,
-    0 28px 80px rgb(0 0 0 / 0.45);
-  animation: lightbox-frame-in 0.42s var(--ease-out-expo) both;
-}
-
-.lightbox-frame-inner {
+.image-viewer__stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
-  border-radius: calc(1.35rem - 0.35rem);
-  background: rgb(0 0 0 / 0.35);
-  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.25) inset;
+  overscroll-behavior: none;
+  touch-action: none;
 }
 
-.lightbox-image {
-  animation: lightbox-image-in 0.48s var(--ease-out-expo) both;
+.image-viewer__track {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  width: 100vw;
+  height: 100%;
+  will-change: transform;
 }
 
-@keyframes lightbox-fade-in {
+.image-viewer__track[data-multiple="true"] {
+  width: 300vw;
+  left: -100vw;
+}
+
+.image-viewer__slide {
+  display: flex;
+  flex: 0 0 100vw;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100%;
+  overflow: hidden;
+}
+
+.image-viewer__image-frame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.image-viewer__image {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100vw;
+  max-height: 100dvh;
+  object-fit: contain;
+  border-radius: 0;
+  pointer-events: auto;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+  touch-action: none;
+}
+
+.image-viewer__slide:not([data-current="true"]) .image-viewer__image {
+  pointer-events: none;
+}
+
+.image-viewer__close,
+.image-viewer__tool,
+.image-viewer__nav {
+  color: #27272a;
+  background: #ffffffc2;
+  border: 1px solid #0f172a1f;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease;
+}
+
+.image-viewer__close:hover,
+.image-viewer__tool:hover,
+.image-viewer__nav:hover {
+  background: #fffffff5;
+  border-color: #0f172a33;
+}
+
+.dark .image-viewer__close,
+.dark .image-viewer__tool,
+.dark .image-viewer__nav,
+.dark .image-viewer__counter {
+  color: #fafafa;
+  background: #18181b94;
+  border-color: #ffffff29;
+}
+
+.dark .image-viewer__close:hover,
+.dark .image-viewer__tool:hover,
+.dark .image-viewer__nav:hover {
+  background: #27272ab8;
+  border-color: #ffffff47;
+}
+
+.image-viewer__nav:disabled {
+  opacity: 0.28;
+  pointer-events: none;
+}
+
+.image-viewer__close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 9999px;
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.image-viewer__toolbar {
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  z-index: 2;
+  display: inline-flex;
+  overflow: hidden;
+  border-radius: 9999px;
+  transform: translate(-50%);
+  border: 1px solid #0f172a1f;
+  background: #ffffffc2;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+.dark .image-viewer__toolbar {
+  border-color: #ffffff29;
+  background: #18181b94;
+}
+
+.image-viewer__tool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0;
+  border: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  background: transparent;
+}
+
+.image-viewer__tool--label {
+  min-width: 4.2rem;
+  font-size: 0.8rem;
+}
+
+.image-viewer__nav {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.45rem;
+  height: 2.45rem;
+  border-radius: 9999px;
+  font-size: 1.35rem;
+  line-height: 1;
+  transform: translateY(-50%);
+}
+
+.image-viewer__nav--prev {
+  left: 1rem;
+}
+
+.image-viewer__nav--next {
+  right: 1rem;
+}
+
+.image-viewer__counter {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  z-index: 2;
+  transform: translateX(-50%);
+  border-radius: 9999px;
+  border: 1px solid #0f172a1f;
+  background: #ffffffc2;
+  color: #27272a;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+/* keep MobileNav fade key */
+@keyframes lightbox-in {
   from {
     opacity: 0;
   }
   to {
     opacity: 1;
-  }
-}
-
-@keyframes lightbox-frame-in {
-  from {
-    opacity: 0;
-    transform: translateY(14px) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes lightbox-image-in {
-  from {
-    opacity: 0;
-    transform: scale(1.03);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .lightbox-overlay,
-  .lightbox-frame,
-  .lightbox-image {
-    animation: none !important;
   }
 }
 

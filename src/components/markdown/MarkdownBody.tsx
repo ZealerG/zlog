@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { ImageLightbox } from "./ImageLightbox"
+import { ImageViewer, type ViewerImage } from "./ImageViewer"
 
 function decodeCode(btn: HTMLButtonElement): string {
   const b64 = btn.getAttribute("data-code-b64")
@@ -19,6 +19,20 @@ function decodeCode(btn: HTMLButtonElement): string {
   return btn.getAttribute("data-code") ?? ""
 }
 
+function collectImages(root: HTMLElement): ViewerImage[] {
+  return Array.from(root.querySelectorAll<HTMLImageElement>("img"))
+    .filter((img) => {
+      if (img.classList.contains("no-lightbox")) return false
+      if (img.closest("[data-image-viewer]")) return false
+      if (img.naturalWidth > 0 && img.naturalWidth < 48) return false
+      return Boolean(img.currentSrc || img.src)
+    })
+    .map((img) => ({
+      src: img.currentSrc || img.src,
+      alt: img.alt || "",
+    }))
+}
+
 export function MarkdownBody({
   html,
   className = "",
@@ -27,24 +41,27 @@ export function MarkdownBody({
   className?: string
 }) {
   const ref = useRef<HTMLDivElement>(null)
-  const [root, setRoot] = useState<HTMLDivElement | null>(null)
-  const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(
-    null,
-  )
-
-  useEffect(() => {
-    setRoot(ref.current)
-  }, [html])
+  const [viewer, setViewer] = useState<{
+    images: ViewerImage[]
+    index: number
+  } | null>(null)
 
   useEffect(() => {
     const el = ref.current
     if (!el) return
 
+    // mark zoomable + strip titles that show as tooltips
+    el.querySelectorAll<HTMLImageElement>("img").forEach((img) => {
+      if (img.classList.contains("no-lightbox")) return
+      img.classList.add("md-zoomable")
+      img.removeAttribute("title")
+    })
+
     const onClick = async (event: MouseEvent) => {
       const target = event.target as HTMLElement | null
+      if (!target) return
 
-      // code copy
-      const btn = target?.closest?.(".code-copy-btn") as HTMLButtonElement | null
+      const btn = target.closest?.(".code-copy-btn") as HTMLButtonElement | null
       if (btn && el.contains(btn)) {
         const code = decodeCode(btn)
         try {
@@ -65,29 +82,26 @@ export function MarkdownBody({
         return
       }
 
-      // image lightbox
-      const img = target?.closest?.("img") as HTMLImageElement | null
-      if (img && el.contains(img) && !img.classList.contains("no-lightbox")) {
-        if (img.naturalWidth > 0 && img.naturalWidth < 48) return
-        event.preventDefault()
-        setLightbox({ src: img.currentSrc || img.src, alt: img.alt || "" })
+      const img = target.closest?.("img") as HTMLImageElement | null
+      if (!img || !el.contains(img) || img.classList.contains("no-lightbox")) {
+        return
       }
+      if (img.naturalWidth > 0 && img.naturalWidth < 48) return
+
+      event.preventDefault()
+      event.stopPropagation()
+      const images = collectImages(el)
+      const src = img.currentSrc || img.src
+      const index = Math.max(
+        0,
+        images.findIndex((i) => i.src === src),
+      )
+      setViewer({ images: images.length ? images : [{ src, alt: "" }], index })
     }
 
     el.addEventListener("click", onClick)
     return () => el.removeEventListener("click", onClick)
   }, [html])
-
-  // cursor affordance for images
-  useEffect(() => {
-    const el = root
-    if (!el) return
-    el.querySelectorAll("img").forEach((img) => {
-      if (!img.classList.contains("no-lightbox")) {
-        img.classList.add("md-zoomable")
-      }
-    })
-  }, [root, html])
 
   return (
     <>
@@ -96,10 +110,14 @@ export function MarkdownBody({
         className={`reading-copy post-prose max-w-none text-n-6 ${className}`}
         dangerouslySetInnerHTML={{ __html: html }}
       />
-      {lightbox ? (
-        <ImageLightbox
-          src={lightbox.src}
-          onClose={() => setLightbox(null)}
+      {viewer ? (
+        <ImageViewer
+          images={viewer.images}
+          index={viewer.index}
+          onClose={() => setViewer(null)}
+          onIndexChange={(i) =>
+            setViewer((v) => (v ? { ...v, index: i } : v))
+          }
         />
       ) : null}
     </>

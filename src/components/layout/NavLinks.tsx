@@ -42,6 +42,7 @@ export function NavLinks({
   const [navHover, setNavHover] = useState(false)
   const leaveTimer = useRef<number | null>(null)
 
+  // xiami: capsule glass when scrolled OR hovering nav
   const showCapsule = scrolled || navHover
   const openHref = hovered
 
@@ -57,7 +58,7 @@ export function NavLinks({
     leaveTimer.current = window.setTimeout(() => {
       setNavHover(false)
       setHovered(null)
-    }, 120)
+    }, 140)
   }
 
   return (
@@ -72,8 +73,8 @@ export function NavLinks({
       <nav
         className={
           showCapsule
-            ? "site-nav-capsule site-nav-capsule-scrolled site-nav-capsule-preview relative flex items-center justify-center overflow-hidden rounded-full px-1.5 py-0.5 text-sm font-medium text-n-5 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]"
-            : "site-nav-capsule relative flex items-center justify-center overflow-hidden rounded-full bg-transparent px-1.5 py-0.5 text-sm font-medium text-n-5 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]"
+            ? "relative flex items-center justify-center overflow-hidden rounded-full text-sm font-medium text-n-5 transition-all duration-300 dark:text-n-5 site-nav-capsule site-nav-capsule-scrolled site-nav-capsule-preview md:flex"
+            : "relative flex items-center justify-center overflow-hidden rounded-full bg-transparent text-sm font-medium text-n-5 transition-all duration-300 dark:text-n-5 site-nav-capsule md:flex"
         }
       >
         {items.map((item) => {
@@ -92,8 +93,8 @@ export function NavLinks({
               onFocus={() => setHovered(item.href)}
               className={
                 emphasized
-                  ? "nav-link relative z-10 flex items-center gap-2 overflow-hidden rounded-full px-3.5 py-2 font-semibold text-primary transition-all duration-300"
-                  : "nav-link relative z-10 flex items-center gap-2 overflow-hidden rounded-full px-3.5 py-2 text-n-5 transition-all duration-300 hover:text-primary dark:text-n-5"
+                  ? "relative z-10 flex items-center gap-2 overflow-hidden rounded-none px-4 py-2 font-semibold text-primary transition-colors duration-300 first:rounded-l-full last:rounded-r-full"
+                  : "relative z-10 flex items-center gap-2 overflow-hidden rounded-none px-4 py-2 text-n-5 transition-colors duration-300 first:rounded-l-full last:rounded-r-full hover:text-primary dark:text-n-5"
               }
             >
               <span className="relative z-10 flex items-center justify-center">
@@ -105,23 +106,28 @@ export function NavLinks({
                   }
                 >
                   {Icon ? (
-                    <Icon className="h-4 w-4 shrink-0" strokeWidth={1.9} aria-hidden />
+                    <Icon
+                      className="h-[18px] w-[18px] shrink-0"
+                      strokeWidth={2}
+                      aria-hidden
+                    />
                   ) : null}
                 </span>
-                <span className="whitespace-nowrap tracking-tight">{item.label}</span>
+                <span className="whitespace-nowrap">{item.label}</span>
               </span>
             </Link>
           )
         })}
       </nav>
 
+      {/* bridge hit area into panel */}
       {openHref ? (
         <div className="absolute left-0 right-0 top-full h-3" aria-hidden />
       ) : null}
 
       {openHref && previewData[openHref] ? (
         <div
-          className="absolute left-1/2 top-[calc(100%+0.75rem)] z-50 w-[min(28rem,calc(100vw-2rem))] max-w-[calc(100vw-2rem)] -translate-x-1/2 animate-[nav-preview-in_0.2s_cubic-bezier(0.22,1,0.36,1)]"
+          className="absolute left-1/2 top-[calc(100%+0.75rem)] z-50 w-[min(30rem,calc(100vw-2rem))] max-w-[calc(100vw-2rem)] -translate-x-1/2 animate-[nav-preview-in_0.18s_ease-out]"
           onMouseEnter={clearLeave}
           onMouseLeave={scheduleLeave}
         >
