@@ -52,17 +52,17 @@ export function Hero({ site }: { site: SiteConfig }) {
   return (
     <section
       ref={sectionRef}
-      className="relative z-10 mx-auto grid min-h-[calc(100dvh-6rem)] w-full max-w-5xl items-center gap-10 overflow-x-clip py-[clamp(1.5rem,5vh,3.5rem)] sm:min-h-[calc(100dvh-7rem)] lg:grid-cols-[minmax(18rem,24rem)_minmax(24rem,34rem)] lg:justify-center lg:gap-10 xl:grid-cols-[minmax(20rem,26rem)_minmax(26rem,36rem)] xl:gap-12"
+      className="relative z-10 mx-auto grid min-h-[calc(100dvh-6rem)] w-full max-w-5xl items-center gap-10 overflow-visible py-[clamp(1.5rem,5vh,3.5rem)] sm:min-h-[calc(100dvh-7rem)] lg:grid-cols-[minmax(18rem,24rem)_minmax(24rem,34rem)] lg:justify-center lg:gap-10 xl:grid-cols-[minmax(20rem,26rem)_minmax(26rem,36rem)] xl:gap-12"
     >
-      <div className="hero-avatar flex justify-center">
-        <div ref={avatarRef} className="hero-avatar-parallax will-change-transform">
+      <div className="hero-avatar flex justify-center overflow-visible">
+        <div ref={avatarRef} className="hero-avatar-parallax">
           <div className="hero-avatar-ring relative">
-            <div className="relative h-[18rem] w-[18rem] overflow-hidden rounded-full sm:h-[22rem] sm:w-[22rem] lg:h-[24rem] lg:w-[24rem] xl:h-[26rem] xl:w-[26rem]">
+            <div className="hero-avatar-core relative h-[18rem] w-[18rem] overflow-hidden rounded-full sm:h-[22rem] sm:w-[22rem] lg:h-[24rem] lg:w-[24rem] xl:h-[26rem] xl:w-[26rem]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={site.avatar}
                 alt={`${site.name} avatar`}
-                className="h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.32,0.72,0,1)]"
+                className="h-full w-full object-cover"
                 draggable={false}
               />
             </div>
