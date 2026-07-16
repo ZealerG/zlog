@@ -10,7 +10,7 @@ import {
   Images,
   type LucideIcon,
 } from "lucide-react"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import type { NavItem } from "@/lib/content/types"
 import type { NavPreviewData } from "@/lib/content/nav-preview"
 import { NavPreviewPanel } from "./NavPreviewPanel"
@@ -40,24 +40,40 @@ export function NavLinks({
   const pathname = usePathname()
   const [hovered, setHovered] = useState<string | null>(null)
   const [navHover, setNavHover] = useState(false)
+  const leaveTimer = useRef<number | null>(null)
 
   const showCapsule = scrolled || navHover
   const openHref = hovered
 
+  const clearLeave = () => {
+    if (leaveTimer.current != null) {
+      window.clearTimeout(leaveTimer.current)
+      leaveTimer.current = null
+    }
+  }
+
+  const scheduleLeave = () => {
+    clearLeave()
+    leaveTimer.current = window.setTimeout(() => {
+      setNavHover(false)
+      setHovered(null)
+    }, 120)
+  }
+
   return (
     <div
       className="relative hidden md:block"
-      onMouseLeave={() => {
-        setNavHover(false)
-        setHovered(null)
+      onMouseEnter={() => {
+        clearLeave()
+        setNavHover(true)
       }}
+      onMouseLeave={scheduleLeave}
     >
       <nav
-        onMouseEnter={() => setNavHover(true)}
         className={
           showCapsule
-            ? "site-nav-capsule site-nav-capsule-scrolled site-nav-capsule-preview relative flex items-center justify-center overflow-hidden rounded-full px-1 text-sm font-medium text-n-5 transition-all duration-300"
-            : "site-nav-capsule relative flex items-center justify-center overflow-hidden rounded-full bg-transparent px-1 text-sm font-medium text-n-5 transition-all duration-300"
+            ? "site-nav-capsule site-nav-capsule-scrolled site-nav-capsule-preview relative flex items-center justify-center overflow-hidden rounded-full px-1.5 py-0.5 text-sm font-medium text-n-5 transition-all duration-300"
+            : "site-nav-capsule relative flex items-center justify-center overflow-hidden rounded-full bg-transparent px-1.5 py-0.5 text-sm font-medium text-n-5 transition-all duration-300"
         }
       >
         {items.map((item) => {
@@ -69,12 +85,15 @@ export function NavLinks({
               key={item.href}
               tabIndex={-1}
               href={item.href}
-              onMouseEnter={() => setHovered(item.href)}
+              onMouseEnter={() => {
+                clearLeave()
+                setHovered(item.href)
+              }}
               onFocus={() => setHovered(item.href)}
               className={
                 emphasized
-                  ? "relative z-10 flex items-center gap-2 overflow-hidden rounded-full px-3.5 py-2 font-semibold text-primary transition-all duration-300"
-                  : "relative z-10 flex items-center gap-2 overflow-hidden rounded-full px-3.5 py-2 text-n-5 transition-all duration-300 hover:bg-primary/5 hover:text-primary dark:text-n-5"
+                  ? "nav-link relative z-10 flex items-center gap-2 overflow-hidden rounded-full px-3.5 py-2 font-semibold text-primary transition-all duration-300"
+                  : "nav-link relative z-10 flex items-center gap-2 overflow-hidden rounded-full px-3.5 py-2 text-n-5 transition-all duration-300 hover:text-primary dark:text-n-5"
               }
             >
               <span className="relative z-10 flex items-center justify-center">
@@ -86,23 +105,26 @@ export function NavLinks({
                   }
                 >
                   {Icon ? (
-                    <Icon className="h-4 w-4 shrink-0" aria-hidden />
+                    <Icon className="h-4 w-4 shrink-0" strokeWidth={1.9} aria-hidden />
                   ) : null}
                 </span>
-                <span className="whitespace-nowrap">{item.label}</span>
+                <span className="whitespace-nowrap tracking-tight">{item.label}</span>
               </span>
             </Link>
           )
         })}
       </nav>
 
-      {/* hit area bridge so mouse can move into panel */}
       {openHref ? (
         <div className="absolute left-0 right-0 top-full h-3" aria-hidden />
       ) : null}
 
       {openHref && previewData[openHref] ? (
-        <div className="absolute left-1/2 top-[calc(100%+0.75rem)] z-50 w-[min(30rem,calc(100vw-2rem))] -translate-x-1/2 animate-[nav-preview-in_0.18s_ease-out]">
+        <div
+          className="absolute left-1/2 top-[calc(100%+0.75rem)] z-50 w-[min(30rem,calc(100vw-2rem))] -translate-x-1/2 animate-[nav-preview-in_0.2s_cubic-bezier(0.22,1,0.36,1)]"
+          onMouseEnter={clearLeave}
+          onMouseLeave={scheduleLeave}
+        >
           <NavPreviewPanel
             href={openHref}
             data={previewData}

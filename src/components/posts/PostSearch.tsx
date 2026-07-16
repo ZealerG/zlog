@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Search } from "lucide-react"
+import { Search, X } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import {
   filterSearchIndex,
@@ -44,25 +44,28 @@ export function PostSearch() {
   )
 
   return (
-    <div>
+    <div className="posts-sidebar-card">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-n-5 transition hover:text-primary dark:text-n-5"
+        className="inline-flex w-full cursor-pointer items-center justify-between gap-2 text-sm font-medium text-n-5 transition hover:text-primary dark:text-n-5"
       >
-        <Search className="h-4 w-4" aria-hidden />
-        <span>Search posts</span>
+        <span className="inline-flex items-center gap-2">
+          <Search className="h-4 w-4" strokeWidth={1.9} aria-hidden />
+          <span>Search posts</span>
+        </span>
+        {open ? <X className="h-3.5 w-3.5 opacity-60" /> : null}
       </button>
 
       {open ? (
-        <div className="mt-3">
+        <div className="mt-3 animate-[nav-preview-in_0.16s_ease-out]">
           <input
             type="search"
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search posts"
-            className="w-full rounded-xl border border-n-2 bg-background/60 px-3 py-2.5 text-sm text-n-6 outline-none ring-primary/25 placeholder:text-n-4 focus:border-primary/40 focus:ring-2"
+            placeholder="标题、标签或摘要…"
+            className="w-full rounded-xl border border-n-2 bg-background/70 px-3 py-2.5 text-sm text-n-6 outline-none transition placeholder:text-n-4 focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
           />
 
           {status === "error" ? (
@@ -73,12 +76,12 @@ export function PostSearch() {
             results.length === 0 ? (
               <p className="site-meta mt-3 text-n-5">无匹配结果</p>
             ) : (
-              <ul className="mt-3 space-y-1">
+              <ul className="mt-3 max-h-64 space-y-0.5 overflow-y-auto">
                 {results.map((item) => (
                   <li key={item.slug}>
                     <Link
                       href={`/posts/${item.slug}`}
-                      className="block rounded-lg px-2 py-2 transition-colors hover:bg-n-1/70"
+                      className="block rounded-lg px-2.5 py-2 transition-colors hover:bg-primary/[0.06]"
                     >
                       <span className="site-meta font-medium text-n-6">
                         {item.title}
@@ -93,7 +96,9 @@ export function PostSearch() {
                 ))}
               </ul>
             )
-          ) : null}
+          ) : (
+            <p className="site-meta mt-3 text-n-4">输入关键词筛选篇章</p>
+          )}
         </div>
       ) : null}
     </div>

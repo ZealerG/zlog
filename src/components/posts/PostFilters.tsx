@@ -31,7 +31,7 @@ export function PostFilters({
   tags?: string[]
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-3">
+    <div className="flex flex-wrap items-center gap-1 rounded-full border border-n-2/80 bg-n-1/30 p-1 dark:bg-n-1/20">
       {SORTS.map((item) => {
         const active = state.sort === item.value
         return (
@@ -40,8 +40,8 @@ export function PostFilters({
             href={buildHref({ ...state, sort: item.value })}
             className={
               active
-                ? "transition text-primary"
-                : "transition text-n-5 hover:text-n-6 dark:text-n-5 dark:hover:text-n-6"
+                ? "rounded-full bg-background px-3 py-1.5 text-xs font-medium text-primary shadow-sm transition dark:bg-n-0/80"
+                : "rounded-full px-3 py-1.5 text-xs text-n-5 transition hover:text-primary"
             }
           >
             {item.label}

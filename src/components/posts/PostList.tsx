@@ -19,23 +19,31 @@ export function PostList({
   author?: string
 }) {
   if (posts.length === 0) {
-    return <p className="site-meta text-n-5">暂无文章</p>
+    return (
+      <div className="rounded-2xl border border-dashed border-n-2 px-6 py-12 text-center">
+        <p className="site-meta text-n-5">暂无文章</p>
+        <p className="site-meta mt-2 text-n-4">
+          在 <code>content/posts/</code> 新增 Markdown 即可。
+        </p>
+      </div>
+    )
   }
 
   return (
-    <div>
-      {posts.map((post) => (
+    <div className="posts-list">
+      {posts.map((post, index) => (
         <article
           key={post.slug}
-          className="group relative -mx-3 rounded-md border-b border-n-2 px-3 pb-6 pt-3 transition-colors last:border-b-0 dark:border-n-2"
+          className="post-list-item group relative -mx-3 rounded-xl border-b border-n-2 px-3 pb-6 pt-4 transition-all duration-200 last:border-b-0 dark:border-n-2"
+          style={{ animationDelay: `${index * 0.04}s` }}
         >
           <Link
             href={`/posts/${post.slug}`}
             aria-label={`Open ${post.title}`}
-            className="absolute inset-0 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="absolute inset-0 rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           />
           <div className="pointer-events-none relative">
-            <h2 className="site-title-h2 tracking-tight text-n-6 transition group-hover:text-primary dark:text-n-6">
+            <h2 className="site-title-h2 tracking-tight text-n-6 transition duration-200 group-hover:text-primary dark:text-n-6">
               {post.title}
               {!post.published ? (
                 <span className="ml-2 align-middle rounded-full border border-primary/40 px-2 py-0.5 text-[11px] font-medium text-primary">
@@ -45,7 +53,7 @@ export function PostList({
             </h2>
 
             {post.summary ? (
-              <p className="reading-copy site-meta mt-3 text-n-5">
+              <p className="reading-copy site-meta mt-3 line-clamp-2 max-w-2xl text-n-5 transition duration-200 group-hover:text-n-5/90">
                 {post.summary}
               </p>
             ) : null}
@@ -76,7 +84,9 @@ export function PostList({
                 </time>
                 {author ? (
                   <>
-                    <span aria-hidden>·</span>
+                    <span aria-hidden className="text-n-3">
+                      ·
+                    </span>
                     <span>{author}</span>
                   </>
                 ) : null}

@@ -47,8 +47,13 @@ export function MobileNav({
     if (!open) return
     const prev = document.body.style.overflow
     document.body.style.overflow = "hidden"
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false)
+    }
+    window.addEventListener("keydown", onKey)
     return () => {
       document.body.style.overflow = prev
+      window.removeEventListener("keydown", onKey)
     }
   }, [open])
 
@@ -59,7 +64,7 @@ export function MobileNav({
         aria-label={open ? "Close navigation menu" : "Open navigation menu"}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="pointer-events-auto inline-flex h-10 w-10 shrink-0 items-center justify-center bg-transparent text-n-6 transition dark:text-n-6"
+        className="pointer-events-auto inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-transparent text-n-6 transition hover:bg-n-1/60 active:scale-95 dark:text-n-6 dark:hover:bg-white/5"
       >
         {open ? (
           <X className="h-[18px] w-[18px]" strokeWidth={2} />
@@ -73,10 +78,10 @@ export function MobileNav({
           <button
             type="button"
             aria-label="Close menu overlay"
-            className="absolute inset-0 bg-black/45 backdrop-blur-[2px]"
+            className="absolute inset-0 bg-black/45 backdrop-blur-[2px] animate-[lightbox-in_0.15s_ease-out]"
             onClick={() => setOpen(false)}
           />
-          <div className="absolute inset-x-3 top-3 overflow-hidden rounded-3xl border border-n-2/80 bg-n-0/92 shadow-[0_18px_45px_rgba(2,6,23,0.28)] backdrop-blur-2xl dark:border-white/10 dark:bg-[#0c0e14]/92">
+          <div className="absolute inset-x-3 top-3 overflow-hidden rounded-3xl border border-n-2/80 bg-n-0/94 shadow-[0_18px_45px_rgba(2,6,23,0.28)] backdrop-blur-2xl animate-[nav-preview-in_0.2s_cubic-bezier(0.22,1,0.36,1)] dark:border-white/10 dark:bg-[#0c0e14]/94">
             <div className="flex items-center justify-between border-b border-n-2/70 px-4 py-3 dark:border-white/10">
               <span className="text-base font-semibold tracking-tight text-primary">
                 {brand}
@@ -87,7 +92,7 @@ export function MobileNav({
                   type="button"
                   aria-label="Close navigation menu"
                   onClick={() => setOpen(false)}
-                  className="inline-flex h-9 w-9 items-center justify-center text-n-6"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-n-6 transition hover:bg-n-1/70 dark:hover:bg-white/5"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -104,11 +109,13 @@ export function MobileNav({
                     onClick={() => setOpen(false)}
                     className={
                       active
-                        ? "flex items-center gap-3 rounded-2xl bg-primary/10 px-3 py-3 text-sm font-semibold text-primary"
-                        : "flex items-center gap-3 rounded-2xl px-3 py-3 text-sm text-n-5 transition-colors hover:bg-n-1/80 dark:hover:bg-white/5"
+                        ? "flex items-center gap-3 rounded-2xl bg-primary/10 px-3 py-3 text-sm font-semibold text-primary transition"
+                        : "flex items-center gap-3 rounded-2xl px-3 py-3 text-sm text-n-5 transition hover:bg-n-1/80 active:scale-[0.99] dark:hover:bg-white/5"
                     }
                   >
-                    {Icon ? <Icon className="h-4 w-4 shrink-0" /> : null}
+                    {Icon ? (
+                      <Icon className="h-4 w-4 shrink-0" strokeWidth={1.9} />
+                    ) : null}
                     <span>{item.label}</span>
                   </Link>
                 )

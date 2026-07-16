@@ -16,9 +16,9 @@ function PreviewItem({
     <Link
       href={item.href}
       onClick={onNavigate}
-      className="group rounded-md px-2 py-2 transition-colors duration-200 hover:bg-transparent"
+      className="group flex rounded-lg px-2.5 py-2 transition-colors duration-200 hover:bg-primary/[0.06]"
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex min-w-0 flex-1 items-start justify-between gap-3">
         <div className="min-w-0">
           {!item.compact && item.kind ? (
             <span className="site-eyebrow tracking-[0.14em] text-n-4">
@@ -26,7 +26,7 @@ function PreviewItem({
             </span>
           ) : null}
           <p
-            className={`${item.compact ? "site-meta" : "site-meta mt-1"} font-medium text-n-6 transition group-hover:text-primary`}
+            className={`${item.compact ? "site-meta" : "site-meta mt-1"} truncate font-medium text-n-6 transition group-hover:text-primary`}
           >
             {item.title}
           </p>
@@ -57,16 +57,16 @@ function CardLink({
     <Link
       href={href}
       onClick={onNavigate}
-      className="group block rounded-md px-2 py-2.5 transition-colors duration-200"
+      className="group block rounded-xl px-2.5 py-2.5 transition-colors duration-200 hover:bg-primary/[0.06]"
     >
       <div className="flex items-start justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <p className="site-eyebrow text-n-4">{eyebrow}</p>
-          <span className="site-meta mt-2 block font-medium text-n-6 group-hover:text-primary">
+          <span className="site-meta mt-2 block font-medium text-n-6 transition group-hover:text-primary">
             {title}
           </span>
         </div>
-        <span className="inline-flex h-8 w-8 items-center justify-center text-n-4 transition group-hover:text-primary">
+        <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center text-n-4 transition group-hover:text-primary">
           <ArrowRight className="h-3.5 w-3.5 transition group-hover:translate-x-0.5" />
         </span>
       </div>
@@ -97,13 +97,22 @@ export function NavPreviewPanel({
   if (!section) return null
 
   return (
-    <div className="surface-shell menu-shell p-3">
+    <div className="surface-shell menu-shell p-3.5">
       <section className="menu-section">
-        <p className="menu-eyebrow">{section.eyebrow}</p>
+        <div className="mb-1 flex items-center justify-between gap-3 px-1">
+          <p className="menu-eyebrow !pb-0">{section.eyebrow}</p>
+          <Link
+            href={href}
+            onClick={onNavigate}
+            className="site-meta text-xs text-primary transition hover:opacity-80"
+          >
+            View all
+          </Link>
+        </div>
 
         {section.mode === "categories" && section.categories ? (
-          <div className="mt-2 grid items-start gap-5 md:grid-cols-[9rem_minmax(0,1fr)]">
-            <div className="grid items-start gap-1">
+          <div className="mt-2 grid items-start gap-4 md:grid-cols-[8.5rem_minmax(0,1fr)]">
+            <div className="grid items-start gap-0.5 border-r border-n-2/70 pr-3 dark:border-white/10">
               {section.categories.map((cat) => {
                 const active = activeCategory?.slug === cat.slug
                 return (
@@ -114,8 +123,10 @@ export function NavPreviewPanel({
                     onMouseEnter={() => setHoveredCategory(cat.slug)}
                     onFocus={() => setHoveredCategory(cat.slug)}
                     onClick={onNavigate}
-                    className={`site-eyebrow flex items-center justify-between rounded-md px-2 py-1.5 text-left transition-colors ${
-                      active ? "text-primary" : "text-n-5 hover:text-primary"
+                    className={`site-eyebrow flex items-center justify-between rounded-lg px-2 py-1.5 text-left transition-all ${
+                      active
+                        ? "bg-primary/10 text-primary"
+                        : "text-n-5 hover:bg-n-1/60 hover:text-primary dark:hover:bg-white/5"
                     }`}
                   >
                     <span>{cat.label}</span>
@@ -124,7 +135,7 @@ export function NavPreviewPanel({
                 )
               })}
             </div>
-            <div className="grid gap-1">
+            <div className="grid gap-0.5">
               {section.items
                 .filter((item) =>
                   activeCategory
@@ -144,7 +155,7 @@ export function NavPreviewPanel({
                   ? (item.category || "未分类") === activeCategory.label
                   : true,
               ).length === 0 ? (
-                <p className="site-meta px-1 py-1 text-n-4">
+                <p className="site-meta px-2 py-2 text-n-4">
                   {section.empty ?? "暂无内容"}
                 </p>
               ) : null}
@@ -153,7 +164,7 @@ export function NavPreviewPanel({
         ) : null}
 
         {section.mode === "list" ? (
-          <div className="mt-1 grid gap-1">
+          <div className="mt-1.5 grid gap-0.5">
             {section.items.length > 0 ? (
               section.items.map((item) => (
                 <PreviewItem
@@ -163,7 +174,7 @@ export function NavPreviewPanel({
                 />
               ))
             ) : (
-              <p className="site-meta px-1 py-1 text-n-4">
+              <p className="site-meta px-2 py-2 text-n-4">
                 {section.empty ?? "暂无内容"}
               </p>
             )}
@@ -171,8 +182,8 @@ export function NavPreviewPanel({
         ) : null}
 
         {section.mode === "timeline" ? (
-          <div className="mt-1 grid gap-5">
-            <div className="grid gap-1">
+          <div className="mt-1.5 grid gap-4">
+            <div className="grid gap-0.5">
               {section.items.map((item) => (
                 <PreviewItem
                   key={item.href + item.title}
@@ -182,7 +193,7 @@ export function NavPreviewPanel({
               ))}
             </div>
             {section.footer?.length ? (
-              <div className="grid gap-2 border-t border-n-2 pt-3 sm:grid-cols-2 dark:border-n-2">
+              <div className="grid gap-1 border-t border-n-2 pt-3 sm:grid-cols-2 dark:border-n-2">
                 {section.footer.map((f) => (
                   <CardLink
                     key={f.href}
@@ -198,7 +209,7 @@ export function NavPreviewPanel({
         ) : null}
 
         {section.mode === "cards" ? (
-          <div className="mt-1 grid gap-2 sm:grid-cols-2">
+          <div className="mt-1.5 grid gap-1 sm:grid-cols-2">
             {section.items.length > 0 ? (
               section.items.map((item) => (
                 <CardLink
@@ -210,7 +221,7 @@ export function NavPreviewPanel({
                 />
               ))
             ) : (
-              <p className="site-meta px-1 py-1 text-n-4 sm:col-span-2">
+              <p className="site-meta px-2 py-2 text-n-4 sm:col-span-2">
                 {section.empty ?? "暂无内容"}
               </p>
             )}
