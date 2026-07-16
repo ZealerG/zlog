@@ -1109,22 +1109,66 @@ html[data-theme="dark"] .surface-shell {
   }
 }
 
+/*
+  Dark nav capsule: nearly-opaque zinc plate + blur.
+  8% white glass was unreadable over page text (design-taste: contrast first).
+*/
 .dark .site-nav-capsule-scrolled,
 .dark .site-nav-capsule-preview,
 html[data-theme="dark"] .site-nav-capsule-scrolled,
 html[data-theme="dark"] .site-nav-capsule-preview {
+  isolation: isolate;
   border-color: rgb(255 255 255 / 0.14);
-  background: rgb(255 255 255 / 0.08);
-  backdrop-filter: blur(22px) saturate(150%);
-  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  /* solid zinc-900 with tiny translucency for residual glass feel */
+  background: color-mix(in srgb, #18181b 94%, transparent);
+  background-image:
+    linear-gradient(
+      180deg,
+      rgb(255 255 255 / 0.06),
+      rgb(255 255 255 / 0.02)
+    );
+  background-blend-mode: normal;
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
   box-shadow:
-    0 18px 45px rgb(2 6 23 / 0.28),
-    inset 0 1px 0 rgb(255 255 255 / 0.06);
+    0 1px 0 rgb(255 255 255 / 0.08) inset,
+    0 0 0 1px rgb(0 0 0 / 0.35),
+    0 16px 40px rgb(0 0 0 / 0.45);
+}
+
+/* ensure labels stay crisp over the plate */
+.dark .site-nav-capsule-scrolled,
+.dark .site-nav-capsule-preview,
+html[data-theme="dark"] .site-nav-capsule-scrolled,
+html[data-theme="dark"] .site-nav-capsule-preview {
+  color: #a1a1aa;
+}
+
+.dark .site-nav-capsule-scrolled a,
+.dark .site-nav-capsule-preview a,
+html[data-theme="dark"] .site-nav-capsule-scrolled a,
+html[data-theme="dark"] .site-nav-capsule-preview a {
+  text-shadow: 0 1px 1px rgb(0 0 0 / 0.35);
+}
+
+.dark .site-nav-capsule .nav-link:hover::before,
+html[data-theme="dark"] .site-nav-capsule .nav-link:hover::before {
+  background: rgb(var(--primary-rgb) / 0.14);
 }
 
 .site-nav-capsule-preview:not(.site-nav-capsule-scrolled),
 .site-nav-capsule-scrolled.site-nav-capsule-preview {
   transform: translateZ(0);
+}
+
+/* preview panel also needs opaque dark plate */
+.dark .menu-shell.surface-shell,
+html[data-theme="dark"] .menu-shell.surface-shell {
+  background: color-mix(in srgb, #18181b 96%, transparent);
+  border-color: rgb(255 255 255 / 0.14);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.06) inset,
+    0 22px 55px rgb(0 0 0 / 0.5);
 }
 
 /* theme toggle capsule glass when scrolled */
@@ -1147,16 +1191,13 @@ html[data-theme="dark"] .site-nav-capsule-preview {
   box-shadow: var(--shadow-lift);
 }
 
-.dark .site-theme-capsule {
-  border-color: rgb(255 255 255 / 0.12);
-  background: linear-gradient(
-    180deg,
-    rgb(255 255 255 / 0.09),
-    rgb(255 255 255 / 0.04)
-  );
+.dark .site-theme-capsule,
+html[data-theme="dark"] .site-theme-capsule {
+  border-color: rgb(255 255 255 / 0.14);
+  background: color-mix(in srgb, #18181b 94%, transparent);
   box-shadow:
-    0 1px 0 rgb(255 255 255 / 0.05) inset,
-    0 12px 32px rgb(0 0 0 / 0.32);
+    0 1px 0 rgb(255 255 255 / 0.06) inset,
+    0 12px 32px rgb(0 0 0 / 0.4);
 }
 
 .site-header-mobile-frame {

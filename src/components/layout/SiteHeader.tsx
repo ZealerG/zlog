@@ -83,7 +83,7 @@ export function SiteHeader({
             <ThemeToggle
               className={
                 scrolled
-                  ? "rounded-2xl border border-n-2/40 bg-white/70 shadow-sm backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.06]"
+                  ? "site-theme-capsule rounded-2xl"
                   : ""
               }
             />
