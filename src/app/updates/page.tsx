@@ -50,18 +50,28 @@ export default async function UpdatesPage({
           <span className="site-body tracking-normal text-n-4">·</span>
           <span className="site-body tracking-normal text-n-5">最近动态</span>
         </h1>
+        <p className="site-meta mt-3 max-w-xl text-n-5">
+          短笔记与日常片段。完整写作在{" "}
+          <Link href="/posts" className="text-primary transition hover:opacity-80">
+            篇章
+          </Link>
+          。
+        </p>
       </header>
 
       <div className="mt-8">
-        <div className="flex flex-wrap items-center justify-between gap-3 text-n-5">
-          <p className="site-meta">{items.length} updates total</p>
-          <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="site-meta text-n-5">
+            <span className="font-medium text-n-6">{items.length}</span> updates
+            total
+          </p>
+          <div className="flex flex-wrap items-center gap-1 rounded-full border border-n-2/80 bg-n-1/30 p-1 dark:bg-n-1/20">
             <Link
               href="/updates"
               className={
                 sort === "latest"
-                  ? "transition text-primary"
-                  : "transition text-n-5 hover:text-n-6 dark:text-n-5 dark:hover:text-n-6"
+                  ? "rounded-full bg-background px-3 py-1.5 text-xs font-medium text-primary shadow-sm transition dark:bg-n-0/80"
+                  : "rounded-full px-3 py-1.5 text-xs text-n-5 transition hover:text-primary"
               }
             >
               Latest
@@ -70,8 +80,8 @@ export default async function UpdatesPage({
               href="/updates?sort=earliest"
               className={
                 sort === "earliest"
-                  ? "transition text-primary"
-                  : "transition text-n-5 hover:text-n-6 dark:text-n-5 dark:hover:text-n-6"
+                  ? "rounded-full bg-background px-3 py-1.5 text-xs font-medium text-primary shadow-sm transition dark:bg-n-0/80"
+                  : "rounded-full px-3 py-1.5 text-xs text-n-5 transition hover:text-primary"
               }
             >
               Earliest

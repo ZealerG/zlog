@@ -292,13 +292,66 @@ a {
   max-width: none;
 }
 
-/* updates / 足迹 body inside feed cards */
+/* updates / 足迹 */
+.update-row {
+  animation: home-feed-item-reveal 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transition: background-color 0.2s ease;
+}
+
+.update-row:hover {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(var(--primary-rgb) / 0.03) 12%,
+    rgb(var(--primary-rgb) / 0.03) 88%,
+    transparent
+  );
+}
+
+.dark .update-row:hover {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(var(--primary-rgb) / 0.05) 12%,
+    rgb(var(--primary-rgb) / 0.05) 88%,
+    transparent
+  );
+}
+
+.update-date-col {
+  position: relative;
+}
+
+@media (min-width: 640px) {
+  .update-date-col::after {
+    content: "";
+    position: absolute;
+    top: 0.45rem;
+    right: -1.35rem;
+    width: 1px;
+    height: calc(100% - 0.2rem);
+    background: linear-gradient(
+      180deg,
+      rgb(var(--primary-rgb) / 0.35),
+      color-mix(in oklab, var(--n-2) 80%, transparent) 40%,
+      transparent
+    );
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+
+  .update-row:hover .update-date-col::after {
+    opacity: 1;
+  }
+}
+
 .update-body .post-prose {
   max-width: none;
 }
 
 .update-body .post-prose :where(p) {
-  margin: 0.45rem 0;
+  margin: 0.5rem 0;
+  line-height: 1.75;
 }
 
 .update-body .post-prose :where(p:first-child) {
@@ -310,7 +363,7 @@ a {
 }
 
 .update-body .post-prose :where(img) {
-  margin: 0.75rem 0;
+  margin: 0.85rem 0;
   border-radius: 1rem;
   max-height: 28rem;
   width: auto;
@@ -319,7 +372,13 @@ a {
 }
 
 .update-body .code-block-shell {
-  margin: 0.75rem 0;
+  margin: 0.85rem 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .update-row {
+    animation: none;
+  }
 }
 
 @media (min-width: 640px) {
