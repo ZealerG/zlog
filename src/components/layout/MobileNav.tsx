@@ -8,7 +8,6 @@ import {
   Footprints,
   Home,
   Images,
-  Menu,
   X,
   type LucideIcon,
 } from "lucide-react"
@@ -64,13 +63,31 @@ export function MobileNav({
         aria-label={open ? "Close navigation menu" : "Open navigation menu"}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="pointer-events-auto inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-transparent text-n-6 transition hover:bg-n-1/60 active:scale-95 dark:text-n-6 dark:hover:bg-white/5"
+        className="pointer-events-auto inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-n-6 transition hover:bg-n-1/60 active:scale-95 dark:text-n-6 dark:hover:bg-white/5"
       >
-        {open ? (
-          <X className="h-[18px] w-[18px]" strokeWidth={2} />
-        ) : (
-          <Menu className="h-[18px] w-[18px]" strokeWidth={2} />
-        )}
+        <span className="relative block h-[14px] w-[18px]" aria-hidden>
+          <span
+            className={
+              open
+                ? "absolute left-0 top-1/2 h-[1.5px] w-full origin-center -translate-y-1/2 rotate-45 rounded-full bg-current transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]"
+                : "absolute left-0 top-0 h-[1.5px] w-full rounded-full bg-current transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]"
+            }
+          />
+          <span
+            className={
+              open
+                ? "absolute left-0 top-1/2 h-[1.5px] w-full origin-center -translate-y-1/2 scale-x-0 rounded-full bg-current opacity-0 transition-all duration-200 ease-[cubic-bezier(0.32,0.72,0,1)]"
+                : "absolute left-0 top-1/2 h-[1.5px] w-full -translate-y-1/2 rounded-full bg-current transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]"
+            }
+          />
+          <span
+            className={
+              open
+                ? "absolute left-0 top-1/2 h-[1.5px] w-full origin-center -translate-y-1/2 -rotate-45 rounded-full bg-current transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]"
+                : "absolute bottom-0 left-0 h-[1.5px] w-full rounded-full bg-current transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]"
+            }
+          />
+        </span>
       </button>
 
       {open ? (

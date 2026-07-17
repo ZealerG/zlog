@@ -23,7 +23,8 @@ export function Hero({ site }: { site: SiteConfig }) {
   const sectionRef = useRef<HTMLElement>(null)
   const avatarRef = useRef<HTMLDivElement>(null)
 
-  // parallax avatar with rAF (no React state thrash)
+  // Parallax via rAF + transform only (no React state).
+  // Prefer IntersectionObserver gate so we skip work off-screen.
   useEffect(() => {
     const section = sectionRef.current
     const avatar = avatarRef.current
@@ -31,28 +32,45 @@ export function Hero({ site }: { site: SiteConfig }) {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
 
     let raf = 0
+    let active = true
+
+    const paint = () => {
+      if (!active) return
+      const rect = section.getBoundingClientRect()
+      const progress = Math.min(1, Math.max(0, -rect.top / Math.max(rect.height, 1)))
+      const y = progress * 24
+      const scale = 1 - progress * 0.035
+      avatar.style.transform = `translate3d(0, ${y}px, 0) scale(${scale})`
+    }
+
     const onScroll = () => {
       window.cancelAnimationFrame(raf)
-      raf = window.requestAnimationFrame(() => {
-        const rect = section.getBoundingClientRect()
-        const progress = Math.min(1, Math.max(0, -rect.top / Math.max(rect.height, 1)))
-        const y = progress * 28
-        const scale = 1 - progress * 0.04
-        avatar.style.transform = `translate3d(0, ${y}px, 0) scale(${scale})`
-      })
+      raf = window.requestAnimationFrame(paint)
     }
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        active = Boolean(entry?.isIntersecting)
+        if (active) onScroll()
+      },
+      { threshold: 0 },
+    )
+    io.observe(section)
+
     window.addEventListener("scroll", onScroll, { passive: true })
-    onScroll()
+    paint()
     return () => {
+      active = false
       window.cancelAnimationFrame(raf)
       window.removeEventListener("scroll", onScroll)
+      io.disconnect()
     }
   }, [])
 
   return (
     <section
       ref={sectionRef}
-      className="relative z-10 mx-auto grid min-h-[calc(100dvh-6rem)] w-full max-w-5xl items-center gap-10 overflow-visible py-[clamp(1.5rem,5vh,3.5rem)] sm:min-h-[calc(100dvh-7rem)] lg:grid-cols-[minmax(18rem,24rem)_minmax(24rem,34rem)] lg:justify-center lg:gap-10 xl:grid-cols-[minmax(20rem,26rem)_minmax(26rem,36rem)] xl:gap-12"
+      className="relative z-10 mx-auto grid min-h-[calc(100dvh-6rem)] w-full max-w-5xl items-center gap-10 overflow-visible py-[clamp(1.25rem,4.5vh,3rem)] sm:min-h-[calc(100dvh-7rem)] lg:grid-cols-[minmax(18rem,24rem)_minmax(24rem,34rem)] lg:justify-center lg:gap-10 xl:grid-cols-[minmax(20rem,26rem)_minmax(26rem,36rem)] xl:gap-12"
     >
       <div className="hero-avatar flex justify-center overflow-visible">
         <div ref={avatarRef} className="hero-avatar-parallax">
@@ -80,8 +98,8 @@ export function Hero({ site }: { site: SiteConfig }) {
           <Typewriter text={tagline} />
         </p>
 
-        <p className="hero-copy-body reading-copy site-lead mt-2.5 text-n-5 sm:mt-3">
-          <span className="hero-copy-emphasis font-medium italic text-n-6">
+        <p className="hero-copy-body reading-copy site-lead mt-2.5 text-pretty text-n-5 sm:mt-3">
+          <span className="hero-copy-emphasis font-medium italic leading-[1.15] text-n-6">
             builder and writer
           </span>{" "}
           exploring products, technology, and personal expression.

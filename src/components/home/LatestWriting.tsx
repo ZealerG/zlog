@@ -25,10 +25,12 @@ export function LatestWriting({ posts }: { posts: Post[] }) {
           </div>
           <Link
             href="/posts"
-            className="group/all inline-flex items-center gap-1 site-meta text-n-5 transition-colors hover:text-primary"
+            className="group/all inline-flex items-center gap-1.5 site-meta text-n-5 transition-colors hover:text-primary"
           >
             View all
-            <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover/all:translate-x-0.5 group-hover/all:-translate-y-0.5" />
+            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-n-1/80 text-n-5 transition duration-300 group-hover/all:bg-primary/12 group-hover/all:text-primary dark:bg-white/6">
+              <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover/all:translate-x-0.5 group-hover/all:-translate-y-0.5" />
+            </span>
           </Link>
         </div>
 
@@ -42,20 +44,20 @@ export function LatestWriting({ posts }: { posts: Post[] }) {
                 className="home-feed-item"
                 style={{ animationDelay: `${0.22 + index * 0.06}s` }}
               >
-                <article className="home-feed-row group relative -mx-3 rounded-lg border-b border-n-2 px-3 py-4 last:border-b-0 dark:border-n-2">
+                <article className="home-feed-row group relative -mx-3 rounded-xl border-b border-n-2 px-3 py-4 last:border-b-0 dark:border-n-2">
                   <Link
                     href={`/posts/${post.slug}`}
                     aria-label={`Open ${post.title}`}
-                    className="absolute inset-0 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                    className="absolute inset-0 rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                   />
-                  <div className="pointer-events-none relative flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
-                    <p className="home-feed-item-title min-w-0 flex-1 truncate whitespace-nowrap text-n-6 transition duration-200 group-hover:text-primary dark:text-n-6">
+                  <div className="pointer-events-none relative flex items-start justify-between gap-x-6 gap-y-2">
+                    <p className="home-feed-item-title min-w-0 flex-1 text-pretty text-n-6 transition duration-200 group-hover:text-primary dark:text-n-6">
                       {post.title}
                       {!post.published ? (
                         <span className="ml-2 text-xs text-primary">Draft</span>
                       ) : null}
                     </p>
-                    <p className="home-feed-date shrink-0 text-n-5 transition duration-200 group-hover:text-n-4">
+                    <p className="home-feed-date shrink-0 pt-0.5 text-n-5 transition duration-200 group-hover:text-n-4">
                       <time dateTime={post.date} title={formatDate(post.date)}>
                         {formatDate(post.date)}
                       </time>
