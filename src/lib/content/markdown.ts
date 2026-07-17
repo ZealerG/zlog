@@ -149,6 +149,274 @@ function enhanceImages() {
   }
 }
 
+function isWhitespaceText(node: ElementContent): boolean {
+  return node.type === "text" && /^\s*$/.test(node.value)
+}
+
+function isImgElement(node: ElementContent): boolean {
+  return node.type === "element" && node.tagName === "img"
+}
+
+function isBreakElement(node: ElementContent): boolean {
+  return node.type === "element" && node.tagName === "br"
+}
+
+/** Paragraph whose only meaningful children are <img> nodes. */
+function isImageOnlyParagraph(node: ElementContent): boolean {
+  if (node.type !== "element" || node.tagName !== "p") return false
+  let hasImg = false
+  for (const child of node.children) {
+    if (isImgElement(child)) {
+      hasImg = true
+      continue
+    }
+    if (isBreakElement(child) || isWhitespaceText(child)) continue
+    return false
+  }
+  return hasImg
+}
+
+function paragraphHasImages(node: ElementContent): boolean {
+  if (node.type !== "element" || node.tagName !== "p") return false
+  return node.children.some((c) => isImgElement(c))
+}
+
+function extractImages(node: ElementContent): Element[] {
+  if (node.type !== "element") return []
+  if (node.tagName === "img") return [node]
+  if (node.tagName === "p" && isImageOnlyParagraph(node)) {
+    const out: Element[] = []
+    for (const child of node.children) {
+      if (child.type === "element" && child.tagName === "img") out.push(child)
+    }
+    return out
+  }
+  return []
+}
+
+function isGalleryBlock(node: ElementContent): boolean {
+  return isImgElement(node) || isImageOnlyParagraph(node)
+}
+
+/**
+ * Split a mixed paragraph (text + images) into text <p>s and image galleries.
+ * e.g. `note\n![]()![]()` → <p>note</p> + gallery
+ */
+function splitMixedParagraph(p: Element): ElementContent[] {
+  const out: ElementContent[] = []
+  let textBuf: ElementContent[] = []
+  let imgBuf: Element[] = []
+
+  const flushText = () => {
+    const meaningful = textBuf.some(
+      (c) =>
+        !(isWhitespaceText(c) || isBreakElement(c)) &&
+        !(c.type === "text" && !c.value.trim()),
+    )
+    if (!meaningful) {
+      textBuf = []
+      return
+    }
+    // trim leading/trailing whitespace-only text nodes
+    while (textBuf.length && isWhitespaceText(textBuf[0])) textBuf.shift()
+    while (
+      textBuf.length &&
+      isWhitespaceText(textBuf[textBuf.length - 1])
+    ) {
+      textBuf.pop()
+    }
+    // drop trailing <br>
+    while (
+      textBuf.length &&
+      isBreakElement(textBuf[textBuf.length - 1])
+    ) {
+      textBuf.pop()
+    }
+    if (textBuf.length) {
+      out.push({
+        type: "element",
+        tagName: "p",
+        properties: { ...(p.properties ?? {}) },
+        children: textBuf,
+      })
+    }
+    textBuf = []
+  }
+
+  const flushImgs = () => {
+    if (imgBuf.length) {
+      out.push(buildGallery(imgBuf))
+      imgBuf = []
+    }
+  }
+
+  for (const child of p.children) {
+    if (isImgElement(child) && child.type === "element") {
+      flushText()
+      imgBuf.push(child)
+      continue
+    }
+    // soft breaks between images stay with image run (ignored)
+    if (imgBuf.length && (isWhitespaceText(child) || isBreakElement(child))) {
+      continue
+    }
+    flushImgs()
+    textBuf.push(child)
+  }
+  flushText()
+  flushImgs()
+  return out.length ? out : [p]
+}
+
+function buildGallery(imgs: Element[]): Element {
+  // SSR shell matching xiami content-gallery; hydrated by MarkdownBody → ContentGallery
+  const figures: Element[] = imgs.map((img, index) => {
+    const alt =
+      typeof img.properties?.alt === "string" ? img.properties.alt : ""
+    const galleryImg: Element = {
+      ...img,
+      properties: {
+        ...img.properties,
+        loading: "lazy",
+        decoding: "async",
+        alt: alt || `图册图片 ${index + 1}`,
+        className: [
+          ...asClassList(img.properties?.className).filter(
+            (c) => c !== "photo-gallery__image",
+          ),
+          "md-zoomable",
+        ],
+        "data-gallery-index": String(index),
+        draggable: "false",
+      },
+    }
+
+    return {
+      type: "element",
+      tagName: "figure",
+      properties: {
+        className: ["content-gallery__item"],
+        "data-gallery-item": String(index + 1),
+      },
+      children: [galleryImg],
+    }
+  })
+
+  return {
+    type: "element",
+    tagName: "div",
+    properties: {
+      className: [
+        "content-gallery",
+        imgs.length > 1 ? "content-gallery--navigable" : "",
+      ].filter(Boolean),
+      "data-type": "gallery",
+      "data-gallery-root": "true",
+      "data-photo-gallery": "",
+      "data-count": String(imgs.length),
+      "aria-label": "图册",
+    },
+    children: [
+      {
+        type: "element",
+        tagName: "div",
+        properties: { className: ["content-gallery__track"] },
+        children: figures,
+      },
+    ],
+  }
+}
+
+function collapseGalleryChildren(children: ElementContent[]): ElementContent[] {
+  // first expand mixed paragraphs (text + images in one <p>)
+  const expanded: ElementContent[] = []
+  for (const child of children) {
+    if (
+      child.type === "element" &&
+      child.tagName === "p" &&
+      paragraphHasImages(child) &&
+      !isImageOnlyParagraph(child)
+    ) {
+      expanded.push(...splitMixedParagraph(child))
+    } else {
+      expanded.push(child)
+    }
+  }
+
+  const next: ElementContent[] = []
+  let i = 0
+  while (i < expanded.length) {
+    const cur = expanded[i]
+    if (isWhitespaceText(cur)) {
+      next.push(cur)
+      i += 1
+      continue
+    }
+    if (!isGalleryBlock(cur)) {
+      next.push(cur)
+      i += 1
+      continue
+    }
+
+    const imgs: Element[] = []
+    while (i < expanded.length) {
+      const node = expanded[i]
+      if (isWhitespaceText(node)) {
+        i += 1
+        continue
+      }
+      if (!isGalleryBlock(node)) break
+      imgs.push(...extractImages(node))
+      i += 1
+    }
+    if (imgs.length) next.push(buildGallery(imgs))
+  }
+  return next
+}
+
+/**
+ * Collapse consecutive image-only blocks into a photo gallery.
+ * Only processes container children once; skips already-built galleries.
+ */
+function wrapImageGalleries() {
+  return (tree: Root) => {
+    const walk = (node: Root | Element) => {
+      if (!node.children?.length) return
+
+      // collapse consecutive image blocks at this level
+      const collapsed = collapseGalleryChildren(
+        node.children as ElementContent[],
+      )
+      node.children = collapsed as typeof node.children
+
+      for (const child of node.children) {
+        if (child.type !== "element") continue
+        // do not re-enter built galleries or leaf containers
+        if (
+          asClassList(child.properties?.className).includes("content-gallery") ||
+          asClassList(child.properties?.className).includes("photo-gallery")
+        ) {
+          continue
+        }
+        if (
+          child.tagName === "p" ||
+          child.tagName === "figure" ||
+          child.tagName === "a" ||
+          child.tagName === "span" ||
+          child.tagName === "pre" ||
+          child.tagName === "code" ||
+          child.tagName === "img"
+        ) {
+          continue
+        }
+        walk(child)
+      }
+    }
+
+    walk(tree)
+  }
+}
+
 /**
  * Task list polish:
  * wrap non-checkbox children so nested lists stack correctly under content.
@@ -351,6 +619,7 @@ export async function markdownToHtml(md: string): Promise<{
     .use(rehypeHighlight, { detect: true, ignoreMissing: true })
     .use(enhanceCallouts)
     .use(enhanceImages)
+    .use(wrapImageGalleries)
     .use(enhanceTaskLists)
     .use(polishFootnotes)
     .use(wrapTables)

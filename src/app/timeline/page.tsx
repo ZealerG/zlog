@@ -1,5 +1,4 @@
 import type { Metadata } from "next"
-import Link from "next/link"
 import { ScrollReveal } from "@/components/effects/ScrollReveal"
 import { SiteTimeline } from "@/components/timeline/SiteTimeline"
 import { getTimelineEntries } from "@/lib/content/load"
@@ -39,20 +38,6 @@ export default async function TimelinePage({
             <span className="site-body tracking-normal text-n-4">·</span>
             <span className="site-body tracking-normal text-n-5">时光机</span>
           </h1>
-          <p className="site-meta mt-3 max-w-xl text-n-5">
-            把{" "}
-            <Link href="/posts" className="text-primary transition hover:opacity-80">
-              篇章
-            </Link>
-            、
-            <Link
-              href="/updates"
-              className="text-primary transition hover:opacity-80"
-            >
-              足迹
-            </Link>
-            {" "}与影像放在同一条时间线上回看。
-          </p>
         </header>
       </ScrollReveal>
 

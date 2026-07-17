@@ -1,6 +1,13 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react"
+import { ContentGallery, type GalleryImage } from "./ContentGallery"
 import { ImageViewer, type ViewerImage } from "./ImageViewer"
 
 function decodeCode(btn: HTMLButtonElement): string {
@@ -17,6 +24,71 @@ function decodeCode(btn: HTMLButtonElement): string {
     }
   }
   return btn.getAttribute("data-code") ?? ""
+}
+
+type Segment =
+  | { type: "html"; html: string }
+  | { type: "gallery"; images: GalleryImage[]; key: string }
+
+function parseGalleryImages(galleryEl: Element): GalleryImage[] {
+  return Array.from(galleryEl.querySelectorAll("img")).map((img) => ({
+    src: img.getAttribute("src") || "",
+    alt: img.getAttribute("alt") || "",
+  })).filter((i) => i.src)
+}
+
+/**
+ * Split server HTML into static HTML segments + interactive gallery mounts.
+ * Gallery blocks produced by rehype wrapImageGalleries become React carousels.
+ */
+function splitHtmlSegments(html: string): Segment[] {
+  if (typeof window === "undefined") {
+    // SSR: keep raw HTML (galleries still styled as static track)
+    return [{ type: "html", html }]
+  }
+  if (!html.includes("data-photo-gallery") && !html.includes("data-gallery-root") && !html.includes("photo-gallery") && !html.includes("content-gallery")) {
+    return [{ type: "html", html }]
+  }
+
+  const wrap = document.createElement("div")
+  wrap.innerHTML = html
+  const segments: Segment[] = []
+  let htmlBuf = ""
+  let galleryIndex = 0
+
+  const flushHtml = () => {
+    if (htmlBuf) {
+      segments.push({ type: "html", html: htmlBuf })
+      htmlBuf = ""
+    }
+  }
+
+  for (const node of Array.from(wrap.childNodes)) {
+    if (
+      node.nodeType === Node.ELEMENT_NODE &&
+      (node as Element).matches?.(
+        "[data-photo-gallery], [data-gallery-root], .photo-gallery, .content-gallery",
+      )
+    ) {
+      flushHtml()
+      const images = parseGalleryImages(node as Element)
+      if (images.length) {
+        segments.push({
+          type: "gallery",
+          images,
+          key: `g-${galleryIndex++}-${images[0]?.src ?? ""}`,
+        })
+      }
+      continue
+    }
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      htmlBuf += (node as Element).outerHTML
+    } else if (node.nodeType === Node.TEXT_NODE) {
+      htmlBuf += node.textContent ?? ""
+    }
+  }
+  flushHtml()
+  return segments.length ? segments : [{ type: "html", html }]
 }
 
 function collectImages(root: HTMLElement): ViewerImage[] {
@@ -45,12 +117,16 @@ export function MarkdownBody({
     images: ViewerImage[]
     index: number
   } | null>(null)
+  const [segments, setSegments] = useState<Segment[]>([{ type: "html", html }])
+
+  useEffect(() => {
+    setSegments(splitHtmlSegments(html))
+  }, [html])
 
   useEffect(() => {
     const el = ref.current
     if (!el) return
 
-    // mark zoomable + strip titles that show as tooltips
     el.querySelectorAll<HTMLImageElement>("img").forEach((img) => {
       if (img.classList.contains("no-lightbox")) return
       img.classList.add("md-zoomable")
@@ -82,6 +158,14 @@ export function MarkdownBody({
         return
       }
 
+      // ignore drag-end clicks on gallery track
+      const track = target.closest?.(".content-gallery__track") as HTMLElement | null
+      if (track?.dataset.galleryDragging === "true") {
+        event.preventDefault()
+        event.stopPropagation()
+        return
+      }
+
       const img = target.closest?.("img") as HTMLImageElement | null
       if (!img || !el.contains(img) || img.classList.contains("no-lightbox")) {
         return
@@ -90,7 +174,11 @@ export function MarkdownBody({
 
       event.preventDefault()
       event.stopPropagation()
-      const images = collectImages(el)
+
+      const gallery = img.closest(
+        "[data-gallery-root], [data-photo-gallery], .content-gallery",
+      ) as HTMLElement | null
+      const images = gallery ? collectImages(gallery) : collectImages(el)
       const src = img.currentSrc || img.src
       const index = Math.max(
         0,
@@ -101,15 +189,36 @@ export function MarkdownBody({
 
     el.addEventListener("click", onClick)
     return () => el.removeEventListener("click", onClick)
-  }, [html])
+  }, [segments, html])
+
+  const body: ReactNode = useMemo(() => {
+    if (segments.length === 1 && segments[0].type === "html") {
+      return (
+        <div
+          className={`reading-copy post-prose max-w-none text-n-6 ${className}`}
+          dangerouslySetInnerHTML={{ __html: segments[0].html }}
+        />
+      )
+    }
+    return (
+      <div className={`reading-copy post-prose max-w-none text-n-6 ${className}`}>
+        {segments.map((seg, i) =>
+          seg.type === "html" ? (
+            <div
+              key={`h-${i}`}
+              dangerouslySetInnerHTML={{ __html: seg.html }}
+            />
+          ) : (
+            <ContentGallery key={seg.key} images={seg.images} />
+          ),
+        )}
+      </div>
+    )
+  }, [segments, className])
 
   return (
     <>
-      <div
-        ref={ref}
-        className={`reading-copy post-prose max-w-none text-n-6 ${className}`}
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
+      <div ref={ref}>{body}</div>
       {viewer ? (
         <ImageViewer
           images={viewer.images}

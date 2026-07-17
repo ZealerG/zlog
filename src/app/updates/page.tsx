@@ -52,13 +52,6 @@ export default async function UpdatesPage({
             <span className="site-body tracking-normal text-n-4">·</span>
             <span className="site-body tracking-normal text-n-5">最近动态</span>
           </h1>
-          <p className="site-meta mt-3 max-w-xl text-n-5">
-            短笔记与日常片段。完整写作在{" "}
-            <Link href="/posts" className="text-primary transition hover:opacity-80">
-              篇章
-            </Link>
-            。
-          </p>
         </header>
       </ScrollReveal>
 

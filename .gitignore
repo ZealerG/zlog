@@ -33,6 +33,7 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 .env*.local
+!.env.example
 
 # vercel
 .vercel
@@ -63,3 +64,6 @@ content/glimpses/2026-05-yushan.md
 content/friends/*
 !content/friends/example-blog.md
 content/.DS_Store
+
+# old planning docs
+docs/superpowers/
