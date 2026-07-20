@@ -192,15 +192,16 @@ export async function parsePhotoExifFromBuffer(
 }
 
 /**
- * Browser: prefer same-origin API for remote images (CORS-safe).
- * Node/tests: fetch the URL and parse buffer.
+ * In-flight + resolved cache so N gallery mounts of the same src
+ * only hit /api/exif (and re-download the image) once.
+ * Without this, 足迹 pages with multi-image memos stampede the EXIF route.
  */
-export async function parsePhotoExif(src: string): Promise<PhotoExif | null> {
-  if (!src || src.startsWith("data:")) return null
+const exifPromiseCache = new Map<string, Promise<PhotoExif | null>>()
 
+async function parsePhotoExifUncached(src: string): Promise<PhotoExif | null> {
   try {
     if (typeof window !== "undefined") {
-      // absolute remote → server proxy
+      // absolute remote → server proxy (CORS-safe)
       if (/^https?:\/\//i.test(src)) {
         const endpoint = `/api/exif?url=${encodeURIComponent(src)}`
         const res = await fetch(endpoint)
@@ -220,4 +221,20 @@ export async function parsePhotoExif(src: string): Promise<PhotoExif | null> {
   } catch {
     return null
   }
+}
+
+/**
+ * Browser: prefer same-origin API for remote images (CORS-safe).
+ * Node/tests: fetch the URL and parse buffer.
+ * Dedupes concurrent + repeat calls by `src`.
+ */
+export function parsePhotoExif(src: string): Promise<PhotoExif | null> {
+  if (!src || src.startsWith("data:")) return Promise.resolve(null)
+
+  const hit = exifPromiseCache.get(src)
+  if (hit) return hit
+
+  const pending = parsePhotoExifUncached(src).catch(() => null)
+  exifPromiseCache.set(src, pending)
+  return pending
 }

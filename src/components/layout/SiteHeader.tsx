@@ -49,7 +49,7 @@ export function SiteHeader({
         <Link
           tabIndex={-1}
           href="/"
-          className="pointer-events-auto absolute left-1/2 translate-x-[-50%] rounded-2xl border border-transparent bg-transparent px-3 py-1.5 text-lg font-semibold tracking-tight text-primary opacity-100 transition-[opacity,transform] duration-200 md:static md:translate-x-0 md:translate-y-0 md:justify-self-start"
+          className="pointer-events-auto absolute left-1/2 translate-x-[-50%] rounded-2xl border border-transparent bg-transparent px-3 py-1.5 text-lg font-semibold tracking-tight text-primary opacity-100 transition-[opacity,transform,color] duration-300 hover:opacity-90 md:static md:translate-x-0 md:translate-y-0 md:justify-self-start"
         >
           <span className="inline-block origin-left transition-transform duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] md:scale-[var(--site-header-brand-scale)]">
             {brand}
@@ -83,8 +83,8 @@ export function SiteHeader({
             <ThemeToggle
               className={
                 scrolled
-                  ? "site-theme-capsule rounded-2xl"
-                  : ""
+                  ? "site-theme-capsule rounded-full"
+                  : "site-theme-capsule site-theme-capsule-idle rounded-full"
               }
             />
           </div>

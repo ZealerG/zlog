@@ -99,21 +99,54 @@ function GalleryItem({
   index: number
 }) {
   const [meta, setMeta] = useState<PhotoMetaItem[]>([])
+  const itemRef = useRef<HTMLElement>(null)
   const imgRef = useRef<HTMLImageElement>(null)
 
+  // EXIF is decorative overlay metadata — only fetch when the item is near
+  // the viewport. Combined with parsePhotoExif's URL cache this stops the
+  // /api/exif stampede on 足迹 (full image re-download per mount).
   useEffect(() => {
+    const node = itemRef.current
+    if (!node) return
+
     let cancelled = false
-    void parsePhotoExif(src).then((exif) => {
-      if (cancelled || !exif) return
-      setMeta(photoExifToMetaItems(exif))
-    })
+    let started = false
+
+    const loadExif = () => {
+      if (started || cancelled) return
+      started = true
+      void parsePhotoExif(src).then((exif) => {
+        if (cancelled || !exif) return
+        setMeta(photoExifToMetaItems(exif))
+      })
+    }
+
+    if (typeof IntersectionObserver === "undefined") {
+      loadExif()
+      return () => {
+        cancelled = true
+      }
+    }
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          loadExif()
+          io.disconnect()
+        }
+      },
+      { rootMargin: "200px 0px", threshold: 0.01 },
+    )
+    io.observe(node)
     return () => {
       cancelled = true
+      io.disconnect()
     }
   }, [src])
 
   return (
     <figure
+      ref={itemRef}
       className="content-gallery__item"
       data-gallery-item={index + 1}
     >

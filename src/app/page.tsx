@@ -1,14 +1,20 @@
 import { ScrollReveal } from "@/components/effects/ScrollReveal"
 import { Hero } from "@/components/home/Hero"
+import { LatestGlimpses } from "@/components/home/LatestGlimpses"
 import { LatestUpdates } from "@/components/home/LatestUpdates"
 import { LatestWriting } from "@/components/home/LatestWriting"
-import { getAllPosts, getAllUpdates } from "@/lib/content/load"
+import {
+  getAllGlimpses,
+  getAllPosts,
+  getAllUpdates,
+} from "@/lib/content/load"
 import { getSiteConfig } from "@/lib/content/site"
 
 export default function Home() {
   const site = getSiteConfig()
   const posts = getAllPosts().slice(0, 5)
   const updates = getAllUpdates().slice(0, 5)
+  const glimpses = getAllGlimpses().slice(0, 6)
 
   return (
     <main className="relative w-full max-w-full overflow-x-hidden px-6 sm:px-12 lg:px-24">
@@ -30,6 +36,17 @@ export default function Home() {
           <LatestUpdates updates={updates} />
         </section>
       </ScrollReveal>
+
+      {glimpses.length > 0 ? (
+        <>
+          <div className="home-feed-rule mx-auto w-full max-w-5xl" aria-hidden />
+          <ScrollReveal y={26} delay={60}>
+            <div className="mx-auto w-full max-w-5xl py-16 lg:py-20">
+              <LatestGlimpses glimpses={glimpses} />
+            </div>
+          </ScrollReveal>
+        </>
+      ) : null}
     </main>
   )
 }

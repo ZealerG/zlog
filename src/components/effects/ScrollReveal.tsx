@@ -13,6 +13,11 @@ type Props = {
 /**
  * Lightweight scroll entry — transform/opacity only.
  * Prefers IntersectionObserver over scroll listeners (gpt-taste / performance).
+ *
+ * Important: tall blocks (足迹 / 拾光 full lists) only show a sliver on first
+ * paint. A high threshold (e.g. 0.12 of total height) never fires until the
+ * user scrolls — content stays opacity:0. Use threshold 0 + an immediate
+ * in-viewport check on mount.
  */
 export function ScrollReveal({
   children,
@@ -36,18 +41,32 @@ export function ScrollReveal({
     el.style.setProperty("--reveal-y", `${y}px`)
     el.style.setProperty("--reveal-delay", `${delay}ms`)
 
+    const reveal = () => {
+      el.dataset.revealed = "true"
+    }
+
+    // Already above the fold (or partially so) on mount → show now.
+    // Covers tall list wrappers where ratio-based thresholds fail.
+    const rect = el.getBoundingClientRect()
+    const vh = window.innerHeight || document.documentElement.clientHeight
+    if (rect.top < vh && rect.bottom > 0) {
+      reveal()
+      if (once) return
+    }
+
     const io = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
+          // isIntersecting is enough — do not require a % of a tall element
           if (entry.isIntersecting) {
-            el.dataset.revealed = "true"
+            reveal()
             if (once) io.unobserve(el)
           } else if (!once) {
             el.dataset.revealed = "false"
           }
         }
       },
-      { threshold: 0.12, rootMargin: "0px 0px -8% 0px" },
+      { threshold: 0, rootMargin: "0px 0px -4% 0px" },
     )
     io.observe(el)
     return () => io.disconnect()

@@ -232,14 +232,15 @@ export function SiteTimeline({
                                 : "mt-3 grid gap-2 sm:grid-cols-2"
                             }
                           >
-                            {item.images.slice(0, 4).map((src) => (
+                            {item.images.slice(0, 4).map((src, imgIndex) => (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img
-                                key={src}
+                                key={`${src}-${imgIndex}`}
                                 src={src}
                                 alt=""
                                 className="h-auto w-full rounded-[1.25rem] border border-n-2 object-cover transition duration-300 group-hover:brightness-[1.02]"
                                 loading="lazy"
+                                decoding="async"
                               />
                             ))}
                           </div>
