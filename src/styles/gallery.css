@@ -75,29 +75,44 @@
   user-drag: none;
 }
 
-/* Default gallery image sizing — avoid zero-height collapse */
+/*
+  Multi-image carousel: fixed height so (1) lazy images reserve space and
+  (2) landscape shots can be wider than the track (horizontal scroll).
+  Single-image galleries are constrained below so they don't clip.
+*/
 .content-gallery__item img {
   display: block;
-  max-height: min(70vh, 32rem);
-  max-width: min(100%, 42rem);
-  width: auto;
-  height: auto;
-  object-fit: contain;
-  clip-path: none;
   width: auto;
   max-width: none;
   height: min(36rem, 72vh);
   max-height: none;
+  object-fit: contain;
+  clip-path: none;
   margin: 0 !important;
   border: 0 !important;
   border-radius: 0 !important;
   transition: opacity 0.18s;
-  display: block;
   cursor: zoom-in;
 }
 
-.content-gallery__item[data-gallery-orientation="landscape"] img {
-  max-width: none !important;
+/* Beat .post-prose :where(img) { max-width: 100% } for multi-image tracks */
+.content-gallery--navigable .content-gallery__item img {
+  max-width: none;
+}
+
+/*
+  Single card: fit the frame (no silent clip without nav arrows).
+  min-height on the figure reserves space for lazy loads before decode.
+*/
+.content-gallery:not(.content-gallery--navigable) .content-gallery__item {
+  width: 100%;
+  min-height: min(12rem, 28vh);
+}
+
+.content-gallery:not(.content-gallery--navigable) .content-gallery__item img {
+  max-width: 100%;
+  height: auto;
+  max-height: min(36rem, 72vh);
 }
 
 .content-gallery__item > figcaption:not(.photo-meta-overlay) {
@@ -350,6 +365,11 @@
 
   .content-gallery__item img {
     height: min(28rem, 62vh);
+  }
+
+  .content-gallery:not(.content-gallery--navigable) .content-gallery__item img {
+    height: auto;
+    max-height: min(28rem, 62vh);
   }
 
   .content-gallery__nav-button {

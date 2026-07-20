@@ -76,6 +76,7 @@
   margin-bottom: 0;
 }
 
+/* Standalone update images (not gallery cells) */
 .update-body .post-prose :where(img) {
   margin: 0.85rem 0;
   border-radius: 1.15rem;
@@ -92,14 +93,23 @@
   box-shadow: var(--shadow-lift);
 }
 
+/*
+  Gallery cells: undo update-body standalone-img cosmetics only.
+  Use unset (not height/width literals) so gallery.css sizing cascade wins.
+*/
 .update-body .post-prose .content-gallery :where(img) {
   margin: 0;
   border-radius: 0.75rem;
-  max-height: min(70vh, 32rem);
-  width: auto;
-  max-width: min(100%, 42rem);
-  height: auto;
+  max-height: unset;
+  max-width: unset;
   object-fit: contain;
+  box-shadow: none;
+  transform: none;
+}
+
+.update-body .post-prose .content-gallery :where(img):hover {
+  transform: none;
+  box-shadow: none;
 }
 
 .update-body .code-block-shell {
