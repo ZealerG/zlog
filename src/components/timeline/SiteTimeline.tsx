@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useMemo, useState } from "react"
 import type { TimelineEntry } from "@/lib/content/load"
+import { RemoteImage } from "@/components/media/RemoteImage"
 
 function yearOf(iso: string) {
   return iso.slice(0, 4)
@@ -233,15 +234,18 @@ export function SiteTimeline({
                             }
                           >
                             {item.images.slice(0, 4).map((src, imgIndex) => (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img
+                              <div
                                 key={`${src}-${imgIndex}`}
-                                src={src}
-                                alt=""
-                                className="h-auto w-full rounded-[1.25rem] border border-n-2 object-cover transition duration-300 group-hover:brightness-[1.02]"
-                                loading="lazy"
-                                decoding="async"
-                              />
+                                className="relative aspect-[4/3] overflow-hidden rounded-[1.25rem] border border-n-2"
+                              >
+                                <RemoteImage
+                                  src={src}
+                                  alt=""
+                                  fill
+                                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 28rem"
+                                  className="object-cover transition duration-300 group-hover:brightness-[1.02]"
+                                />
+                              </div>
                             ))}
                           </div>
                         ) : null}

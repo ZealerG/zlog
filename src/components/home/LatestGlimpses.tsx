@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { ArrowUpRight } from "lucide-react"
 import type { Glimpse } from "@/lib/content/types"
+import { RemoteImage } from "@/components/media/RemoteImage"
 
 function yearOf(iso: string) {
   const y = new Date(iso).getFullYear()
@@ -56,16 +57,16 @@ export function LatestGlimpses({ glimpses }: { glimpses: Glimpse[] }) {
             <Link
               key={tile.key}
               href={tile.href}
-              className="home-glimpses-card media-zoom group"
+              className="home-glimpses-card media-zoom group relative"
               style={{ animationDelay: `${0.4 + index * 0.05}s` }}
               aria-label={tile.caption ?? "拾光影像"}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <RemoteImage
                 src={tile.src}
                 alt={tile.caption ?? "拾光"}
-                loading="lazy"
-                className="h-full w-full object-cover"
+                fill
+                sizes="(max-width: 640px) 70vw, 240px"
+                className="object-cover"
                 draggable={false}
               />
               {tile.caption ? (

@@ -131,11 +131,12 @@ export function normalizeMarkdownBody(body: string): string {
     .trim()
 }
 
-/** Extract remote image URLs from markdown image syntax. */
+/** Extract remote image URLs from markdown image syntax (order preserved, unique). */
 export function extractMarkdownImages(body: string): string[] {
-  return Array.from(
+  const urls = Array.from(
     body.matchAll(/!\[[^\]]*\]\((https?:[^)\s]+)\)/g),
   ).map((match) => match[1])
+  return [...new Set(urls)]
 }
 
 export function parsePost(
@@ -292,7 +293,9 @@ export function parseGlimpse(
       : slugFromRelative(relativePath)
 
   const body = normalizeMarkdownBody(content)
-  const images = [...asStringArray(data.images), ...extractMarkdownImages(body)]
+  const images = [
+    ...new Set([...asStringArray(data.images), ...extractMarkdownImages(body)]),
+  ]
   // 拾光 only keeps visual moments
   if (images.length === 0) {
     return null

@@ -1,4 +1,5 @@
 import type { Glimpse } from "@/lib/content/types"
+import { RemoteImage } from "@/components/media/RemoteImage"
 
 export function GlimpseGrid({ glimpses }: { glimpses: Glimpse[] }) {
   if (glimpses.length === 0) {
@@ -18,14 +19,14 @@ export function GlimpseGrid({ glimpses }: { glimpses: Glimpse[] }) {
           <figure className="bezel h-full">
             <div className="surface-shell surface-shell-hover media-zoom flex h-full flex-col overflow-hidden">
               <div className="relative aspect-[4/3] overflow-hidden bg-n-1/40">
-                {glimpse.images.map((src) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                {glimpse.images.slice(0, 1).map((src) => (
+                  <RemoteImage
                     key={src}
                     src={src}
                     alt={glimpse.caption ?? "拾光"}
-                    className="h-full w-full object-cover"
-                    loading="lazy"
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-cover"
                   />
                 ))}
               </div>

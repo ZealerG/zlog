@@ -82,6 +82,15 @@ describe("markdownToHtml", () => {
     expect((html.match(/data-gallery-item/g) ?? []).length).toBe(3)
   })
 
+  it("dedupes identical image srcs inside a gallery run", async () => {
+    const { html } = await markdownToHtml(
+      "![a](https://example.com/same.jpg)![b](https://example.com/same.jpg)![c](https://example.com/same.jpg)\n",
+    )
+    expect(html).toContain('data-count="1"')
+    expect((html.match(/data-gallery-item/g) ?? []).length).toBe(1)
+    expect(html).not.toContain("content-gallery--navigable")
+  })
+
   it("splits mixed paragraph text + images into gallery", async () => {
     const { html } = await markdownToHtml(
       "嵛山岛等我！\n![a](https://example.com/1.jpg)![b](https://example.com/2.jpg)",

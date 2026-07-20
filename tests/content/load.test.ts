@@ -12,7 +12,10 @@ import {
   getTimelineEntries,
   loadContentGraph,
 } from "@/lib/content/load"
-import { clearMarkdownFileCache } from "@/lib/content/parse"
+import {
+  clearMarkdownFileCache,
+  extractMarkdownImages,
+} from "@/lib/content/parse"
 
 const contentRoot = path.join(process.cwd(), "content")
 const tmpRoots: string[] = []
@@ -269,6 +272,14 @@ after
     fs.utimesSync(file, past, past)
 
     expect(getPostBySlug("alpha", root)?.title).toBe("After")
+  })
+
+  it("extractMarkdownImages preserves order and uniques", () => {
+    expect(
+      extractMarkdownImages(
+        "![a](https://a.com/1.jpg)![b](https://a.com/2.jpg)![c](https://a.com/1.jpg)",
+      ),
+    ).toEqual(["https://a.com/1.jpg", "https://a.com/2.jpg"])
   })
 
   it("getTimelineEntries uses one graph (posts + updates + glimpses)", () => {

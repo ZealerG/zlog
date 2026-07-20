@@ -268,9 +268,25 @@ function splitMixedParagraph(p: Element): ElementContent[] {
   return out.length ? out : [p]
 }
 
+/** Collapse duplicate srcs in a gallery run (memo dumps sometimes paste 4× same URL). */
+function uniqueImagesBySrc(imgs: Element[]): Element[] {
+  const seen = new Set<string>()
+  const out: Element[] = []
+  for (const img of imgs) {
+    const src = String(img.properties?.src ?? "")
+    if (src) {
+      if (seen.has(src)) continue
+      seen.add(src)
+    }
+    out.push(img)
+  }
+  return out.length ? out : imgs
+}
+
 function buildGallery(imgs: Element[]): Element {
   // SSR shell matching xiami content-gallery; hydrated by MarkdownBody → ContentGallery
-  const figures: Element[] = imgs.map((img, index) => {
+  const unique = uniqueImagesBySrc(imgs)
+  const figures: Element[] = unique.map((img, index) => {
     const alt =
       typeof img.properties?.alt === "string" ? img.properties.alt : ""
     const galleryImg: Element = {
@@ -308,12 +324,12 @@ function buildGallery(imgs: Element[]): Element {
     properties: {
       className: [
         "content-gallery",
-        imgs.length > 1 ? "content-gallery--navigable" : "",
+        unique.length > 1 ? "content-gallery--navigable" : "",
       ].filter(Boolean),
       "data-type": "gallery",
       "data-gallery-root": "true",
       "data-photo-gallery": "",
-      "data-count": String(imgs.length),
+      "data-count": String(unique.length),
       "aria-label": "图册",
     },
     children: [
