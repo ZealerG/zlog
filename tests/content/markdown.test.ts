@@ -64,6 +64,15 @@ describe("markdownToHtml", () => {
     expect(html).toContain("noopener")
   })
 
+  it("preserves soft line breaks as <br> (Obsidian-like, incl. blockquotes)", async () => {
+    const { html } = await markdownToHtml(
+      "> line one\n> line two\n> line three\n",
+    )
+    expect(html).toContain("<blockquote>")
+    expect(html).toContain("<br>")
+    expect(html).toMatch(/line one\s*<br>\s*line two\s*<br>\s*line three/)
+  })
+
   it("excludes footnote headings from toc data", async () => {
     const { headings, html } = await markdownToHtml("Hi[^1]\n\n[^1]: note")
     expect(html).toContain("footnotes")

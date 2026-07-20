@@ -1,6 +1,7 @@
 import { unified } from "unified"
 import remarkParse from "remark-parse"
 import remarkGfm from "remark-gfm"
+import remarkBreaks from "remark-breaks"
 import remarkSmartypants from "remark-smartypants"
 import remarkRehype from "remark-rehype"
 import rehypeSlug from "rehype-slug"
@@ -647,6 +648,8 @@ export async function markdownToHtml(md: string): Promise<MarkdownHtmlResult> {
   const file = await unified()
     .use(remarkParse)
     .use(remarkGfm, { singleTilde: false })
+    // Obsidian-like: single newlines become <br> (esp. inside blockquotes)
+    .use(remarkBreaks)
     .use(remarkSmartypants)
     .use(remarkRehype, { allowDangerousHtml: false, footnoteLabel: "脚注" })
     .use(rehypeSlug)
@@ -714,6 +717,7 @@ export async function markdownToHtmlLite(
   const file = await unified()
     .use(remarkParse)
     .use(remarkGfm, { singleTilde: false })
+    .use(remarkBreaks)
     .use(remarkSmartypants)
     .use(remarkRehype, { allowDangerousHtml: false })
     .use(rehypeExternalLinks, {
