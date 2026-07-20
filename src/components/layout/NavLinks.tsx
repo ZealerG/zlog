@@ -126,7 +126,7 @@ export function NavLinks({
 
       {openHref && previewData[openHref] ? (
         <div
-          className="absolute left-1/2 top-[calc(100%+0.75rem)] z-50 w-[min(30rem,calc(100vw-2rem))] max-w-[calc(100vw-2rem)] -translate-x-1/2 animate-[nav-preview-in_0.18s_ease-out_both]"
+          className="animate-soft-panel-in-nav absolute left-1/2 top-[calc(100%+0.75rem)] z-50 w-[min(30rem,calc(100vw-2rem))] max-w-[calc(100vw-2rem)] -translate-x-1/2"
           onMouseEnter={clearLeave}
           onMouseLeave={scheduleLeave}
         >
