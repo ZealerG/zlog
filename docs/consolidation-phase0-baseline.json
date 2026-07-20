@@ -1,0 +1,270 @@
+{
+  "recorded_at": "2026-07-20T07:16:40.577Z",
+  "env": {
+    "node": "v20.20.2",
+    "mode": "next dev (localhost:3000)",
+    "warning": "Dev timings are higher than production static build; use for relative regression only."
+  },
+  "git": {
+    "branch": "main",
+    "commit": "ba8b04f",
+    "note": "post-merge consolidation Phase 0 baseline"
+  },
+  "content_inventory": {
+    "posts": {
+      "files": 16,
+      "bytes": 208772
+    },
+    "updates": {
+      "files": 1,
+      "bytes": 85
+    },
+    "glimpses": {
+      "files": 3,
+      "bytes": 7343,
+      "memo_sections": 11
+    },
+    "projects": {
+      "files": 1,
+      "bytes": 284
+    },
+    "friends": {
+      "files": 4,
+      "bytes": 675
+    },
+    "bookmarks": {
+      "files": 2,
+      "bytes": 309
+    },
+    "pages": {
+      "files": 0,
+      "bytes": 0
+    }
+  },
+  "route_baseline": [
+    {
+      "path": "/",
+      "warm": {
+        "ttfb_ms": 36,
+        "total_ms": 39,
+        "bytes": 78149,
+        "img_tags": 4,
+        "external_imgs": 9,
+        "status": 200
+      },
+      "samples": [
+        {
+          "ttfb_ms": 108,
+          "total_ms": 111,
+          "status": 200
+        },
+        {
+          "ttfb_ms": 41,
+          "total_ms": 44,
+          "status": 200
+        },
+        {
+          "ttfb_ms": 36,
+          "total_ms": 39,
+          "status": 200
+        }
+      ]
+    },
+    {
+      "path": "/posts",
+      "warm": {
+        "ttfb_ms": 51,
+        "total_ms": 56,
+        "bytes": 114698,
+        "img_tags": 0,
+        "external_imgs": 1,
+        "status": 200
+      },
+      "samples": [
+        {
+          "ttfb_ms": 125,
+          "total_ms": 144,
+          "status": 200
+        },
+        {
+          "ttfb_ms": 49,
+          "total_ms": 53,
+          "status": 200
+        },
+        {
+          "ttfb_ms": 51,
+          "total_ms": 56,
+          "status": 200
+        }
+      ]
+    },
+    {
+      "path": "/updates",
+      "warm": {
+        "ttfb_ms": 33,
+        "total_ms": 43,
+        "bytes": 96216,
+        "img_tags": 5,
+        "external_imgs": 11,
+        "status": 200
+      },
+      "samples": [
+        {
+          "ttfb_ms": 251,
+          "total_ms": 256,
+          "status": 200
+        },
+        {
+          "ttfb_ms": 36,
+          "total_ms": 41,
+          "status": 200
+        },
+        {
+          "ttfb_ms": 33,
+          "total_ms": 43,
+          "status": 200
+        }
+      ]
+    },
+    {
+      "path": "/timeline",
+      "warm": {
+        "ttfb_ms": 32,
+        "total_ms": 34,
+        "bytes": 79860,
+        "img_tags": 8,
+        "external_imgs": 17,
+        "status": 200
+      },
+      "samples": [
+        {
+          "ttfb_ms": 36,
+          "total_ms": 38,
+          "status": 200
+        },
+        {
+          "ttfb_ms": 33,
+          "total_ms": 35,
+          "status": 200
+        },
+        {
+          "ttfb_ms": 32,
+          "total_ms": 34,
+          "status": 200
+        }
+      ]
+    },
+    {
+      "path": "/more",
+      "warm": {
+        "ttfb_ms": 27,
+        "total_ms": 31,
+        "bytes": 53852,
+        "img_tags": 0,
+        "external_imgs": 1,
+        "status": 200
+      },
+      "samples": [
+        {
+          "ttfb_ms": 47,
+          "total_ms": 49,
+          "status": 200
+        },
+        {
+          "ttfb_ms": 27,
+          "total_ms": 29,
+          "status": 200
+        },
+        {
+          "ttfb_ms": 27,
+          "total_ms": 31,
+          "status": 200
+        }
+      ]
+    },
+    {
+      "path": "/projects",
+      "warm": {
+        "ttfb_ms": 55,
+        "total_ms": 57,
+        "bytes": 47138,
+        "img_tags": 1,
+        "external_imgs": 5,
+        "status": 200
+      },
+      "samples": [
+        {
+          "ttfb_ms": 88,
+          "total_ms": 89,
+          "status": 200
+        },
+        {
+          "ttfb_ms": 26,
+          "total_ms": 30,
+          "status": 200
+        },
+        {
+          "ttfb_ms": 55,
+          "total_ms": 57,
+          "status": 200
+        }
+      ]
+    },
+    {
+      "path": "/friends",
+      "warm": {
+        "ttfb_ms": 26,
+        "total_ms": 28,
+        "bytes": 46532,
+        "img_tags": 4,
+        "external_imgs": 1,
+        "status": 200
+      },
+      "samples": [
+        {
+          "ttfb_ms": 51,
+          "total_ms": 52,
+          "status": 200
+        },
+        {
+          "ttfb_ms": 24,
+          "total_ms": 25,
+          "status": 200
+        },
+        {
+          "ttfb_ms": 26,
+          "total_ms": 28,
+          "status": 200
+        }
+      ]
+    },
+    {
+      "path": "/bookmarks",
+      "warm": {
+        "ttfb_ms": 23,
+        "total_ms": 25,
+        "bytes": 48522,
+        "img_tags": 0,
+        "external_imgs": 1,
+        "status": 200
+      },
+      "samples": [
+        {
+          "ttfb_ms": 44,
+          "total_ms": 46,
+          "status": 200
+        },
+        {
+          "ttfb_ms": 22,
+          "total_ms": 25,
+          "status": 200
+        },
+        {
+          "ttfb_ms": 23,
+          "total_ms": 25,
+          "status": 200
+        }
+      ]
+    }
+  ]
+}
