@@ -3,7 +3,7 @@ import Link from "next/link"
 import { ScrollReveal } from "@/components/effects/ScrollReveal"
 import { UpdateTimeline } from "@/components/updates/UpdateTimeline"
 import { getAllUpdates } from "@/lib/content/load"
-import { markdownToHtml } from "@/lib/content/markdown"
+import { markdownToHtmlLite } from "@/lib/content/markdown"
 import { getSiteConfig } from "@/lib/content/site"
 
 export const metadata: Metadata = {
@@ -31,7 +31,8 @@ export default async function UpdatesPage({
 
   const items = await Promise.all(
     ordered.map(async (update) => {
-      const { html } = await markdownToHtml(update.body)
+      // Short memos: lite pipeline (no highlight / footnotes / TOC)
+      const { html } = await markdownToHtmlLite(update.body)
       return {
         slug: update.slug,
         date: update.date,

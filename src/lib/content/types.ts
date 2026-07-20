@@ -16,6 +16,8 @@ export type Update = {
   date: string
   published: boolean
   body: string
+  /** Remote image URLs extracted at parse time (markdown `![](https://…)`). */
+  images: string[]
   slug: string
   filePath: string
 }

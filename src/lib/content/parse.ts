@@ -131,6 +131,13 @@ export function normalizeMarkdownBody(body: string): string {
     .trim()
 }
 
+/** Extract remote image URLs from markdown image syntax. */
+export function extractMarkdownImages(body: string): string[] {
+  return Array.from(
+    body.matchAll(/!\[[^\]]*\]\((https?:[^)\s]+)\)/g),
+  ).map((match) => match[1])
+}
+
 export function parsePost(
   filePath: string,
   relativePath: string,
@@ -183,10 +190,12 @@ export function parseUpdate(
       ? data.slug
       : slugFromRelative(relativePath)
 
+  const body = normalizeMarkdownBody(content)
   return {
     date,
     published,
-    body: normalizeMarkdownBody(content),
+    body,
+    images: extractMarkdownImages(body),
     slug,
     filePath,
   }
@@ -226,19 +235,18 @@ function extractMemoParts(
     if (!date) continue
     const slug = `${baseSlug}-${m[1].replace(/-/g, "")}-${(m[2] ?? "0000").replace(/:/g, "")}`
     const text = rest || heading
-    const images = Array.from(
-      text.matchAll(/!\[[^\]]*\]\((https?:[^)\s]+)\)/g),
-    ).map((match) => match[1])
-    out.push({ date, slug, body: text, images })
+    out.push({ date, slug, body: text, images: extractMarkdownImages(text) })
   }
 
   if (out.length === 0) {
     const date = normalizeDate(data.date)
     if (date) {
-      const images = Array.from(
-        body.matchAll(/!\[[^\]]*\]\((https?:[^)\s]+)\)/g),
-      ).map((match) => match[1])
-      out.push({ date, slug: baseSlug, body, images })
+      out.push({
+        date,
+        slug: baseSlug,
+        body,
+        images: extractMarkdownImages(body),
+      })
     }
   }
 
@@ -254,6 +262,7 @@ export function parseMemoDump(
     date: part.date,
     published: true,
     body: part.body,
+    images: part.images,
     slug: part.slug,
     filePath,
   }))
@@ -283,11 +292,7 @@ export function parseGlimpse(
       : slugFromRelative(relativePath)
 
   const body = normalizeMarkdownBody(content)
-  const imagesFromBody = Array.from(
-    body.matchAll(/!\[[^\]]*\]\((https?:[^)\s]+)\)/g),
-  ).map((m) => m[1])
-
-  const images = [...asStringArray(data.images), ...imagesFromBody]
+  const images = [...asStringArray(data.images), ...extractMarkdownImages(body)]
   // 拾光 only keeps visual moments
   if (images.length === 0) {
     return null

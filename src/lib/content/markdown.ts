@@ -587,12 +587,45 @@ type MarkdownHtmlResult = {
   headings: MarkdownHeading[]
 }
 
-/** Process-local cache: 足迹 converts every memo on each request; reuse within the server process. */
+export type MarkdownPipeline = "full" | "lite"
+
+/** Process-local cache keyed by pipeline + body hash. */
 const markdownHtmlCache = new Map<string, MarkdownHtmlResult>()
 const MARKDOWN_HTML_CACHE_MAX = 256
 
+function cacheKey(pipeline: MarkdownPipeline, md: string): string {
+  // FNV-1a 32-bit — fast, good enough for process-local keys
+  let h = 0x811c9dc5
+  for (let i = 0; i < md.length; i++) {
+    h ^= md.charCodeAt(i)
+    h = Math.imul(h, 0x01000193)
+  }
+  return `${pipeline}:${(h >>> 0).toString(16)}:${md.length}`
+}
+
+function cacheGet(key: string): MarkdownHtmlResult | undefined {
+  return markdownHtmlCache.get(key)
+}
+
+function cacheSet(key: string, result: MarkdownHtmlResult) {
+  if (markdownHtmlCache.size >= MARKDOWN_HTML_CACHE_MAX) {
+    const oldest = markdownHtmlCache.keys().next().value
+    if (oldest !== undefined) markdownHtmlCache.delete(oldest)
+  }
+  markdownHtmlCache.set(key, result)
+}
+
+export function clearMarkdownHtmlCache() {
+  markdownHtmlCache.clear()
+}
+
+/**
+ * Full pipeline for long-form posts / projects:
+ * GFM, footnotes, heading anchors, highlight, callouts, galleries, code shells.
+ */
 export async function markdownToHtml(md: string): Promise<MarkdownHtmlResult> {
-  const cached = markdownHtmlCache.get(md)
+  const key = cacheKey("full", md)
+  const cached = cacheGet(key)
   if (cached) return cached
 
   const file = await unified()
@@ -617,7 +650,12 @@ export async function markdownToHtml(md: string): Promise<MarkdownHtmlResult> {
         const cls = asClassList(node.properties?.className)
         if (cls.includes("sr-only")) return false
         if (node.properties?.id === "footnote-label") return false
-        return node.tagName === "h1" || node.tagName === "h2" || node.tagName === "h3" || node.tagName === "h4"
+        return (
+          node.tagName === "h1" ||
+          node.tagName === "h2" ||
+          node.tagName === "h3" ||
+          node.tagName === "h4"
+        )
       },
     })
     .use(rehypeExternalLinks, {
@@ -641,11 +679,41 @@ export async function markdownToHtml(md: string): Promise<MarkdownHtmlResult> {
     html: String(file),
     headings: (file.data.headings as MarkdownHeading[] | undefined) ?? [],
   }
+  cacheSet(key, result)
+  return result
+}
 
-  if (markdownHtmlCache.size >= MARKDOWN_HTML_CACHE_MAX) {
-    const oldest = markdownHtmlCache.keys().next().value
-    if (oldest !== undefined) markdownHtmlCache.delete(oldest)
+/**
+ * Lite pipeline for short updates / memos:
+ * paragraphs, GFM lists/links, external links, image galleries.
+ * Skips highlight, footnotes, heading anchors, code shells, TOC.
+ */
+export async function markdownToHtmlLite(
+  md: string,
+): Promise<MarkdownHtmlResult> {
+  const key = cacheKey("lite", md)
+  const cached = cacheGet(key)
+  if (cached) return cached
+
+  const file = await unified()
+    .use(remarkParse)
+    .use(remarkGfm, { singleTilde: false })
+    .use(remarkSmartypants)
+    .use(remarkRehype, { allowDangerousHtml: false })
+    .use(rehypeExternalLinks, {
+      target: "_blank",
+      rel: ["noopener", "noreferrer"],
+      protocols: ["http", "https", "mailto"],
+    })
+    .use(enhanceImages)
+    .use(wrapImageGalleries)
+    .use(rehypeStringify)
+    .process(md)
+
+  const result: MarkdownHtmlResult = {
+    html: String(file),
+    headings: [],
   }
-  markdownHtmlCache.set(md, result)
+  cacheSet(key, result)
   return result
 }

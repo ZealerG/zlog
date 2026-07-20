@@ -204,6 +204,10 @@ photo moment
     const updates = getAllUpdates(root)
     expect(updates.some((u) => u.body.includes("text only memo"))).toBe(true)
     expect(updates.some((u) => u.body.includes("photo moment"))).toBe(true)
+    const photo = updates.find((u) => u.body.includes("photo moment"))
+    expect(photo?.images).toEqual(["https://example.com/a.jpg"])
+    const textOnly = updates.find((u) => u.body.includes("text only memo"))
+    expect(textOnly?.images).toEqual([])
   })
 
   it("loadContentGraph builds postsBySlug and reuses fingerprint cache", () => {

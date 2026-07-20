@@ -301,9 +301,6 @@ export function getTimelineEntries(
   }))
 
   const updateEntries = updates.map((u) => {
-    const images = Array.from(
-      u.body.matchAll(/!\[[^\]]*\]\((https?:[^)\s]+)\)/g),
-    ).map((m) => m[1])
     const text = plainTextSnippet(u.body, 160)
     return {
       kind: "update" as const,
@@ -311,7 +308,7 @@ export function getTimelineEntries(
       title: plainTextSnippet(u.body, 72) || "动态",
       summary: text || undefined,
       href: `/updates#${u.slug}`,
-      images: images.length ? images : undefined,
+      images: u.images.length ? u.images : undefined,
     }
   })
 

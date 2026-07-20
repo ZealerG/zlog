@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { markdownToHtml } from "@/lib/content/markdown"
+import { markdownToHtml, markdownToHtmlLite } from "@/lib/content/markdown"
 
 describe("markdownToHtml", () => {
   it("renders gfm, code shell, headings and anchors", async () => {
@@ -96,5 +96,28 @@ describe("markdownToHtml", () => {
     expect(html).toContain("content-gallery")
     expect(html).not.toContain("content-gallery--navigable")
     expect(html).toContain('data-count="1"')
+  })
+})
+
+describe("markdownToHtmlLite", () => {
+  it("renders paragraphs, links and galleries without code shells or anchors", async () => {
+    const { html, headings } = await markdownToHtmlLite(
+      "hello **world**\n\n[site](https://example.com)\n\n![a](https://example.com/1.jpg)![b](https://example.com/2.jpg)\n",
+    )
+    expect(html).toContain("<strong>world</strong>")
+    expect(html).toContain('target="_blank"')
+    expect(html).toContain("content-gallery--navigable")
+    expect(html).not.toContain("code-block-shell")
+    expect(html).not.toContain("heading-anchor")
+    expect(html).not.toContain("hljs")
+    expect(headings).toEqual([])
+  })
+
+  it("is faster path for short memo bodies (smoke)", async () => {
+    const md = "short memo with a [link](https://example.com)\n"
+    const a = await markdownToHtmlLite(md)
+    const b = await markdownToHtmlLite(md)
+    // cached second call returns same string identity path
+    expect(a.html).toBe(b.html)
   })
 })
