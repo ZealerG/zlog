@@ -15,8 +15,8 @@
 content/                      # 写作区（可用 Obsidian 打开）
   site.json                   # 站点名、头像、导航、社交等
   posts/**/*.md               # 长文 → /posts、/posts/[...slug]
-  updates/**/*.md             # 短动态 → /updates
-  glimpses/**/*.md            # 影像拾光 → /timeline
+  updates/**/*.md             # 短动态 / 微语 → /updates（足迹）
+  glimpses/**/*.md            # 见下方「目录语义」
   projects/**/*.md            # 项目 → /projects
   friends/**/*.md             # 友链 → /friends
   bookmarks/**/*.md           # 书签 → /bookmarks
@@ -25,9 +25,25 @@ src/                          # Next.js 应用、内容加载与 UI
 public/                       # 静态资源（favicon 等；文章图请走图床）
 scripts/                      # 构建前生成搜索索引
 tests/                        # 内容解析 / Markdown 测试
+docs/                         # 巩固期基线等工程笔记
 ```
 
 **写作只改 `content/`。** 样式与逻辑在 `src/`。文章配图请用图床外链，不要把大图提交进仓库。
+
+### 目录语义（足迹 vs 拾光）
+
+| 路径 | 正文形态 | 进入哪里 |
+|------|----------|----------|
+| `content/updates/*.md` | 单条 frontmatter 短动态 | **足迹** `/updates` |
+| `content/updates/*.md` 或 `content/glimpses/*.md` | 含多个 `## YYYY-MM-DD` 的 **memo dump** | 拆成多条 → **足迹** `/updates` |
+| `content/glimpses/*.md` | 单条影像（有 `images` 或正文图，**无** memo 分段） | **拾光影像** + 时间线 `/timeline` |
+| `content/posts/*.md` | 长文 | **篇章**；时间线也会聚合 |
+
+约定：
+
+- **日常碎碎念 / 多条微语**：优先 `content/updates/`，或 Obsidian 导出的 `glimpses/memos.md` 式 dump（自动进足迹）。
+- **单独一张/一组图 + 说明**：放 `content/glimpses/`，不要用 `## 日期` 分段标题（否则会被当成 memo dump 进足迹，而不是拾光卡片）。
+- **拾光页 `/timeline`**：篇章 + 足迹 + 独立影像的聚合视图，不是 `glimpses/` 的简单列表。
 
 公开仓库默认 **只带示例内容**；本地私人笔记可通过 `.gitignore` 排除（见文末「示例内容与私人文」）。
 
@@ -171,9 +187,23 @@ published: true
 短动态正文，可插图与链接。
 ```
 
-也支持「微语 dump」式单文件（`## 2026-07-12` 分段），解析器会拆成多条足迹。
+**微语 dump**（也可放在 `content/glimpses/memos.md`）：正文用 `## YYYY-MM-DD`（可带时间）分段，解析器拆成多条足迹；**不会**再当成单张拾光卡片。
+
+```markdown
+---
+title: 我的微语
+date: 2026-01-24
+---
+## 2026-06-23 11:43
+第一条
+
+## 2026-05-30 21:26
+第二条，可插图
+```
 
 #### 拾光影像 `content/glimpses/**/*.md`
+
+单条影像文件（**不要**用 `## YYYY-MM-DD` 多段 dump）：
 
 ```yaml
 ---
@@ -184,6 +214,8 @@ images:
 published: true
 ---
 ```
+
+正文里的 `![](https://...)` 也会收进 `images`。无图则跳过。
 
 #### 项目 / 友链 / 书签
 

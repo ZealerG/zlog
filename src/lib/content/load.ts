@@ -1,4 +1,6 @@
+import fs from "node:fs"
 import path from "node:path"
+import { cache } from "react"
 import type {
   Bookmark,
   Friend,
@@ -57,69 +59,220 @@ function isVisible(published: boolean): boolean {
   return published === true || includeDrafts()
 }
 
-export function getAllPosts(contentRoot = defaultContentRoot()): Post[] {
-  const kindDir = path.join(contentRoot, "posts")
-  const files = listMarkdownFiles(kindDir)
-  const posts = files
-    .map((filePath) => parsePost(filePath, relativeSlugPath(filePath, kindDir)))
-    .filter((p): p is Post => p !== null)
+const CONTENT_KINDS = [
+  "posts",
+  "updates",
+  "glimpses",
+  "pages",
+  "projects",
+  "friends",
+  "bookmarks",
+] as const
 
-  assertNoDuplicateSlugs(posts, "post")
-
-  return posts
-    .filter((p) => isVisible(p.published))
-    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
+/** Cheap fingerprint: path + mtime + size for every markdown file + draft flag. */
+export function contentFingerprint(contentRoot: string): string {
+  const parts: string[] = [`drafts=${includeDrafts() ? 1 : 0}`]
+  for (const kind of CONTENT_KINDS) {
+    const dir = path.join(contentRoot, kind)
+    for (const filePath of listMarkdownFiles(dir)) {
+      try {
+        const st = fs.statSync(filePath)
+        parts.push(`${filePath}:${st.mtimeMs}:${st.size}`)
+      } catch {
+        parts.push(`${filePath}:missing`)
+      }
+    }
+  }
+  return parts.sort().join("\n")
 }
 
-export function getPostBySlug(
-  slug: string,
-  contentRoot = defaultContentRoot(),
-): Post | undefined {
-  return getAllPosts(contentRoot).find((p) => p.slug === slug)
+export type ContentGraph = {
+  contentRoot: string
+  fingerprint: string
+  posts: Post[]
+  postsBySlug: Map<string, Post>
+  updates: Update[]
+  glimpses: Glimpse[]
+  pages: PageDoc[]
+  projects: Project[]
+  friends: Friend[]
+  bookmarks: Bookmark[]
 }
 
-/** 足迹：全部 memo（含图文）+ updates 目录短动态 */
-export function getAllUpdates(contentRoot = defaultContentRoot()): Update[] {
+type GraphCacheEntry = {
+  fingerprint: string
+  graph: ContentGraph
+}
+
+/** Process-level graph cache keyed by content root. Invalidates via fingerprint. */
+const graphCacheByRoot = new Map<string, GraphCacheEntry>()
+
+export function clearContentGraphCache() {
+  graphCacheByRoot.clear()
+}
+
+function sortByDateDesc<T extends { date: string }>(items: T[]): T[] {
+  return [...items].sort((a, b) =>
+    a.date < b.date ? 1 : a.date > b.date ? -1 : 0,
+  )
+}
+
+function buildContentGraph(contentRoot: string, fingerprint: string): ContentGraph {
+  const postsDir = path.join(contentRoot, "posts")
   const updatesDir = path.join(contentRoot, "updates")
   const glimpsesDir = path.join(contentRoot, "glimpses")
+  const pagesDir = path.join(contentRoot, "pages")
+  const projectsDir = path.join(contentRoot, "projects")
+  const friendsDir = path.join(contentRoot, "friends")
+  const bookmarksDir = path.join(contentRoot, "bookmarks")
 
-  const fromUpdates = listMarkdownFiles(updatesDir).flatMap((filePath) => {
+  // --- posts ---
+  const postFiles = listMarkdownFiles(postsDir)
+  const postsRaw = postFiles
+    .map((filePath) => parsePost(filePath, relativeSlugPath(filePath, postsDir)))
+    .filter((p): p is Post => p !== null)
+  assertNoDuplicateSlugs(postsRaw, "post")
+  const posts = sortByDateDesc(postsRaw.filter((p) => isVisible(p.published)))
+  const postsBySlug = new Map(posts.map((p) => [p.slug, p]))
+
+  // --- updates + glimpses: each directory listed once; memo dumps classified once ---
+  const glimpseFiles = listMarkdownFiles(glimpsesDir)
+  const updateFiles = listMarkdownFiles(updatesDir)
+
+  const fromUpdates = updateFiles.flatMap((filePath) => {
     const rel = relativeSlugPath(filePath, updatesDir)
     if (isMemoDumpFile(filePath)) return parseMemoDump(filePath, rel)
     const one = parseUpdate(filePath, rel)
     return one ? [one] : []
   })
 
-  // Obsidian 微语 dump 常放在 glimpses/：全部进足迹
-  const fromGlimpses = listMarkdownFiles(glimpsesDir).flatMap((filePath) => {
-    if (!isMemoDumpFile(filePath)) return []
+  const glimpseClassified = glimpseFiles.map((filePath) => ({
+    filePath,
+    isMemo: isMemoDumpFile(filePath),
+  }))
+
+  const fromGlimpsesMemos = glimpseClassified.flatMap(({ filePath, isMemo }) => {
+    if (!isMemo) return []
     return parseMemoDump(filePath, relativeSlugPath(filePath, glimpsesDir))
   })
 
-  const updates = [...fromUpdates, ...fromGlimpses]
-  assertNoDuplicateSlugs(updates, "update")
+  const updatesRaw = [...fromUpdates, ...fromGlimpsesMemos]
+  assertNoDuplicateSlugs(updatesRaw, "update")
+  const updates = sortByDateDesc(
+    updatesRaw.filter((u) => isVisible(u.published)),
+  )
 
-  return updates
-    .filter((u) => isVisible(u.published))
-    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
+  const glimpsesRaw = glimpseClassified
+    .filter((x) => !x.isMemo)
+    .map(({ filePath }) =>
+      parseGlimpse(filePath, relativeSlugPath(filePath, glimpsesDir)),
+    )
+    .filter((g): g is Glimpse => g !== null)
+  assertNoDuplicateSlugs(glimpsesRaw, "glimpse")
+  const glimpses = sortByDateDesc(
+    glimpsesRaw.filter((g) => isVisible(g.published) && g.images.length > 0),
+  )
+
+  // --- other kinds ---
+  const pagesRaw = listMarkdownFiles(pagesDir)
+    .map((filePath) => parsePage(filePath, relativeSlugPath(filePath, pagesDir)))
+    .filter((p): p is PageDoc => p !== null)
+  assertNoDuplicateSlugs(pagesRaw, "page")
+  const pages = pagesRaw
+    .filter((p) => isVisible(p.published))
+    .sort((a, b) => a.order - b.order)
+
+  const projectsRaw = listMarkdownFiles(projectsDir)
+    .map((filePath) =>
+      parseProject(filePath, relativeSlugPath(filePath, projectsDir)),
+    )
+    .filter((p): p is Project => p !== null)
+  assertNoDuplicateSlugs(projectsRaw, "project")
+  const projects = projectsRaw
+    .filter((p) => isVisible(p.published))
+    .sort((a, b) => a.order - b.order || a.title.localeCompare(b.title))
+
+  const friendsRaw = listMarkdownFiles(friendsDir)
+    .map((filePath) =>
+      parseFriend(filePath, relativeSlugPath(filePath, friendsDir)),
+    )
+    .filter((p): p is Friend => p !== null)
+  assertNoDuplicateSlugs(friendsRaw, "friend")
+  const friends = friendsRaw
+    .filter((p) => isVisible(p.published))
+    .sort((a, b) => a.order - b.order || a.title.localeCompare(b.title))
+
+  const bookmarksRaw = listMarkdownFiles(bookmarksDir)
+    .map((filePath) =>
+      parseBookmark(filePath, relativeSlugPath(filePath, bookmarksDir)),
+    )
+    .filter((p): p is Bookmark => p !== null)
+  assertNoDuplicateSlugs(bookmarksRaw, "bookmark")
+  const bookmarks = bookmarksRaw
+    .filter((p) => isVisible(p.published))
+    .sort((a, b) => a.order - b.order || a.title.localeCompare(b.title))
+
+  return {
+    contentRoot,
+    fingerprint,
+    posts,
+    postsBySlug,
+    updates,
+    glimpses,
+    pages,
+    projects,
+    friends,
+    bookmarks,
+  }
+}
+
+/**
+ * Load full content graph once per contentRoot fingerprint.
+ * Safe for tests (unique temp roots) and dev (mtime fingerprint invalidates).
+ */
+export function loadContentGraph(
+  contentRoot = defaultContentRoot(),
+): ContentGraph {
+  const fingerprint = contentFingerprint(contentRoot)
+  const hit = graphCacheByRoot.get(contentRoot)
+  if (hit && hit.fingerprint === fingerprint) {
+    return hit.graph
+  }
+  const graph = buildContentGraph(contentRoot, fingerprint)
+  graphCacheByRoot.set(contentRoot, { fingerprint, graph })
+  return graph
+}
+
+/** Request-scoped graph for the default content root (RSC layout + page share one load). */
+const getDefaultContentGraph = cache(() => loadContentGraph(defaultContentRoot()))
+
+function resolveGraph(contentRoot?: string): ContentGraph {
+  const root = contentRoot ?? defaultContentRoot()
+  if (contentRoot === undefined || root === defaultContentRoot()) {
+    return getDefaultContentGraph()
+  }
+  return loadContentGraph(root)
+}
+
+export function getAllPosts(contentRoot = defaultContentRoot()): Post[] {
+  return resolveGraph(contentRoot).posts
+}
+
+export function getPostBySlug(
+  slug: string,
+  contentRoot = defaultContentRoot(),
+): Post | undefined {
+  return resolveGraph(contentRoot).postsBySlug.get(slug)
+}
+
+/** 足迹：全部 memo（含图文）+ updates 目录短动态 */
+export function getAllUpdates(contentRoot = defaultContentRoot()): Update[] {
+  return resolveGraph(contentRoot).updates
 }
 
 /** 独立拾光文件（可选影像补充） */
 export function getAllGlimpses(contentRoot = defaultContentRoot()): Glimpse[] {
-  const kindDir = path.join(contentRoot, "glimpses")
-  const files = listMarkdownFiles(kindDir)
-  const glimpses = files
-    .filter((filePath) => !isMemoDumpFile(filePath))
-    .map((filePath) =>
-      parseGlimpse(filePath, relativeSlugPath(filePath, kindDir)),
-    )
-    .filter((g): g is Glimpse => g !== null)
-
-  assertNoDuplicateSlugs(glimpses, "glimpse")
-
-  return glimpses
-    .filter((g) => isVisible(g.published) && g.images.length > 0)
-    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
+  return resolveGraph(contentRoot).glimpses
 }
 
 export type TimelineEntry = {
@@ -136,7 +289,9 @@ export type TimelineEntry = {
 export function getTimelineEntries(
   contentRoot = defaultContentRoot(),
 ): TimelineEntry[] {
-  const posts = getAllPosts(contentRoot).map((p) => ({
+  const { posts, updates, glimpses } = resolveGraph(contentRoot)
+
+  const postEntries = posts.map((p) => ({
     kind: "post" as const,
     date: p.date,
     title: p.title,
@@ -145,7 +300,7 @@ export function getTimelineEntries(
     draft: !p.published,
   }))
 
-  const updates = getAllUpdates(contentRoot).map((u) => {
+  const updateEntries = updates.map((u) => {
     const images = Array.from(
       u.body.matchAll(/!\[[^\]]*\]\((https?:[^)\s]+)\)/g),
     ).map((m) => m[1])
@@ -160,7 +315,7 @@ export function getTimelineEntries(
     }
   })
 
-  const glimpses = getAllGlimpses(contentRoot).map((g) => ({
+  const glimpseEntries = glimpses.map((g) => ({
     kind: "glimpse" as const,
     date: g.date,
     title: g.caption || "拾光",
@@ -169,67 +324,27 @@ export function getTimelineEntries(
     images: g.images,
   }))
 
-  return [...posts, ...updates, ...glimpses].sort((a, b) =>
+  return [...postEntries, ...updateEntries, ...glimpseEntries].sort((a, b) =>
     a.date < b.date ? 1 : a.date > b.date ? -1 : 0,
   )
 }
 
 export function getAllPages(contentRoot = defaultContentRoot()): PageDoc[] {
-  const kindDir = path.join(contentRoot, "pages")
-  const files = listMarkdownFiles(kindDir)
-  const pages = files
-    .map((filePath) => parsePage(filePath, relativeSlugPath(filePath, kindDir)))
-    .filter((p): p is PageDoc => p !== null)
-
-  assertNoDuplicateSlugs(pages, "page")
-
-  return pages
-    .filter((p) => isVisible(p.published))
-    .sort((a, b) => a.order - b.order)
+  return resolveGraph(contentRoot).pages
 }
 
 export function getAllProjects(contentRoot = defaultContentRoot()): Project[] {
-  const kindDir = path.join(contentRoot, "projects")
-  const files = listMarkdownFiles(kindDir)
-  const items = files
-    .map((filePath) =>
-      parseProject(filePath, relativeSlugPath(filePath, kindDir)),
-    )
-    .filter((p): p is Project => p !== null)
-  assertNoDuplicateSlugs(items, "project")
-  return items
-    .filter((p) => isVisible(p.published))
-    .sort((a, b) => a.order - b.order || a.title.localeCompare(b.title))
+  return resolveGraph(contentRoot).projects
 }
 
 export function getAllFriends(contentRoot = defaultContentRoot()): Friend[] {
-  const kindDir = path.join(contentRoot, "friends")
-  const files = listMarkdownFiles(kindDir)
-  const items = files
-    .map((filePath) =>
-      parseFriend(filePath, relativeSlugPath(filePath, kindDir)),
-    )
-    .filter((p): p is Friend => p !== null)
-  assertNoDuplicateSlugs(items, "friend")
-  return items
-    .filter((p) => isVisible(p.published))
-    .sort((a, b) => a.order - b.order || a.title.localeCompare(b.title))
+  return resolveGraph(contentRoot).friends
 }
 
 export function getAllBookmarks(
   contentRoot = defaultContentRoot(),
 ): Bookmark[] {
-  const kindDir = path.join(contentRoot, "bookmarks")
-  const files = listMarkdownFiles(kindDir)
-  const items = files
-    .map((filePath) =>
-      parseBookmark(filePath, relativeSlugPath(filePath, kindDir)),
-    )
-    .filter((p): p is Bookmark => p !== null)
-  assertNoDuplicateSlugs(items, "bookmark")
-  return items
-    .filter((p) => isVisible(p.published))
-    .sort((a, b) => a.order - b.order || a.title.localeCompare(b.title))
+  return resolveGraph(contentRoot).bookmarks
 }
 
 export function getBookmarksByCategory(

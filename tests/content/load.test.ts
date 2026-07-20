@@ -3,12 +3,16 @@ import fs from "node:fs"
 import os from "node:os"
 import path from "node:path"
 import {
+  clearContentGraphCache,
   getAllPosts,
   getAllUpdates,
   getAllGlimpses,
   getAllPages,
   getPostBySlug,
+  getTimelineEntries,
+  loadContentGraph,
 } from "@/lib/content/load"
+import { clearMarkdownFileCache } from "@/lib/content/parse"
 
 const contentRoot = path.join(process.cwd(), "content")
 const tmpRoots: string[] = []
@@ -25,6 +29,8 @@ afterEach(() => {
     const root = tmpRoots.pop()
     if (root) fs.rmSync(root, { recursive: true, force: true })
   }
+  clearContentGraphCache()
+  clearMarkdownFileCache()
 })
 
 describe("content load", () => {
@@ -198,5 +204,114 @@ photo moment
     const updates = getAllUpdates(root)
     expect(updates.some((u) => u.body.includes("text only memo"))).toBe(true)
     expect(updates.some((u) => u.body.includes("photo moment"))).toBe(true)
+  })
+
+  it("loadContentGraph builds postsBySlug and reuses fingerprint cache", () => {
+    const root = makeTempContentRoot()
+    const postsDir = path.join(root, "posts")
+    fs.writeFileSync(
+      path.join(postsDir, "a.md"),
+      `---
+title: Alpha
+slug: alpha
+date: 2026-07-01
+published: true
+---
+
+alpha body
+`,
+    )
+
+    const g1 = loadContentGraph(root)
+    const g2 = loadContentGraph(root)
+    expect(g1).toBe(g2)
+    expect(g1.postsBySlug.get("alpha")?.title).toBe("Alpha")
+    expect(getPostBySlug("alpha", root)?.title).toBe("Alpha")
+  })
+
+  it("invalidates graph cache when a file changes", () => {
+    const root = makeTempContentRoot()
+    const postsDir = path.join(root, "posts")
+    const file = path.join(postsDir, "a.md")
+    fs.writeFileSync(
+      file,
+      `---
+title: Before
+slug: alpha
+date: 2026-07-01
+published: true
+---
+
+before
+`,
+    )
+
+    expect(getPostBySlug("alpha", root)?.title).toBe("Before")
+
+    // ensure mtime advances on fast FS
+    const past = new Date(Date.now() + 2000)
+    fs.writeFileSync(
+      file,
+      `---
+title: After
+slug: alpha
+date: 2026-07-01
+published: true
+---
+
+after
+`,
+    )
+    fs.utimesSync(file, past, past)
+
+    expect(getPostBySlug("alpha", root)?.title).toBe("After")
+  })
+
+  it("getTimelineEntries uses one graph (posts + updates + glimpses)", () => {
+    const root = makeTempContentRoot()
+    fs.writeFileSync(
+      path.join(root, "posts", "p.md"),
+      `---
+title: Post
+slug: p1
+date: 2026-07-10
+published: true
+---
+
+hi
+`,
+    )
+    fs.mkdirSync(path.join(root, "updates"), { recursive: true })
+    fs.writeFileSync(
+      path.join(root, "updates", "u.md"),
+      `---
+date: 2026-07-11
+published: true
+---
+
+update body
+`,
+    )
+    fs.mkdirSync(path.join(root, "glimpses"), { recursive: true })
+    fs.writeFileSync(
+      path.join(root, "glimpses", "g.md"),
+      `---
+date: 2026-07-12
+caption: shot
+images:
+  - https://example.com/x.jpg
+published: true
+---
+`,
+    )
+
+    const entries = getTimelineEntries(root)
+    expect(entries.some((e) => e.kind === "post" && e.title === "Post")).toBe(
+      true,
+    )
+    expect(entries.some((e) => e.kind === "update")).toBe(true)
+    expect(entries.some((e) => e.kind === "glimpse" && e.title === "shot")).toBe(
+      true,
+    )
   })
 })

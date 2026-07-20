@@ -11,11 +11,42 @@ import type {
   Update,
 } from "./types"
 
-export function readMarkdownFile(filePath: string) {
+type ParsedMarkdownFile = ReturnType<typeof matter>
+
+type MarkdownFileCacheEntry = {
+  mtimeMs: number
+  size: number
+  result: ParsedMarkdownFile
+}
+
+/** Process-local path+mtime cache — parse once per file revision. */
+const markdownFileCache = new Map<string, MarkdownFileCacheEntry>()
+
+export function clearMarkdownFileCache() {
+  markdownFileCache.clear()
+}
+
+export function readMarkdownFile(filePath: string): ParsedMarkdownFile {
+  const stat = fs.statSync(filePath)
+  const hit = markdownFileCache.get(filePath)
+  if (
+    hit &&
+    hit.mtimeMs === stat.mtimeMs &&
+    hit.size === stat.size
+  ) {
+    return hit.result
+  }
+
   let raw = fs.readFileSync(filePath, "utf8")
   // strip BOM + leading blank lines so Obsidian exports still parse
   raw = raw.replace(/^\uFEFF/, "").replace(/^\s+/, "")
-  return matter(raw)
+  const result = matter(raw)
+  markdownFileCache.set(filePath, {
+    mtimeMs: stat.mtimeMs,
+    size: stat.size,
+    result,
+  })
+  return result
 }
 
 function normalizeDate(value: unknown): string | null {
