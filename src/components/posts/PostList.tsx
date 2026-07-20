@@ -59,13 +59,13 @@ export function PostList({
             ) : null}
 
             <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {post.category ? (
                   <Link
                     href={`/posts?category=${encodeURIComponent(post.category)}`}
-                    className="pointer-events-auto relative text-xs font-medium text-primary transition hover:opacity-80"
+                    className="category-inline pointer-events-auto relative"
                   >
-                    / {post.category}
+                    /{post.category}
                   </Link>
                 ) : null}
                 {post.tags.map((tag) => (

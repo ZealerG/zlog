@@ -62,10 +62,20 @@
   line-height: 1.75;
 }
 
-/* xiami: first character of update body in primary accent */
-.update-body .post-prose :where(p:first-of-type)::first-letter {
+/*
+  Drop cap — match xiami.dev/updates:
+  float left, primary, ~1.9em, weight 600, tight line-height.
+  Cover both flat HTML (direct <p>) and segmented client islands
+  (first child wrapper > first <p>).
+*/
+.update-body .post-prose > p:first-of-type::first-letter,
+.update-body .post-prose > :first-child > p:first-of-type::first-letter {
+  float: left;
   color: var(--primary);
-  font-weight: 550;
+  margin: 0.2em 0.1em 0 0;
+  font-size: 1.9em;
+  font-weight: 600;
+  line-height: 0.9;
 }
 
 .update-body .post-prose :where(p:first-child) {

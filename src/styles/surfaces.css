@@ -239,24 +239,48 @@ html[data-theme="dark"] .surface-shell-hover:hover {
   }
 }
 
-/* post detail / list tags — hairline premium pills */
+/*
+  Post meta chips (category + tags) share one box model so row heights match.
+  Category is primary-tinted; tags stay neutral hairline pills.
+*/
+.category-inline,
 .tag-inline {
   display: inline-flex;
   align-items: center;
+  box-sizing: border-box;
+  min-height: 1.65rem;
   border-radius: 999px;
   border: 1px solid var(--hairline);
-  background: color-mix(in oklab, var(--n-1) 45%, transparent);
-  padding: 0.22rem 0.7rem;
+  padding: 0.2rem 0.7rem;
   font-size: 0.72rem;
+  font-weight: 500;
   line-height: 1.2;
   letter-spacing: 0.01em;
-  color: var(--n-5);
-  box-shadow: 0 1px 0 rgb(255 255 255 / 0.45) inset;
   transition:
     color 0.35s var(--ease-premium),
     border-color 0.35s var(--ease-premium),
     background-color 0.35s var(--ease-premium),
     transform 0.35s var(--ease-premium);
+}
+
+.category-inline {
+  color: var(--primary);
+  border-color: rgb(var(--primary-rgb) / 0.28);
+  background: rgb(var(--primary-rgb) / 0.08);
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.4) inset;
+}
+
+.category-inline:hover {
+  color: var(--primary);
+  border-color: rgb(var(--primary-rgb) / 0.42);
+  background: rgb(var(--primary-rgb) / 0.14);
+  transform: translateY(-1px);
+}
+
+.tag-inline {
+  color: var(--n-5);
+  background: color-mix(in oklab, var(--n-1) 45%, transparent);
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.45) inset;
 }
 
 .tag-inline:hover {
@@ -266,6 +290,7 @@ html[data-theme="dark"] .surface-shell-hover:hover {
   transform: translateY(-1px);
 }
 
+.dark .category-inline,
 .dark .tag-inline {
   box-shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset;
 }

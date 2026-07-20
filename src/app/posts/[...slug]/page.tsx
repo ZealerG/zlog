@@ -68,33 +68,28 @@ export default async function PostDetailPage({
               <PostMeta date={post.date} updated={post.updated} />
             </div>
 
-            <div className="mt-4 flex flex-wrap items-center gap-3">
-              <div className="flex flex-wrap items-center gap-3">
-                {post.category ? (
-                  <Link
-                    href={`/posts?category=${encodeURIComponent(post.category)}`}
-                    className="text-xs font-medium text-primary transition-colors hover:text-primary/75"
-                  >
-                    /{post.category}
-                  </Link>
-                ) : (
-                  <Link
-                    href="/posts"
-                    className="text-xs font-medium text-primary transition-colors hover:text-primary/75"
-                  >
-                    /篇章
-                  </Link>
-                )}
-                {post.tags.map((tag) => (
-                  <Link
-                    key={tag}
-                    href={`/posts?tag=${encodeURIComponent(tag)}`}
-                    className="tag-inline"
-                  >
-                    #{tag}
-                  </Link>
-                ))}
-              </div>
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              {post.category ? (
+                <Link
+                  href={`/posts?category=${encodeURIComponent(post.category)}`}
+                  className="category-inline"
+                >
+                  /{post.category}
+                </Link>
+              ) : (
+                <Link href="/posts" className="category-inline">
+                  /篇章
+                </Link>
+              )}
+              {post.tags.map((tag) => (
+                <Link
+                  key={tag}
+                  href={`/posts?tag=${encodeURIComponent(tag)}`}
+                  className="tag-inline"
+                >
+                  #{tag}
+                </Link>
+              ))}
             </div>
 
             {post.summary ? (
