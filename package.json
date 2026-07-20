@@ -6,12 +6,15 @@
   "scripts": {
     "predev": "SHOW_DRAFTS=1 tsx scripts/generate-search-index.ts",
     "dev": "next dev",
-    "prebuild": "SHOW_DRAFTS=0 tsx scripts/generate-search-index.ts",
+    "prebuild": "pnpm content:check && SHOW_DRAFTS=0 tsx scripts/generate-search-index.ts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "content:check": "tsx scripts/content-check.ts",
+    "content:check:strict": "tsx scripts/content-check.ts --strict",
+    "smoke": "tsx scripts/smoke-routes.ts"
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.20",

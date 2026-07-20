@@ -86,14 +86,19 @@ pnpm dev                     # http://localhost:3000
 常用命令：
 
 ```bash
-pnpm dev      # 开发（会生成含草稿的搜索索引）
-pnpm build    # 生产构建（搜索索引不含草稿）
-pnpm start    # 预览生产构建
-pnpm test     # 单元测试
-pnpm lint     # ESLint
+pnpm dev                 # 开发（会生成含草稿的搜索索引）
+pnpm build               # 生产构建：先 content:check，再生成无草稿索引
+pnpm start               # 预览生产构建
+pnpm test                # 单元测试 + 离线 content smoke
+pnpm lint                # ESLint
+pnpm content:check       # 内容 lint（缺字段 / 重复 slug / wiki 附件）
+pnpm content:check:strict
+pnpm smoke               # HTTP 冒烟（需先 pnpm dev / start）
 ```
 
 开发模式下默认会 **显示草稿**（`NODE_ENV=development`）。生产构建默认隐藏草稿。
+
+搜索索引由 **同一 content graph**（`loadContentGraph`）生成，与列表/详情可见文章一致。
 
 ---
 
@@ -106,7 +111,7 @@ pnpm lint     # ESLint
 | 变量 | 是否必填 | 说明 |
 |------|----------|------|
 | `NEXT_PUBLIC_SITE_URL` | **生产强烈建议** | 站点绝对地址，**无尾斜杠**。用于 RSS、sitemap 等绝对链接。例：`https://blog.example.com`。本地可写 `http://localhost:3000`。未设置时，在 Vercel 上会回退到 `https://$VERCEL_URL`。 |
-| `ADMIN_PASSWORD` | 否 | 开启 `/admin` 的口令。不设则管理接口一律 401，无法改 `site.json`。 |
+| `ADMIN_PASSWORD` | 否 | 开启 `/admin` 的口令。不设则管理接口一律 401。**仅适合本地可写盘**；Vercel 只读，生产请直接改仓库 `content/site.json` 后 push。 |
 | `SHOW_DRAFTS` | 否 | `1` / `true` 强制显示草稿；`0` / `false` 强制隐藏。不设时：开发显示、生产隐藏。一般不用改。 |
 
 ### `.env.example` 模板

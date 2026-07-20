@@ -79,6 +79,11 @@ export default function AdminPage() {
         <p className="site-meta mt-3 text-n-5">
           仅编辑 <code>site.json</code>（站点名、简介、社交等）。文章请继续用 Obsidian。
         </p>
+        <p className="site-meta mt-2 rounded-xl border border-primary/20 bg-primary/5 px-3 py-2 text-n-5">
+          <strong className="font-medium text-primary">本地可写盘</strong>
+          专用。Vercel 等只读文件系统上即使登录成功也无法保存；生产请改仓库里的{" "}
+          <code>content/site.json</code> 后 <code>git push</code>。
+        </p>
         <label className="mt-8 block space-y-2">
           <span className="site-meta text-n-5">ADMIN_PASSWORD</span>
           <input
@@ -110,6 +115,10 @@ export default function AdminPage() {
     <main className="mx-auto min-h-screen w-full max-w-2xl px-6 py-16 sm:px-10">
       <p className="site-eyebrow uppercase tracking-[0.28em] text-n-5">Admin</p>
       <h1 className="site-title-page mt-4 tracking-tight text-n-6">站点信息</h1>
+      <p className="site-meta mt-2 rounded-xl border border-primary/20 bg-primary/5 px-3 py-2 text-n-5">
+        生产（Vercel）文件系统只读：此处保存可能失败。正式改站请编辑仓库{" "}
+        <code>content/site.json</code> 后 push。
+      </p>
       <p className="site-meta mt-3 text-n-5">
         文章 / 足迹 / 拾光请用 Obsidian 编辑仓库里的 Markdown。这里只改站点展示信息。
       </p>
