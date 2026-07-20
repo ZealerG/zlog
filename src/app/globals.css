@@ -1347,14 +1347,24 @@ html[data-theme="dark"] .hero-social-btn {
   transform: scale(0.98);
 }
 
+/*
+  Entrance motion only (opacity + Y + scale).
+
+  Tailwind v4 centers with the individual `translate` property
+  (`-translate-x-1/2` → translate: -50%). Animating horizontal
+  offset via `transform: translate(-50%, …)` stacks on top of that
+  and shifts the panel left during the animation (or forever with
+  fill-mode: both). Keep X centering on `translate`; never put it
+  in these keyframes.
+*/
 @keyframes nav-preview-in {
   from {
     opacity: 0;
-    transform: translate(-50%, 8px) scale(0.98);
+    transform: translateY(8px) scale(0.98);
   }
   to {
     opacity: 1;
-    transform: translate(-50%, 0) scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 

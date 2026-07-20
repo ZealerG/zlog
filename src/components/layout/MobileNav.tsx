@@ -98,7 +98,7 @@ export function MobileNav({
             className="absolute inset-0 bg-black/45 backdrop-blur-[2px] animate-[lightbox-in_0.15s_ease-out]"
             onClick={() => setOpen(false)}
           />
-          <div className="glass-panel absolute inset-x-3 top-3 overflow-hidden rounded-3xl animate-[nav-preview-in_0.2s_cubic-bezier(0.22,1,0.36,1)] dark:!bg-[linear-gradient(165deg,rgb(24_24_27/0.88),rgb(9_9_11/0.92))]">
+          <div className="glass-panel absolute inset-x-3 top-3 overflow-hidden rounded-3xl animate-[nav-preview-in_0.2s_cubic-bezier(0.22,1,0.36,1)_both] dark:!bg-[linear-gradient(165deg,rgb(24_24_27/0.88),rgb(9_9_11/0.92))]">
             <div className="flex items-center justify-between border-b border-n-2/70 px-4 py-3 dark:border-white/10">
               <span className="text-base font-semibold tracking-tight text-primary">
                 {brand}

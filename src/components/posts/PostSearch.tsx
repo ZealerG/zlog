@@ -58,7 +58,7 @@ export function PostSearch() {
       </button>
 
       {open ? (
-        <div className="mt-3 animate-[nav-preview-in_0.16s_ease-out]">
+        <div className="mt-3 animate-[nav-preview-in_0.16s_ease-out_both]">
           <input
             type="search"
             autoFocus

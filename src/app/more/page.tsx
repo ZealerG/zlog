@@ -47,9 +47,6 @@ export default function MorePage() {
             <span className="site-body tracking-normal text-n-4">·</span>
             <span className="site-body tracking-normal text-n-5">更多功能</span>
           </h1>
-          <p className="site-meta mt-3 max-w-xl text-pretty text-n-5">
-            写作之外的延伸：作品、朋友与收藏。
-          </p>
         </header>
       </ScrollReveal>
 

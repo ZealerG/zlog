@@ -582,10 +582,19 @@ function wrapCodeBlocks() {
   }
 }
 
-export async function markdownToHtml(md: string): Promise<{
+type MarkdownHtmlResult = {
   html: string
   headings: MarkdownHeading[]
-}> {
+}
+
+/** Process-local cache: 足迹 converts every memo on each request; reuse within the server process. */
+const markdownHtmlCache = new Map<string, MarkdownHtmlResult>()
+const MARKDOWN_HTML_CACHE_MAX = 256
+
+export async function markdownToHtml(md: string): Promise<MarkdownHtmlResult> {
+  const cached = markdownHtmlCache.get(md)
+  if (cached) return cached
+
   const file = await unified()
     .use(remarkParse)
     .use(remarkGfm, { singleTilde: false })
@@ -628,8 +637,15 @@ export async function markdownToHtml(md: string): Promise<{
     .use(rehypeStringify)
     .process(md)
 
-  return {
+  const result: MarkdownHtmlResult = {
     html: String(file),
     headings: (file.data.headings as MarkdownHeading[] | undefined) ?? [],
   }
+
+  if (markdownHtmlCache.size >= MARKDOWN_HTML_CACHE_MAX) {
+    const oldest = markdownHtmlCache.keys().next().value
+    if (oldest !== undefined) markdownHtmlCache.delete(oldest)
+  }
+  markdownHtmlCache.set(md, result)
+  return result
 }
