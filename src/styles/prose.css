@@ -1,0 +1,226 @@
+/* Extracted from globals.css — Phase 4 consolidation */
+
+/* subtle page enter for main blocks */
+@media (prefers-reduced-motion: no-preference) {
+  .site-layout-content > * {
+    animation: page-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+
+@keyframes page-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .site-layout-content > * {
+    animation: none !important;
+  }
+}
+
+.menu-shell {
+  min-width: 16rem;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.menu-section {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.nav-preview-panel {
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.nav-preview-panel a {
+  max-width: 100%;
+}
+
+.menu-eyebrow {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--n-4);
+  padding: 0 0.25rem 0.35rem;
+}
+
+/* xiami-like reading styles */
+.post-prose {
+  max-width: 42rem;
+  color: var(--n-6);
+}
+
+.post-prose :where(h1, h2, h3, h4) {
+  position: relative;
+  scroll-margin-top: 7rem;
+  color: var(--n-6);
+}
+
+.post-prose :where(h1) {
+  letter-spacing: -0.025em;
+  margin-top: 2.5rem;
+  font-size: 1.875rem;
+  font-weight: 500;
+  line-height: 1.15;
+}
+
+.post-prose :where(h2) {
+  letter-spacing: -0.025em;
+  margin-top: 2rem;
+  font-size: 1.5rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.post-prose :where(h3) {
+  letter-spacing: -0.02em;
+  margin-top: 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.post-prose :where(h1, h2, h3, h4) .heading-anchor {
+  margin-left: 0.4rem;
+  color: var(--n-4);
+  text-decoration: none;
+  opacity: 0;
+  font-weight: 500;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.post-prose :where(h1, h2, h3, h4):hover .heading-anchor,
+.post-prose :where(h1, h2, h3, h4):focus-within .heading-anchor {
+  opacity: 1;
+  color: var(--primary);
+}
+
+.post-prose :where(p) {
+  margin: 0.9rem 0;
+  line-height: 1.8;
+  color: var(--n-6);
+}
+
+/* ---------- lists (GitHub / common blog style) ---------- */
+.post-prose :where(ul, ol) {
+  margin: 0.85rem 0;
+  padding-left: 1.6rem;
+}
+
+.post-prose :where(ul) {
+  list-style-type: disc;
+  list-style-position: outside;
+}
+
+.post-prose :where(ol) {
+  list-style-type: decimal;
+  list-style-position: outside;
+}
+
+.post-prose :where(ul ul) {
+  list-style-type: circle;
+}
+
+.post-prose :where(ul ul ul) {
+  list-style-type: square;
+}
+
+.post-prose :where(ol ol) {
+  list-style-type: lower-alpha;
+}
+
+.post-prose :where(li) {
+  display: list-item;
+  margin: 0.3rem 0;
+  padding-left: 0.2rem;
+  line-height: 1.75;
+  color: var(--n-6);
+}
+
+/* nested lists under li */
+.post-prose :where(li > ul, li > ol) {
+  margin: 0.35rem 0 0.4rem;
+}
+
+/* tight paragraphs inside list items (GFM loose lists) */
+.post-prose :where(li > p) {
+  margin: 0.25rem 0;
+  min-height: 0;
+}
+
+.post-prose :where(li > p:first-child) {
+  margin-top: 0;
+}
+
+.post-prose :where(li > p:last-child) {
+  margin-bottom: 0;
+}
+
+/* code / pre inside list items shouldn't explode spacing */
+.post-prose :where(li .code-block-shell) {
+  margin-top: 0.6rem;
+  margin-bottom: 0.6rem;
+}
+
+.post-prose :where(blockquote) {
+  border-left: 3px solid var(--primary);
+  color: var(--n-5);
+  margin: 1.5rem 0;
+  padding-left: 1rem;
+  font-style: normal;
+}
+
+.post-prose :where(a) {
+  color: var(--primary);
+  text-underline-offset: 0.2em;
+}
+
+.post-prose :where(a:hover) {
+  text-decoration: underline;
+}
+
+.post-prose :where(img) {
+  border-radius: 1rem;
+  border: 1px solid var(--n-2);
+  margin: 1.25rem 0;
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.post-prose img.md-zoomable {
+  cursor: zoom-in;
+  transition:
+    transform 0.45s var(--ease-premium),
+    box-shadow 0.45s var(--ease-premium),
+    border-color 0.35s var(--ease-premium);
+}
+
+.post-prose img.md-zoomable:hover {
+  transform: translateY(-2px) scale(1.012);
+  border-color: rgb(var(--primary-rgb) / 0.32);
+  box-shadow: var(--shadow-lift);
+}
+
+.post-prose .content-gallery img.md-zoomable:hover {
+  transform: none;
+  border-color: transparent;
+  box-shadow: none;
+}
+

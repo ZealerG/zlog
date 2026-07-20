@@ -1,13 +1,23 @@
 import type { Metadata } from "next"
 import { ScrollReveal } from "@/components/effects/ScrollReveal"
-import { SiteTimeline } from "@/components/timeline/SiteTimeline"
+import {
+  SiteTimeline,
+  type TimelineKindFilter,
+} from "@/components/timeline/SiteTimeline"
 import { getTimelineEntries } from "@/lib/content/load"
 
 export const metadata: Metadata = {
   title: "拾光",
 }
 
-type SearchParams = Promise<{ type?: string }>
+type SearchParams = Promise<{ type?: string; year?: string }>
+
+function parseKind(type?: string): TimelineKindFilter {
+  if (type === "posts") return "post"
+  if (type === "updates") return "update"
+  if (type === "glimpse") return "glimpse"
+  return "all"
+}
 
 export default async function TimelinePage({
   searchParams,
@@ -15,16 +25,11 @@ export default async function TimelinePage({
   searchParams: SearchParams
 }) {
   const sp = await searchParams
-  const type =
-    sp.type === "posts" || sp.type === "updates" || sp.type === "glimpse"
-      ? sp.type
-      : "all"
-  const entries = getTimelineEntries().filter((e) => {
-    if (type === "posts") return e.kind === "post"
-    if (type === "updates") return e.kind === "update"
-    if (type === "glimpse") return e.kind === "glimpse"
-    return true
-  })
+  const activeKind = parseKind(sp.type)
+  const activeYear =
+    typeof sp.year === "string" && /^\d{4}$/.test(sp.year) ? sp.year : "all"
+
+  const entries = getTimelineEntries()
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-5xl overflow-x-hidden px-6 py-16 sm:px-10">
@@ -41,20 +46,12 @@ export default async function TimelinePage({
         </header>
       </ScrollReveal>
 
-      <ScrollReveal y={20} delay={60}>
-        <SiteTimeline
-          entries={entries}
-          initialKind={
-            type === "all"
-              ? "all"
-              : type === "posts"
-                ? "post"
-                : type === "updates"
-                  ? "update"
-                  : "glimpse"
-          }
-        />
-      </ScrollReveal>
+      {/* Tall list: no ScrollReveal wrapper (avoids threshold blank-on-load) */}
+      <SiteTimeline
+        entries={entries}
+        activeKind={activeKind}
+        activeYear={activeYear}
+      />
     </main>
   )
 }

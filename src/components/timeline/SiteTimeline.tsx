@@ -1,7 +1,4 @@
-"use client"
-
 import Link from "next/link"
-import { useMemo, useState } from "react"
 import type { TimelineEntry } from "@/lib/content/load"
 import { RemoteImage } from "@/components/media/RemoteImage"
 
@@ -27,32 +24,48 @@ const KIND_TONE: Record<TimelineEntry["kind"], string> = {
   glimpse: "timeline-kind-glimpse",
 }
 
+export type TimelineKindFilter = "all" | TimelineEntry["kind"]
+
+function buildTimelineHref(kind: TimelineKindFilter, year: string) {
+  const params = new URLSearchParams()
+  if (kind === "post") params.set("type", "posts")
+  else if (kind === "update") params.set("type", "updates")
+  else if (kind === "glimpse") params.set("type", "glimpse")
+  if (year !== "all") params.set("year", year)
+  const qs = params.toString()
+  return qs ? `/timeline?${qs}` : "/timeline"
+}
+
+/**
+ * Server-rendered timeline with shareable URL filters (?type=&year=).
+ * No client state — chips are Links so filters survive refresh/share.
+ */
 export function SiteTimeline({
   entries,
-  initialKind = "all",
+  activeKind = "all",
+  activeYear = "all",
 }: {
+  /** Full unfiltered timeline (chips use this for year list + totals). */
   entries: TimelineEntry[]
-  initialKind?: "all" | TimelineEntry["kind"]
+  activeKind?: TimelineKindFilter
+  activeYear?: string
 }) {
-  const years = useMemo(() => {
-    const set = new Set(entries.map((e) => yearOf(e.date)))
-    return [...set].sort((a, b) => (a < b ? 1 : -1))
-  }, [entries])
+  // Year chips reflect the active kind so empty years don't clutter the bar
+  const kindScoped =
+    activeKind === "all" ? entries : entries.filter((e) => e.kind === activeKind)
 
-  const [activeYear, setActiveYear] = useState("all")
-  const [activeKind, setActiveKind] = useState<"all" | TimelineEntry["kind"]>(
-    initialKind,
+  const years = [...new Set(kindScoped.map((e) => yearOf(e.date)))].sort(
+    (a, b) => (a < b ? 1 : -1),
   )
 
-  const filtered = useMemo(() => {
-    return entries.filter((e) => {
-      if (activeYear !== "all" && yearOf(e.date) !== activeYear) return false
-      if (activeKind !== "all" && e.kind !== activeKind) return false
-      return true
-    })
-  }, [activeKind, activeYear, entries])
+  const filtered = kindScoped.filter((e) => {
+    if (activeYear !== "all" && yearOf(e.date) !== activeYear) return false
+    return true
+  })
 
-  const groups = useMemo(() => {
+  const total = entries.length
+
+  const groups = (() => {
     const map = new Map<string, TimelineEntry[]>()
     for (const e of filtered) {
       const y = yearOf(e.date)
@@ -60,9 +73,9 @@ export function SiteTimeline({
       map.get(y)!.push(e)
     }
     return [...map.entries()].sort(([a], [b]) => (a < b ? 1 : -1))
-  }, [filtered])
+  })()
 
-  if (entries.length === 0) {
+  if (entries.length === 0 && total === 0) {
     return (
       <div className="mt-10 rounded-2xl border border-dashed border-n-2 px-6 py-14 text-center">
         <p className="site-meta text-n-5">时间线还是空的。</p>
@@ -85,7 +98,7 @@ export function SiteTimeline({
           <p className="mt-1 text-2xl font-medium tabular-nums tracking-tight text-n-6">
             {filtered.length}
             <span className="ml-1.5 text-sm font-normal text-n-5">
-              / {entries.length}
+              / {total}
             </span>
           </p>
         </div>
@@ -103,26 +116,27 @@ export function SiteTimeline({
               ["update", "足迹"],
               ["glimpse", "影像"],
             ] as const
-          ).map(([key, label]) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setActiveKind(key)}
-              className={
-                activeKind === key
-                  ? "rounded-full bg-background px-3 py-1.5 text-xs font-medium text-primary shadow-sm transition dark:bg-n-0/80"
-                  : "rounded-full px-3 py-1.5 text-xs text-n-5 transition hover:text-primary"
-              }
-            >
-              {label}
-            </button>
-          ))}
+          ).map(([key, label]) => {
+            const active = activeKind === key
+            return (
+              <Link
+                key={key}
+                href={buildTimelineHref(key, activeYear)}
+                className={
+                  active
+                    ? "rounded-full bg-background px-3 py-1.5 text-xs font-medium text-primary shadow-sm transition dark:bg-n-0/80"
+                    : "rounded-full px-3 py-1.5 text-xs text-n-5 transition hover:text-primary"
+                }
+              >
+                {label}
+              </Link>
+            )
+          })}
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5">
-          <button
-            type="button"
-            onClick={() => setActiveYear("all")}
+          <Link
+            href={buildTimelineHref(activeKind, "all")}
             className={
               activeYear === "all"
                 ? "rounded-full bg-primary/12 px-3 py-1.5 text-xs font-medium text-primary"
@@ -130,21 +144,23 @@ export function SiteTimeline({
             }
           >
             All years
-          </button>
-          {years.map((year) => (
-            <button
-              key={year}
-              type="button"
-              onClick={() => setActiveYear(year)}
-              className={
-                activeYear === year
-                  ? "rounded-full bg-primary/12 px-3 py-1.5 text-xs font-medium text-primary"
-                  : "rounded-full px-3 py-1.5 text-xs text-n-5 transition hover:text-primary"
-              }
-            >
-              {year}
-            </button>
-          ))}
+          </Link>
+          {years.map((year) => {
+            const active = activeYear === year
+            return (
+              <Link
+                key={year}
+                href={buildTimelineHref(activeKind, year)}
+                className={
+                  active
+                    ? "rounded-full bg-primary/12 px-3 py-1.5 text-xs font-medium text-primary"
+                    : "rounded-full px-3 py-1.5 text-xs text-n-5 transition hover:text-primary"
+                }
+              >
+                {year}
+              </Link>
+            )
+          })}
         </div>
       </div>
 

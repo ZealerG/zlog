@@ -1,0 +1,132 @@
+/* Extracted from globals.css — Phase 4 consolidation */
+
+/* more hub + projects / friends / bookmarks */
+.more-hub-card {
+  animation: home-feed-item-reveal 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+  background: linear-gradient(
+    165deg,
+    rgb(255 255 255 / 0.55),
+    rgb(255 255 255 / 0.28)
+  );
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.5) inset;
+}
+
+.dark .more-hub-card,
+html[data-theme="dark"] .more-hub-card {
+  background: linear-gradient(
+    165deg,
+    rgb(255 255 255 / 0.06),
+    rgb(255 255 255 / 0.03)
+  );
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.05) inset;
+}
+
+.more-hub-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.55) inset,
+    0 14px 36px rgb(15 23 42 / 0.08);
+}
+
+.dark .more-hub-card:hover,
+html[data-theme="dark"] .more-hub-card:hover {
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.08) inset,
+    0 16px 40px rgb(2 6 23 / 0.32);
+}
+
+.more-hub-icon {
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.projects-avatar-ring {
+  padding: 3px;
+  border-radius: 999px;
+  background: linear-gradient(
+    145deg,
+    rgb(var(--primary-rgb) / 0.4),
+    transparent 45%,
+    rgb(var(--primary-rgb) / 0.12)
+  );
+  box-shadow: 0 16px 40px rgb(15 23 42 / 0.1);
+}
+
+.projects-avatar-ring img {
+  display: block;
+  border: 3px solid var(--background);
+}
+
+.projects-aside article,
+.projects-aside + section article {
+  animation: home-feed-item-reveal 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.friends-stage {
+  background-image:
+    radial-gradient(circle at 20% 20%, rgb(var(--primary-rgb) / 0.06), transparent 40%),
+    radial-gradient(circle at 80% 70%, rgb(var(--primary-rgb) / 0.05), transparent 42%);
+}
+
+.friend-bubble:hover {
+  box-shadow:
+    0 12px 30px rgb(15 23 42 / 0.1),
+    0 0 0 1px rgb(var(--primary-rgb) / 0.12);
+}
+
+.bookmark-card:hover {
+  transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .more-hub-card,
+  .projects-aside + section article {
+    animation: none;
+  }
+  .more-hub-card:hover,
+  .bookmark-card:hover {
+    transform: none;
+  }
+}
+
+@media (min-width: 640px) {
+  .site-title-hero {
+    font-size: clamp(2.5rem, 4.5vw, 3.25rem);
+  }
+}
+
+.reading-copy {
+  font-family: var(--font-serif);
+  font-weight: 450;
+}
+
+.home-feed-eyebrow {
+  letter-spacing: 0.14em !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  line-height: 1.4 !important;
+}
+
+.home-feed-title,
+.home-feed-link,
+.home-feed-date {
+  letter-spacing: 0 !important;
+  font-size: 0.875rem !important;
+  font-weight: 400 !important;
+  line-height: 1.5 !important;
+}
+
+.home-feed-item-title {
+  letter-spacing: 0 !important;
+  font-size: 1rem !important;
+  font-weight: 400 !important;
+  line-height: 1.55 !important;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+

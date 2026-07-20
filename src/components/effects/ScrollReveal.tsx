@@ -12,12 +12,13 @@ type Props = {
 
 /**
  * Lightweight scroll entry — transform/opacity only.
- * Prefers IntersectionObserver over scroll listeners (gpt-taste / performance).
+ * Prefers IntersectionObserver over scroll listeners.
  *
- * Important: tall blocks (足迹 / 拾光 full lists) only show a sliver on first
- * paint. A high threshold (e.g. 0.12 of total height) never fires until the
- * user scrolls — content stays opacity:0. Use threshold 0 + an immediate
- * in-viewport check on mount.
+ * Usage rules (Phase 4):
+ * - Wrap headers / toolbars / short cards only.
+ * - NEVER wrap tall full-page lists (UpdateTimeline, SiteTimeline, PostList).
+ *   Those use CSS row animations instead. Tall wrappers cause blank-on-load.
+ * - Threshold 0 + mount in-viewport check for partial visibility.
  */
 export function ScrollReveal({
   children,

@@ -1,0 +1,90 @@
+/* Extracted from globals.css — Phase 4 consolidation */
+
+/* gpt-taste scroll reveal */
+.scroll-reveal {
+  opacity: 0;
+  filter: blur(8px);
+  transform: translate3d(0, var(--reveal-y, 18px), 0);
+  transition:
+    opacity 0.8s var(--ease-out-expo),
+    transform 0.8s var(--ease-out-expo),
+    filter 0.8s var(--ease-out-expo);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: transform, opacity, filter;
+}
+
+.scroll-reveal[data-revealed="true"] {
+  opacity: 1;
+  filter: blur(0);
+  transform: translate3d(0, 0, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-reveal {
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* global card hover physics */
+.surface-shell-hover {
+  transition:
+    border-color 0.5s var(--ease-premium),
+    box-shadow 0.5s var(--ease-premium),
+    transform 0.5s var(--ease-premium),
+    background-color 0.5s var(--ease-premium);
+}
+
+.surface-shell-hover:hover {
+  transform: translateY(-2px) scale(1.005);
+}
+
+.surface-shell-hover:active {
+  transform: translateY(0) scale(0.995);
+}
+
+/* media hover scale inside overflow-hidden shells */
+.media-zoom {
+  overflow: hidden;
+}
+
+.media-zoom img {
+  transition: transform 0.7s var(--ease-out-expo);
+}
+
+.media-zoom:hover img {
+  transform: scale(1.05);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-copy > *,
+  .hero-avatar,
+  .hero-scroll,
+  .home-feed-block,
+  .home-feed-item,
+  .hero-copy-title,
+  .more-hub-card {
+    animation: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+  }
+
+  .hero-scroll-btn {
+    animation: none;
+  }
+
+  .home-feed-row:hover,
+  .home-glimpses-card:hover,
+  .surface-shell-hover:hover {
+    transform: none;
+  }
+
+  .home-glimpses-caption {
+    opacity: 1;
+    transform: none;
+  }
+}
+

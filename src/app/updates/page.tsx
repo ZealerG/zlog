@@ -56,8 +56,8 @@ export default async function UpdatesPage({
         </header>
       </ScrollReveal>
 
-      <ScrollReveal y={18} delay={50}>
-        <div className="mt-8">
+      <div className="mt-8">
+        <ScrollReveal y={12} delay={40}>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="site-meta text-n-5">
               <span className="font-medium text-n-6">{items.length}</span> updates
@@ -86,12 +86,13 @@ export default async function UpdatesPage({
               </Link>
             </div>
           </div>
+        </ScrollReveal>
 
-          <div className="mt-10">
-            <UpdateTimeline items={items} author={site.author} />
-          </div>
+        {/* Tall list: CSS row animation only — not ScrollReveal */}
+        <div className="mt-10">
+          <UpdateTimeline items={items} author={site.author} />
         </div>
-      </ScrollReveal>
+      </div>
     </main>
   )
 }

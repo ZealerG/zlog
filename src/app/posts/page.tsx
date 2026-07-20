@@ -141,16 +141,19 @@ export default async function PostsPage({
       </ScrollReveal>
 
       <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start lg:gap-12">
-        <ScrollReveal className="order-2 grid gap-5 lg:order-1" y={18} delay={60}>
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="site-meta text-n-5">
-              <span className="font-medium text-n-6">{posts.length}</span> posts
-              total
-            </p>
-            <PostFilters state={state} />
-          </div>
+        <div className="order-2 grid gap-5 lg:order-1">
+          <ScrollReveal y={12} delay={40}>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="site-meta text-n-5">
+                <span className="font-medium text-n-6">{posts.length}</span> posts
+                total
+              </p>
+              <PostFilters state={state} />
+            </div>
+          </ScrollReveal>
+          {/* Tall list: CSS post-list-item animation only */}
           <PostList posts={posts} author={site.author} />
-        </ScrollReveal>
+        </div>
 
         <ScrollReveal className="order-1 space-y-4 lg:order-2 lg:sticky lg:top-28" y={16} delay={100}>
           <aside className="space-y-4">

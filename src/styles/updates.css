@@ -1,0 +1,113 @@
+/* Extracted from globals.css — Phase 4 consolidation */
+
+/* updates / 足迹 */
+.update-row {
+  animation: home-feed-item-reveal 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transition: background-color 0.2s ease;
+}
+
+.update-row:hover {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(var(--primary-rgb) / 0.03) 12%,
+    rgb(var(--primary-rgb) / 0.03) 88%,
+    transparent
+  );
+}
+
+.dark .update-row:hover {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(var(--primary-rgb) / 0.05) 12%,
+    rgb(var(--primary-rgb) / 0.05) 88%,
+    transparent
+  );
+}
+
+.update-date-col {
+  position: relative;
+}
+
+@media (min-width: 640px) {
+  .update-date-col::after {
+    content: "";
+    position: absolute;
+    top: 0.45rem;
+    right: -1.35rem;
+    width: 1px;
+    height: calc(100% - 0.2rem);
+    background: linear-gradient(
+      180deg,
+      rgb(var(--primary-rgb) / 0.35),
+      color-mix(in oklab, var(--n-2) 80%, transparent) 40%,
+      transparent
+    );
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+
+  .update-row:hover .update-date-col::after {
+    opacity: 1;
+  }
+}
+
+.update-body .post-prose {
+  max-width: none;
+}
+
+.update-body .post-prose :where(p) {
+  margin: 0.5rem 0;
+  line-height: 1.75;
+}
+
+/* xiami: first character of update body in primary accent */
+.update-body .post-prose :where(p:first-of-type)::first-letter {
+  color: var(--primary);
+  font-weight: 550;
+}
+
+.update-body .post-prose :where(p:first-child) {
+  margin-top: 0;
+}
+
+.update-body .post-prose :where(p:last-child) {
+  margin-bottom: 0;
+}
+
+.update-body .post-prose :where(img) {
+  margin: 0.85rem 0;
+  border-radius: 1.15rem;
+  max-height: 28rem;
+  width: auto;
+  max-width: 100%;
+  object-fit: cover;
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.55s var(--ease-out-expo), box-shadow 0.55s var(--ease-premium);
+}
+
+.update-body .post-prose :where(img):hover {
+  transform: scale(1.01);
+  box-shadow: var(--shadow-lift);
+}
+
+.update-body .post-prose .content-gallery :where(img) {
+  margin: 0;
+  border-radius: 0;
+  max-height: none;
+  width: auto;
+  max-width: none;
+  object-fit: contain;
+}
+
+.update-body .code-block-shell {
+  margin: 0.85rem 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .update-row {
+    animation: none;
+  }
+}
+
