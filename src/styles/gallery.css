@@ -75,7 +75,13 @@
   user-drag: none;
 }
 
+/* Default gallery image sizing — avoid zero-height collapse */
 .content-gallery__item img {
+  display: block;
+  max-height: min(70vh, 32rem);
+  max-width: min(100%, 42rem);
+  width: auto;
+  height: auto;
   object-fit: contain;
   clip-path: none;
   width: auto;

@@ -212,16 +212,37 @@ html[data-theme="dark"] .site-nav-capsule a[data-active="true"]::before {
   transform: translateZ(0);
 }
 
-/* preview dropdown — soft glass, not solid */
+/*
+  Nav preview dropdown — denser glass than generic surface-shell
+  so list text stays readable over busy page backgrounds.
+*/
+.menu-shell.surface-shell {
+  background: linear-gradient(
+    165deg,
+    rgb(255 255 255 / 0.96),
+    rgb(250 250 250 / 0.92)
+  );
+  border-color: rgb(15 23 42 / 0.12);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  backdrop-filter: blur(22px) saturate(150%);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.9) inset,
+    0 18px 48px rgb(15 23 42 / 0.14);
+}
+
 .dark .menu-shell.surface-shell,
 html[data-theme="dark"] .menu-shell.surface-shell {
-  background: rgb(24 24 27 / 0.82);
-  border-color: rgb(255 255 255 / 0.12);
+  background: linear-gradient(
+    165deg,
+    rgb(39 39 42 / 0.96),
+    rgb(24 24 27 / 0.94)
+  );
+  border-color: rgb(255 255 255 / 0.14);
   -webkit-backdrop-filter: blur(28px) saturate(160%);
   backdrop-filter: blur(28px) saturate(160%);
   box-shadow:
-    0 1px 0 rgb(255 255 255 / 0.06) inset,
-    0 20px 50px rgb(0 0 0 / 0.45);
+    0 1px 0 rgb(255 255 255 / 0.08) inset,
+    0 20px 50px rgb(0 0 0 / 0.55);
 }
 
 /* theme toggle — round soft glass chip (xiami moon button) */

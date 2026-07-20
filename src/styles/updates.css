@@ -94,10 +94,11 @@
 
 .update-body .post-prose .content-gallery :where(img) {
   margin: 0;
-  border-radius: 0;
-  max-height: none;
+  border-radius: 0.75rem;
+  max-height: min(70vh, 32rem);
   width: auto;
-  max-width: none;
+  max-width: min(100%, 42rem);
+  height: auto;
   object-fit: contain;
 }
 
