@@ -55,23 +55,12 @@ tmp/
 .cursor/skills/
 skills-lock.json
 
-# Personal Obsidian content (local only; ship example content only)
-content/posts/*
-!content/posts/hello-world.md
-!content/posts/draft-hidden.md
-!content/posts/markdowntest.md
-content/glimpses/memos.md
-content/glimpses/2026-05-yushan.md
-content/glimpses/001-diary-test.md
-content/pages/*
-!content/pages/.gitkeep
-content/friends/*
-!content/friends/example-blog.md
+# Content is tracked (single personal repo). Keep junk out of content/.
 content/.DS_Store
+content/**/.DS_Store
 
-# Personal writing vault (not published by the blog pipeline)
+# Local vault extras — not site content (may hold secrets / scratch)
 notes/
-templates/
 copilot/
 
 # Obsidian vault config + plugins (local; may contain API keys)
