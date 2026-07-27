@@ -62,9 +62,21 @@ content/posts/*
 !content/posts/markdowntest.md
 content/glimpses/memos.md
 content/glimpses/2026-05-yushan.md
+content/glimpses/001-diary-test.md
+content/pages/*
+!content/pages/.gitkeep
 content/friends/*
 !content/friends/example-blog.md
 content/.DS_Store
+
+# Personal writing vault (not published by the blog pipeline)
+notes/
+templates/
+copilot/
+
+# Obsidian vault config + plugins (local; may contain API keys)
+.obsidian/
+.obsidian.bak-*/
 
 # old planning docs
 docs/superpowers/
