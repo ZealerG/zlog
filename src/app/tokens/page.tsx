@@ -3,6 +3,7 @@ import type { ReactNode } from "react"
 import Link from "next/link"
 import { ArrowLeft, ArrowUpRight, Activity } from "lucide-react"
 import { ScrollReveal } from "@/components/effects/ScrollReveal"
+import { formatSiteDateTime } from "@/lib/datetime"
 import { getSiteConfig } from "@/lib/content/site"
 import {
   TOKSCALE_PERIODS,
@@ -28,19 +29,6 @@ export const metadata: Metadata = {
 export const revalidate = 3600
 
 type SearchParams = Promise<{ period?: string }>
-
-function formatUpdated(iso?: string) {
-  if (!iso) return ""
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return iso
-  return d.toLocaleString("zh-CN", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
-}
 
 export default async function TokensPage({
   searchParams,
@@ -137,7 +125,7 @@ export default async function TokensPage({
             </p>
             {updated ? (
               <p className="site-meta text-n-4">
-                更新于 {formatUpdated(updated)}
+                更新于 {formatSiteDateTime(updated)}
               </p>
             ) : null}
           </div>

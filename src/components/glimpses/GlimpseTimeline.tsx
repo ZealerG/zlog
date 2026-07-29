@@ -2,15 +2,14 @@
 
 import { useMemo, useState } from "react"
 import type { Glimpse } from "@/lib/content/types"
+import { formatSiteDateEnShort, formatSiteYear } from "@/lib/datetime"
 
 function yearOf(iso: string) {
-  return iso.slice(0, 4)
+  return formatSiteYear(iso)
 }
 
 function formatMonthDay(iso: string) {
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return iso.slice(0, 10)
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+  return formatSiteDateEnShort(iso)
 }
 
 export function GlimpseTimeline({ glimpses }: { glimpses: Glimpse[] }) {

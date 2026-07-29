@@ -10,6 +10,7 @@ import type {
   Project,
   Update,
 } from "./types"
+import { parseContentDate } from "@/lib/datetime"
 
 type ParsedMarkdownFile = ReturnType<typeof matter>
 
@@ -49,18 +50,9 @@ export function readMarkdownFile(filePath: string): ParsedMarkdownFile {
   return result
 }
 
+/** Normalize frontmatter dates; naive values are Asia/Shanghai wall time. */
 function normalizeDate(value: unknown): string | null {
-  if (value instanceof Date) {
-    return value.toISOString()
-  }
-  if (typeof value === "string" || typeof value === "number") {
-    const d = new Date(value)
-    if (!Number.isNaN(d.getTime())) {
-      return d.toISOString()
-    }
-    return String(value)
-  }
-  return null
+  return parseContentDate(value)
 }
 
 function slugFromRelative(relativePath: string): string {

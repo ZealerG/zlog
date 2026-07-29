@@ -1,4 +1,5 @@
 import { MarkdownBody } from "@/components/markdown/MarkdownBody"
+import { formatSiteMonthDay, formatSiteYear } from "@/lib/datetime"
 
 type UpdateItem = {
   slug: string
@@ -11,25 +12,10 @@ type YearGroup = {
   items: UpdateItem[]
 }
 
-const MONTH_SHORT = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-]
-
 function groupByYear(items: UpdateItem[]): YearGroup[] {
   const map = new Map<string, UpdateItem[]>()
   for (const item of items) {
-    const year = item.date.slice(0, 4) || "Unknown"
+    const year = formatSiteYear(item.date)
     if (!map.has(year)) map.set(year, [])
     map.get(year)!.push(item)
   }
@@ -40,23 +26,7 @@ function groupByYear(items: UpdateItem[]): YearGroup[] {
 }
 
 function parseParts(iso: string) {
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) {
-    return {
-      month: iso.slice(5, 7),
-      day: iso.slice(8, 10) || "--",
-      time: "",
-    }
-  }
-  return {
-    month: MONTH_SHORT[d.getMonth()] ?? "",
-    day: String(d.getDate()).padStart(2, "0"),
-    time: d.toLocaleTimeString("en-GB", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    }),
-  }
+  return formatSiteMonthDay(iso)
 }
 
 export function UpdateTimeline({

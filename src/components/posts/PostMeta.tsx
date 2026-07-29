@@ -1,25 +1,13 @@
 "use client"
 
+import { formatSiteDate, formatSiteDateTime } from "@/lib/datetime"
+
 function formatDate(iso: string) {
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return iso
-  return d.toLocaleDateString("zh-CN", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  })
+  return formatSiteDate(iso)
 }
 
 function formatTooltip(iso: string) {
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return iso
-  return d.toLocaleString("zh-CN", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
+  return formatSiteDateTime(iso)
 }
 
 export function PostMeta({

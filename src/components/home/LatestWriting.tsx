@@ -1,15 +1,10 @@
 import Link from "next/link"
 import { ArrowUpRight } from "lucide-react"
 import type { Post } from "@/lib/content/types"
+import { formatSiteDateEn } from "@/lib/datetime"
 
 function formatDate(iso: string) {
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return iso
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  })
+  return formatSiteDateEn(iso)
 }
 
 export function LatestWriting({ posts }: { posts: Post[] }) {

@@ -1,15 +1,14 @@
 import Link from "next/link"
 import type { TimelineEntry } from "@/lib/content/load"
 import { RemoteImage } from "@/components/media/RemoteImage"
+import { formatSiteDateEnShort, formatSiteYear } from "@/lib/datetime"
 
 function yearOf(iso: string) {
-  return iso.slice(0, 4)
+  return formatSiteYear(iso)
 }
 
 function formatMonthDay(iso: string) {
-  const d = new Date(iso)
-  if (Number.isNaN(d.getTime())) return iso.slice(0, 10)
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+  return formatSiteDateEnShort(iso)
 }
 
 const KIND_LABEL: Record<TimelineEntry["kind"], string> = {
