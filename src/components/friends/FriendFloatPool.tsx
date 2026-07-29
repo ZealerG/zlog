@@ -120,9 +120,9 @@ export function FriendFloatPool({ friends }: { friends: Friend[] }) {
         const w = rect.width || 280
         const h = rect.height || 64
         const seed = 1.37 * index
-        const minX = padX + w / 2 + 28
-        const maxX = width - padX - w / 2 - 28
-        const minY = 72 + h / 2
+        const minX = padX + w / 2 + 32
+        const maxX = width - padX - w / 2 - 32
+        const minY = 82 + h / 2
         const maxY = Math.max(minY, floorY - h / 2 - padY)
 
         let x = clamp(
@@ -153,8 +153,8 @@ export function FriendFloatPool({ friends }: { friends: Friend[] }) {
           )
           const overlap = placed.some(
             (p) =>
-              Math.abs(tx - p.x) < w / 2 + 14 + (p.width / 2 + 14) &&
-              Math.abs(ty - p.y) < h / 2 + 14 + (p.height / 2 + 14),
+              Math.abs(tx - p.x) < w / 2 + 8 + (p.width / 2 + 8) &&
+              Math.abs(ty - p.y) < h / 2 + 8 + (p.height / 2 + 8),
           )
           if (!overlap) {
             x = tx
@@ -165,16 +165,16 @@ export function FriendFloatPool({ friends }: { friends: Friend[] }) {
         placed.push({ x, y, width: w, height: h })
 
         const body = Matter.Bodies.rectangle(x, y, w, h, {
-          frictionAir: 0.09,
-          restitution: 0.94,
-          friction: 0,
-          frictionStatic: 0,
+          frictionAir: 0.085,
+          restitution: 0.92,
+          friction: 0.02,
+          frictionStatic: 0.02,
           chamfer: { radius: h / 2 },
         })
         Matter.Body.setInertia(body, Infinity)
         Matter.Body.setVelocity(body, {
-          x: 0.07 * seeded(seed + 0.81),
-          y: 0.06 * seeded(seed + 1.17),
+          x: 0.045 * seeded(seed + 0.81),
+          y: 0.038 * seeded(seed + 1.17),
         })
         Matter.World.add(engine!.world, body)
 
