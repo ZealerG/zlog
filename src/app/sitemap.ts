@@ -12,6 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/updates`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${base}/timeline`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${base}/more`, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${base}/tokens`, changeFrequency: "daily", priority: 0.55 },
   ]
 
   const postRoutes: MetadataRoute.Sitemap = posts.map((post) => ({

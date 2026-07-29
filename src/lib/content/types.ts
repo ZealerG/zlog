@@ -96,5 +96,7 @@ export type SiteConfig = {
   avatar: string
   locale: string
   social: { email?: string; github?: string }
+  /** Tokscale username for /tokens (e.g. ZealerG → tokscale.ai/u/ZealerG) */
+  tokscale?: string
   nav: NavItem[]
 }

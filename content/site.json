@@ -13,6 +13,7 @@
     "email": "",
     "github": ""
   },
+  "tokscale": "ZealerG",
   "nav": [
     { "href": "/", "label": "起点", "icon": "home" },
     { "href": "/posts", "label": "篇章", "icon": "book" },

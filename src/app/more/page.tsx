@@ -1,6 +1,12 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { ArrowUpRight, Bookmark, BriefcaseBusiness, Handshake } from "lucide-react"
+import {
+  ArrowUpRight,
+  Bookmark,
+  BriefcaseBusiness,
+  Handshake,
+  Sparkles,
+} from "lucide-react"
 import { ScrollReveal } from "@/components/effects/ScrollReveal"
 
 export const metadata: Metadata = {
@@ -15,6 +21,14 @@ const HUB = [
     desc: "正在进行的项目、实验与长期计划。",
     icon: BriefcaseBusiness,
     featured: true,
+  },
+  {
+    href: "/tokens",
+    title: "Tokens",
+    en: "Tokscale",
+    desc: "AI 编程用量统计，数据来自 Tokscale 公开档案。",
+    icon: Sparkles,
+    featured: false,
   },
   {
     href: "/friends",

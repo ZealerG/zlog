@@ -19,6 +19,7 @@ const checks: Check[] = [
   { path: "/updates", includes: ["足迹"] },
   { path: "/timeline", includes: ["拾光"] },
   { path: "/more", includes: ["远方"] },
+  { path: "/tokens", includes: ["Tokens"] },
   { path: "/projects" },
   { path: "/friends" },
   { path: "/bookmarks" },

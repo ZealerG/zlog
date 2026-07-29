@@ -120,6 +120,7 @@ export function getNavPreviewData(): NavPreviewData {
       mode: "cards",
       items: [
         { href: "/projects", title: "项目", kind: "Projects" },
+        { href: "/tokens", title: "Tokens", kind: "Tokscale" },
         { href: "/friends", title: "友链", kind: "Friends" },
         { href: "/bookmarks", title: "书签", kind: "Bookmarks" },
       ],
