@@ -223,32 +223,71 @@ export function lastNDays(
   return out
 }
 
+export type HeatDay = {
+  date: string
+  tokens: number
+  level: 0 | 1 | 2 | 3 | 4
+}
+
+export type HeatMonthLabel = {
+  /** Week column index (0-based) where the label should sit */
+  weekIndex: number
+  label: string
+}
+
+/** Rolling past year ending on `end` (inclusive), as YYYY-MM-DD. */
+export function pastYearRange(end: Date = new Date()): {
+  start: string
+  end: string
+} {
+  const e = new Date(end)
+  e.setHours(0, 0, 0, 0)
+  const s = new Date(e)
+  s.setFullYear(s.getFullYear() - 1)
+  s.setDate(s.getDate() + 1)
+  return {
+    start: toDateKey(s),
+    end: toDateKey(e),
+  }
+}
+
+function toDateKey(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, "0")
+  const day = String(d.getDate()).padStart(2, "0")
+  return `${y}-${m}-${day}`
+}
+
+function parseDateKey(key: string): Date {
+  const [y, m, d] = key.split("-").map(Number)
+  return new Date(y!, m! - 1, d!)
+}
+
 /** Build a GitHub-style week columns heatmap covering chartRange (or last 52 weeks). */
 export function buildHeatmapWeeks(
   contributions: TokscaleContribution[],
   chartRange?: { start: string; end: string },
-): { date: string; tokens: number; level: 0 | 1 | 2 | 3 | 4 }[][] {
+): HeatDay[][] {
   const byDate = new Map(
     contributions.map((c) => [c.date, c.totals?.tokens ?? 0]),
   )
   const end = chartRange?.end
-    ? new Date(chartRange.end + "T00:00:00")
+    ? parseDateKey(chartRange.end)
     : new Date()
   end.setHours(0, 0, 0, 0)
-  // align to Saturday end of week column (Sun-start grid like GitHub uses Sunday)
   const start = chartRange?.start
-    ? new Date(chartRange.start + "T00:00:00")
+    ? parseDateKey(chartRange.start)
     : new Date(end)
   if (!chartRange?.start) start.setDate(end.getDate() - 52 * 7)
   start.setHours(0, 0, 0, 0)
-  // rewind to Sunday
+  // rewind to Sunday (GitHub-style columns)
   start.setDate(start.getDate() - start.getDay())
 
   const values: number[] = []
   const days: { date: string; tokens: number }[] = []
   const cursor = new Date(start)
   while (cursor <= end) {
-    const key = cursor.toISOString().slice(0, 10)
+    const key = toDateKey(cursor)
     const tokens = byDate.get(key) ?? 0
     days.push({ date: key, tokens })
     if (tokens > 0) values.push(tokens)
@@ -256,17 +295,38 @@ export function buildHeatmapWeeks(
   }
 
   const thresholds = intensityThresholds(values)
-  const leveled = days.map((d) => ({
+  const leveled: HeatDay[] = days.map((d) => ({
     date: d.date,
     tokens: d.tokens,
     level: levelFor(d.tokens, thresholds),
   }))
 
-  const weeks: (typeof leveled)[] = []
+  const weeks: HeatDay[][] = []
   for (let i = 0; i < leveled.length; i += 7) {
     weeks.push(leveled.slice(i, i + 7))
   }
   return weeks
+}
+
+/** Month labels for a year heatmap — place label on the week that contains day 1. */
+export function heatmapMonthLabels(weeks: HeatDay[][]): HeatMonthLabel[] {
+  const labels: HeatMonthLabel[] = []
+  let lastKey = ""
+  weeks.forEach((week, weekIndex) => {
+    for (const day of week) {
+      const d = parseDateKey(day.date)
+      if (d.getDate() !== 1) continue
+      const key = `${d.getFullYear()}-${d.getMonth()}`
+      if (key === lastKey) break
+      lastKey = key
+      labels.push({
+        weekIndex,
+        label: d.toLocaleString("en-US", { month: "short" }),
+      })
+      break
+    }
+  })
+  return labels
 }
 
 function intensityThresholds(values: number[]): [number, number, number, number] {

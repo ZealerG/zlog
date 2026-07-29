@@ -15,7 +15,6 @@ import {
   lastNDays,
   parseTokscalePeriod,
   periodLabel,
-  rollupClients,
   tokenMix,
   tokscaleProfileUrl,
   type TokscalePeriod,
@@ -85,7 +84,7 @@ export default async function TokensPage({
     )
   }
 
-  const { stats, user } = profile
+  const { stats } = profile
   const mix = tokenMix(stats).filter((s) => s.value > 0)
   const mixTotal = mix.reduce((s, x) => s + x.value, 0) || 1
   const cpm = costPerMillion(stats)
@@ -94,8 +93,6 @@ export default async function TokensPage({
   const trend = lastNDays(profile.contributions, period === "week" ? 7 : 30)
   const trendMax = Math.max(...trend.map((d) => d.tokens), 1)
   const weeks = buildHeatmapWeeks(profile.contributions, profile.chartRange)
-  const clients = rollupClients(profile.contributions)
-  const clientTotal = clients.reduce((s, c) => s + c.tokens, 0) || 1
   const models = [...profile.modelUsage].sort((a, b) => b.tokens - a.tokens)
   const topModels = models.slice(0, 8)
   const restModels = models.slice(8)
@@ -118,25 +115,6 @@ export default async function TokensPage({
                 AI 用量
               </span>
             </h1>
-            <p className="site-meta mt-3 max-w-xl text-n-5">
-              来自{" "}
-              <a
-                href={profileUrl}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="text-primary transition hover:opacity-80"
-              >
-                Tokscale @{user.username}
-              </a>
-              的公开统计
-              {user.rank != null ? (
-                <>
-                  ，当前排名{" "}
-                  <span className="font-medium text-n-6">#{user.rank}</span>
-                </>
-              ) : null}
-              。数据由 CLI 上传，约每小时刷新一次。
-            </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <PeriodSwitch period={period} />
@@ -198,10 +176,10 @@ export default async function TokensPage({
         </section>
       </ScrollReveal>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <ScrollReveal y={14} delay={60}>
-          <Panel title="Token composition" icon>
-            <div className="tokens-mix-row">
+      <div className="tokens-dual-grid mt-8">
+        <ScrollReveal className="h-full" y={14} delay={60}>
+          <Panel title="Token composition">
+            <div className="tokens-panel-body tokens-mix-row">
               <div className="tokens-mix-bar" aria-hidden>
                 {mix.map((s) => (
                   <div
@@ -238,7 +216,7 @@ export default async function TokensPage({
           </Panel>
         </ScrollReveal>
 
-        <ScrollReveal y={14} delay={80}>
+        <ScrollReveal className="h-full" y={14} delay={80}>
           <Panel
             title={
               period === "week"
@@ -246,29 +224,33 @@ export default async function TokensPage({
                 : "Daily tokens · last 30 days"
             }
           >
-            <div className="tokens-bars" role="img" aria-label="Daily token bars">
-              {trend.map((d) => {
-                const h =
-                  d.tokens > 0
-                    ? Math.max(4, Math.round((d.tokens / trendMax) * 100))
-                    : 2
-                return (
-                  <div
-                    key={d.date}
-                    className="tokens-bar"
-                    data-empty={d.tokens <= 0 ? "true" : "false"}
-                    style={{ height: `${h}%` }}
-                    title={`${d.date}: ${formatTokens(d.tokens)} · ${formatCost(d.cost)}`}
-                  />
-                )
-              })}
-            </div>
-            <div className="mt-2 flex justify-between site-meta text-n-4">
-              <span>{trend[0]?.date.slice(5)}</span>
-              <span>
-                peak {formatTokens(trendMax)}
-              </span>
-              <span>{trend[trend.length - 1]?.date.slice(5)}</span>
+            <div className="tokens-panel-body">
+              <div
+                className="tokens-bars"
+                role="img"
+                aria-label="Daily token bars"
+              >
+                {trend.map((d) => {
+                  const h =
+                    d.tokens > 0
+                      ? Math.max(4, Math.round((d.tokens / trendMax) * 100))
+                      : 2
+                  return (
+                    <div
+                      key={d.date}
+                      className="tokens-bar"
+                      data-empty={d.tokens <= 0 ? "true" : "false"}
+                      style={{ height: `${h}%` }}
+                      title={`${d.date}: ${formatTokens(d.tokens)} · ${formatCost(d.cost)}`}
+                    />
+                  )
+                })}
+              </div>
+              <div className="mt-2 flex justify-between site-meta text-n-4">
+                <span>{trend[0]?.date.slice(5)}</span>
+                <span>peak {formatTokens(trendMax)}</span>
+                <span>{trend[trend.length - 1]?.date.slice(5)}</span>
+              </div>
             </div>
           </Panel>
         </ScrollReveal>
@@ -317,8 +299,8 @@ export default async function TokensPage({
         </section>
       </ScrollReveal>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <ScrollReveal y={14} delay={110}>
+      <ScrollReveal y={14} delay={110}>
+        <section className="mt-6">
           <Panel title="Models">
             <div>
               {topModels.map((m) => (
@@ -343,51 +325,20 @@ export default async function TokensPage({
                     {formatTokens(restTokens)}
                   </span>
                   <span className="tokens-rank-meta w-14 text-right">
-                    {formatPercent((restTokens / (stats.totalTokens || 1)) * 100)}
+                    {formatPercent(
+                      (restTokens / (stats.totalTokens || 1)) * 100,
+                    )}
                   </span>
                 </div>
               ) : null}
             </div>
           </Panel>
-        </ScrollReveal>
-
-        <ScrollReveal y={14} delay={120}>
-          <Panel title="Clients">
-            <div>
-              {clients.length === 0 ? (
-                <p className="site-meta text-n-5">
-                  当前周期没有客户端明细（{profile.clients.join(" · ") || "—"}）
-                </p>
-              ) : (
-                clients.map((c) => (
-                  <div key={c.client} className="tokens-rank-row">
-                    <span className="tokens-rank-name">{c.client}</span>
-                    <span className="tokens-rank-meta">
-                      {formatTokens(c.tokens)}
-                    </span>
-                    <span className="tokens-rank-meta w-14 text-right">
-                      {formatPercent((c.tokens / clientTotal) * 100)}
-                    </span>
-                  </div>
-                ))
-              )}
-            </div>
-          </Panel>
-        </ScrollReveal>
-      </div>
+        </section>
+      </ScrollReveal>
 
       <ScrollReveal y={10} delay={140}>
-        <p className="mt-10 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-n-2/70 pt-5 site-meta text-n-4">
-          <span>数据源 Tokscale · 非自建 collector</span>
-          <a
-            href={profileUrl}
-            target="_blank"
-            rel="noreferrer noopener"
-            className="inline-flex items-center gap-1 text-primary transition hover:opacity-80"
-          >
-            打开完整档案
-            <ArrowUpRight className="h-3.5 w-3.5" />
-          </a>
+        <p className="mt-10 border-t border-n-2/70 pt-5 site-meta text-n-4">
+          数据源 Tokscale
         </p>
       </ScrollReveal>
     </main>
@@ -415,15 +366,13 @@ function StatCard({
 function Panel({
   title,
   children,
-  icon: _icon,
 }: {
   title: string
   children: ReactNode
-  icon?: boolean
 }) {
   return (
-    <section className="surface-shell rounded-2xl p-5 sm:p-6">
-      <h2 className="site-eyebrow mb-4 uppercase tracking-[0.16em] text-n-4">
+    <section className="tokens-panel surface-shell rounded-2xl p-5 sm:p-6">
+      <h2 className="site-eyebrow mb-4 shrink-0 uppercase tracking-[0.16em] text-n-4">
         {title}
       </h2>
       {children}

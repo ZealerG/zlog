@@ -49,9 +49,51 @@
   line-height: 1.4;
 }
 
-.tokens-mix-row {
+/* Side-by-side composition + daily: equal card height */
+.tokens-dual-grid {
   display: grid;
-  gap: 0.55rem;
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+@media (min-width: 1024px) {
+  .tokens-dual-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.tokens-dual-grid > .scroll-reveal {
+  display: flex;
+  height: 100%;
+  min-height: 100%;
+  flex-direction: column;
+}
+
+.tokens-dual-grid > .scroll-reveal > .tokens-panel {
+  flex: 1 1 auto;
+}
+
+.tokens-panel {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.tokens-panel-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 10.5rem;
+}
+
+.tokens-mix-row {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+  min-height: 10.5rem;
 }
 
 .tokens-mix-bar {
@@ -90,9 +132,10 @@
 
 .tokens-bars {
   display: flex;
+  flex: 1 1 auto;
   align-items: flex-end;
   gap: 0.2rem;
-  height: 7.5rem;
+  min-height: 7.5rem;
   padding-top: 0.5rem;
 }
 
@@ -209,4 +252,169 @@
 
 .dark .tokens-period-pill a[data-active="true"] {
   background: color-mix(in oklab, var(--n-1) 80%, transparent);
+}
+
+/* Home activity card → /tokens */
+.tokens-home-card {
+  cursor: pointer;
+}
+
+.tokens-home-card:hover .tokens-heat-cell[data-level="0"] {
+  background: color-mix(in oklab, var(--n-2) 70%, transparent);
+}
+
+.tokens-home-card:focus-visible {
+  outline: 2px solid rgb(var(--primary-rgb) / 0.45);
+  outline-offset: 3px;
+}
+
+.tokens-home-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid color-mix(in oklab, var(--n-2) 75%, transparent);
+}
+
+@media (min-width: 640px) {
+  .tokens-home-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+}
+
+.tokens-home-stat {
+  min-width: 0;
+  border-radius: 0.9rem;
+  border: 1px solid color-mix(in oklab, var(--n-2) 70%, transparent);
+  background: color-mix(in oklab, var(--n-1) 45%, transparent);
+  padding: 0.65rem 0.75rem 0.7rem;
+}
+
+.tokens-home-stat-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--n-4);
+}
+
+.tokens-home-stat-value {
+  margin-top: 0.28rem;
+  font-size: 1.2rem;
+  font-weight: 550;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: var(--n-6);
+  font-variant-numeric: tabular-nums;
+}
+
+.tokens-home-stat-hint {
+  margin-top: 0.2rem;
+  font-size: 0.7rem;
+  line-height: 1.35;
+  color: var(--n-5);
+}
+
+.tokens-home-split {
+  display: grid;
+  gap: 1.1rem;
+}
+
+@media (min-width: 768px) {
+  .tokens-home-split {
+    grid-template-columns: minmax(0, 1.35fr) minmax(11rem, 0.75fr);
+    gap: 1.25rem;
+    align-items: start;
+  }
+}
+
+.tokens-home-sublabel {
+  margin-bottom: 0.5rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--n-4);
+}
+
+.tokens-heat-year {
+  min-width: 0;
+  width: 100%;
+}
+
+.tokens-heat-months {
+  display: grid;
+  margin-bottom: 0.2rem;
+  min-height: 0.95rem;
+}
+
+.tokens-heat-month {
+  overflow: hidden;
+  font-size: 0.62rem;
+  font-weight: 550;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: var(--n-4);
+  white-space: nowrap;
+}
+
+.tokens-heat--home {
+  gap: 0.12rem;
+  width: 100%;
+}
+
+.tokens-heat--year {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  justify-content: stretch;
+  overflow: visible;
+}
+
+.tokens-heat--home .tokens-heat-week {
+  display: grid;
+  grid-template-rows: repeat(7, minmax(0, 1fr));
+  gap: 0.12rem;
+  width: 100%;
+}
+
+.tokens-heat--home .tokens-heat-cell {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+@media (min-width: 640px) {
+  .tokens-heat--home {
+    gap: 0.14rem;
+  }
+
+  .tokens-heat--home .tokens-heat-week {
+    gap: 0.14rem;
+  }
+}
+
+.tokens-home-mix-bar {
+  margin-bottom: 0.55rem;
+}
+
+.tokens-home-mix-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.28rem;
+}
+
+.tokens-home-mix-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--n-5);
+  line-height: 1.35;
 }

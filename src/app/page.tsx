@@ -3,6 +3,7 @@ import { Hero } from "@/components/home/Hero"
 import { LatestGlimpses } from "@/components/home/LatestGlimpses"
 import { LatestUpdates } from "@/components/home/LatestUpdates"
 import { LatestWriting } from "@/components/home/LatestWriting"
+import { TokensActivity } from "@/components/home/TokensActivity"
 import {
   getAllGlimpses,
   getAllPosts,
@@ -30,10 +31,13 @@ export default function Home() {
       <ScrollReveal y={22} delay={40}>
         <section
           id="home-feed"
-          className="home-feed mx-auto grid w-full max-w-5xl gap-12 py-16 lg:grid-cols-[minmax(0,1.2fr)_minmax(16rem,0.8fr)] lg:gap-16 xl:gap-20 lg:py-20"
+          className="home-feed mx-auto grid w-full max-w-5xl gap-10 py-12 lg:grid-cols-[minmax(0,1.2fr)_minmax(16rem,0.8fr)] lg:gap-x-16 lg:gap-y-10 xl:gap-x-20 lg:py-16"
         >
           <LatestWriting posts={posts} />
           <LatestUpdates updates={updates} />
+          <div className="min-w-0 lg:col-span-2">
+            <TokensActivity />
+          </div>
         </section>
       </ScrollReveal>
 
@@ -41,7 +45,7 @@ export default function Home() {
         <>
           <div className="home-feed-rule mx-auto w-full max-w-5xl" aria-hidden />
           <ScrollReveal y={26} delay={60}>
-            <div className="mx-auto w-full max-w-5xl py-16 lg:py-20">
+            <div className="mx-auto w-full max-w-5xl py-12 lg:py-16">
               <LatestGlimpses glimpses={glimpses} />
             </div>
           </ScrollReveal>
