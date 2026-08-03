@@ -2,7 +2,7 @@
 title: 我的obsidian图床配置记录
 date: 2026-01-27 10:48
 description:
-draft: true
+draft: false
 categories: 笔记
 tags:
   - 博客

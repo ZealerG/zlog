@@ -2,7 +2,7 @@
 title: MySQL复习
 date: 2026-05-16 11:12
 description:
-draft: true
+draft: false
 categories: 笔记
 tags:
   - 学习

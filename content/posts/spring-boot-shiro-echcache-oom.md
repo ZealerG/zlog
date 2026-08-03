@@ -2,7 +2,7 @@
 title: Spring Boot整合shiro-echcache缓存踩坑
 date: 2026-01-27 11:22
 description:
-draft: true
+draft: false
 categories: 技术
 tags:
   - 开发
