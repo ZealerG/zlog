@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { ScrollReveal } from "@/components/effects/ScrollReveal"
 import { UpdateTimeline } from "@/components/updates/UpdateTimeline"
-import { getAllUpdates } from "@/lib/content/load"
+import { getAllUpdates, getPostTitleBySlug } from "@/lib/content/load"
 import { markdownToHtmlLite } from "@/lib/content/markdown"
 import { getSiteConfig } from "@/lib/content/site"
 
@@ -32,7 +32,9 @@ export default async function UpdatesPage({
   const items = await Promise.all(
     ordered.map(async (update) => {
       // Short memos: lite pipeline (no highlight / footnotes / TOC)
-      const { html } = await markdownToHtmlLite(update.body)
+      const { html } = await markdownToHtmlLite(update.body, {
+        resolveWikilinkTitle: getPostTitleBySlug,
+      })
       return {
         slug: update.slug,
         date: update.date,

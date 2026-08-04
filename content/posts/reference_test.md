@@ -16,3 +16,4 @@ draft: false
 测试测试 3
 [[#测试测试 1]]
 [[agent-learning#2. LLM 训练机制]]
+[[agent-learning|agent学习]]

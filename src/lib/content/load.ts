@@ -378,6 +378,13 @@ export function getPostBySlug(
   return resolveGraph(contentRoot).postsBySlug.get(slug)
 }
 
+export function getPostTitleBySlug(
+  slug: string,
+  contentRoot = defaultContentRoot(),
+): string | undefined {
+  return getPostBySlug(slug, contentRoot)?.title
+}
+
 /** 足迹：全部 memo（含图文）+ updates 目录短动态 */
 export function getAllUpdates(contentRoot = defaultContentRoot()): Update[] {
   return resolveGraph(contentRoot).updates

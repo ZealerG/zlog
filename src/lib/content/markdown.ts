@@ -23,6 +23,12 @@ export type MarkdownHeading = {
   depth: number
 }
 
+export type MarkdownRenderOptions = {
+  resolveWikilinkTitle?: (slug: string) => string | undefined
+}
+
+type ResolvedWikilinkTitles = ReadonlyMap<string, string | null>
+
 function headingFragment(value: string): string {
   const heading: Element = {
     type: "element",
@@ -50,7 +56,23 @@ function wikilinkHref(rawTarget: string): string | null {
   return fragment ? `${base}#${fragment}` : base
 }
 
-function splitWikilinkText(node: MdastText): UnistNode[] {
+function wikilinkLabel(
+  rawTarget: string,
+  rawAlias: string | undefined,
+  titles: ResolvedWikilinkTitles | undefined,
+): string {
+  const alias = rawAlias?.trim()
+  if (alias) return alias
+
+  const target = parseWikilinkTarget(rawTarget)
+  if (target?.slug) return titles?.get(target.slug) || target.slug
+  return rawTarget.trim()
+}
+
+function splitWikilinkText(
+  node: MdastText,
+  titles: ResolvedWikilinkTitles | undefined,
+): UnistNode[] {
   const matches = [...matchWikilinks(node.value)]
   if (matches.length === 0) return [node]
 
@@ -63,7 +85,7 @@ function splitWikilinkText(node: MdastText): UnistNode[] {
     }
 
     const href = wikilinkHref(match[1])
-    const label = match[2]?.trim() || match[1].trim()
+    const label = wikilinkLabel(match[1], match[2], titles)
     if (href) {
       out.push({
         type: "link",
@@ -86,24 +108,34 @@ function isUnistParent(node: UnistNode): node is UnistParent {
   return "children" in node && Array.isArray(node.children)
 }
 
-function transformWikilinks(parent: UnistParent, insideLink = false): void {
+function transformWikilinks(
+  parent: UnistParent,
+  titles: ResolvedWikilinkTitles | undefined,
+  insideLink = false,
+): void {
   const children: UnistNode[] = []
   for (const child of parent.children) {
     if (child.type === "text" && !insideLink) {
-      children.push(...splitWikilinkText(child as MdastText))
+      children.push(...splitWikilinkText(child as MdastText, titles))
       continue
     }
 
     const childInsideLink =
       insideLink || child.type === "link" || child.type === "linkReference"
-    if (isUnistParent(child)) transformWikilinks(child, childInsideLink)
+    if (isUnistParent(child)) {
+      transformWikilinks(child, titles, childInsideLink)
+    }
     children.push(child)
   }
   parent.children = children
 }
 
-function remarkWikilinks() {
-  return (tree: MdastRoot) => transformWikilinks(tree)
+function remarkWikilinks({
+  titles,
+}: {
+  titles?: ResolvedWikilinkTitles
+} = {}) {
+  return (tree: MdastRoot) => transformWikilinks(tree, titles)
 }
 
 function asClassList(value: Properties[string] | undefined): string[] {
@@ -695,18 +727,46 @@ type MarkdownHtmlResult = {
 
 export type MarkdownPipeline = "full" | "lite"
 
-/** Process-local cache keyed by pipeline + body hash. */
+/** Process-local cache keyed by pipeline + body hash + resolved Wiki-link titles. */
 const markdownHtmlCache = new Map<string, MarkdownHtmlResult>()
 const MARKDOWN_HTML_CACHE_MAX = 256
 
-function cacheKey(pipeline: MarkdownPipeline, md: string): string {
+function fnv1a(value: string): string {
   // FNV-1a 32-bit — fast, good enough for process-local keys
   let h = 0x811c9dc5
-  for (let i = 0; i < md.length; i++) {
-    h ^= md.charCodeAt(i)
+  for (let i = 0; i < value.length; i++) {
+    h ^= value.charCodeAt(i)
     h = Math.imul(h, 0x01000193)
   }
-  return `${pipeline}:${(h >>> 0).toString(16)}:${md.length}`
+  return (h >>> 0).toString(16)
+}
+
+function resolveWikilinkTitles(
+  md: string,
+  resolver: MarkdownRenderOptions["resolveWikilinkTitle"],
+): ResolvedWikilinkTitles | undefined {
+  if (!resolver) return undefined
+
+  const titles = new Map<string, string | null>()
+  for (const match of matchWikilinks(md)) {
+    if (match[2]?.trim()) continue
+    const slug = parseWikilinkTarget(match[1])?.slug
+    if (!slug || titles.has(slug)) continue
+    titles.set(slug, resolver(slug) ?? null)
+  }
+  return titles
+}
+
+function cacheKey(
+  pipeline: MarkdownPipeline,
+  md: string,
+  titles: ResolvedWikilinkTitles | undefined,
+): string {
+  const bodyKey = `${pipeline}:${fnv1a(md)}:${md.length}`
+  if (!titles || titles.size === 0) return bodyKey
+
+  const titleContext = JSON.stringify([...titles])
+  return `${bodyKey}:wiki:${fnv1a(titleContext)}:${titleContext.length}`
 }
 
 function cacheGet(key: string): MarkdownHtmlResult | undefined {
@@ -729,8 +789,15 @@ export function clearMarkdownHtmlCache() {
  * Full pipeline for long-form posts / projects:
  * GFM, footnotes, heading anchors, highlight, callouts, galleries, code shells.
  */
-export async function markdownToHtml(md: string): Promise<MarkdownHtmlResult> {
-  const key = cacheKey("full", md)
+export async function markdownToHtml(
+  md: string,
+  options: MarkdownRenderOptions = {},
+): Promise<MarkdownHtmlResult> {
+  const wikilinkTitles = resolveWikilinkTitles(
+    md,
+    options.resolveWikilinkTitle,
+  )
+  const key = cacheKey("full", md, wikilinkTitles)
   const cached = cacheGet(key)
   if (cached) return cached
 
@@ -738,7 +805,7 @@ export async function markdownToHtml(md: string): Promise<MarkdownHtmlResult> {
   const file = await unified()
     .use(remarkParse)
     .use(remarkGfm, { singleTilde: false })
-    .use(remarkWikilinks)
+    .use(remarkWikilinks, { titles: wikilinkTitles })
     // Obsidian-like: single newlines become <br> (esp. inside blockquotes)
     .use(remarkBreaks)
     .use(remarkSmartypants)
@@ -801,8 +868,13 @@ export async function markdownToHtml(md: string): Promise<MarkdownHtmlResult> {
  */
 export async function markdownToHtmlLite(
   md: string,
+  options: MarkdownRenderOptions = {},
 ): Promise<MarkdownHtmlResult> {
-  const key = cacheKey("lite", md)
+  const wikilinkTitles = resolveWikilinkTitles(
+    md,
+    options.resolveWikilinkTitle,
+  )
+  const key = cacheKey("lite", md, wikilinkTitles)
   const cached = cacheGet(key)
   if (cached) return cached
 
@@ -810,7 +882,7 @@ export async function markdownToHtmlLite(
   const file = await unified()
     .use(remarkParse)
     .use(remarkGfm, { singleTilde: false })
-    .use(remarkWikilinks)
+    .use(remarkWikilinks, { titles: wikilinkTitles })
     .use(remarkBreaks)
     .use(remarkSmartypants)
     .use(remarkRehype, { allowDangerousHtml: false })

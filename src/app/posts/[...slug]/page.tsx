@@ -11,7 +11,11 @@ import {
 import { TableOfContents } from "@/components/posts/TableOfContents"
 import { Backlinks } from "@/components/posts/Backlinks"
 import { MarkdownBody } from "@/components/markdown/MarkdownBody"
-import { getAllPosts, getPostBySlug } from "@/lib/content/load"
+import {
+  getAllPosts,
+  getPostBySlug,
+  getPostTitleBySlug,
+} from "@/lib/content/load"
 import { markdownToHtml } from "@/lib/content/markdown"
 
 type Params = Promise<{ slug: string[] }>
@@ -44,7 +48,9 @@ export default async function PostDetailPage({
   const post = getPostBySlug(slug)
   if (!post) notFound()
 
-  const { html, headings } = await markdownToHtml(post.body)
+  const { html, headings } = await markdownToHtml(post.body, {
+    resolveWikilinkTitle: getPostTitleBySlug,
+  })
   const all = getAllPosts()
   const index = all.findIndex((p) => p.slug === post.slug)
   const prev = index >= 0 ? all[index + 1] : undefined

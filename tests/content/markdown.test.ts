@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest"
-import { markdownToHtml, markdownToHtmlLite } from "@/lib/content/markdown"
+import {
+  clearMarkdownHtmlCache,
+  markdownToHtml,
+  markdownToHtmlLite,
+} from "@/lib/content/markdown"
 import { plainTextSnippet } from "@/lib/content/plain-text"
 
 describe("markdownToHtml", () => {
@@ -80,12 +84,44 @@ describe("markdownToHtml", () => {
 
     expect(html).toContain('<a href="/posts/Folder/My-Note">Read target</a>')
     expect(html).toContain(
-      '<a href="/posts/CaseSensitive#deep-heading">CaseSensitive.mdx#Deep Heading</a>',
+      '<a href="/posts/CaseSensitive#deep-heading">CaseSensitive</a>',
     )
     expect(html).toContain('<a href="#local-heading">#Local Heading</a>')
     expect(html).not.toContain("/posts/inline-code")
     expect(html).not.toContain("/posts/fenced-code")
     expect(html).not.toContain("/posts/embed.png")
+  })
+
+  it("labels Wiki links by alias, resolved title, then slug", async () => {
+    const { html } = await markdownToHtml(
+      [
+        "[[agent-learning|显式名称]]",
+        "[[agent-learning]]",
+        "[[missing-note.md]]",
+      ].join("\n\n"),
+      {
+        resolveWikilinkTitle: (slug) =>
+          slug === "agent-learning" ? "Agent 学习" : undefined,
+      },
+    )
+
+    expect(html).toContain('<a href="/posts/agent-learning">显式名称</a>')
+    expect(html).toContain('<a href="/posts/agent-learning">Agent 学习</a>')
+    expect(html).toContain('<a href="/posts/missing-note">missing-note</a>')
+  })
+
+  it("does not reuse cached labels after a linked title changes", async () => {
+    clearMarkdownHtmlCache()
+    const markdown = "[[cache-title-target]]"
+    const first = await markdownToHtml(markdown, {
+      resolveWikilinkTitle: () => "First title",
+    })
+    const second = await markdownToHtml(markdown, {
+      resolveWikilinkTitle: () => "Second title",
+    })
+
+    expect(first.html).toContain(">First title</a>")
+    expect(second.html).toContain(">Second title</a>")
   })
 
   it("preserves soft line breaks as <br> (Obsidian-like, incl. blockquotes)", async () => {
@@ -163,13 +199,19 @@ describe("markdownToHtmlLite", () => {
     expect(a.html).toBe(b.html)
   })
 
-  it("renders Wiki links with the same internal hrefs as the full pipeline", async () => {
+  it("uses the same Wiki-link title priority as the full pipeline", async () => {
     const { html } = await markdownToHtmlLite(
-      "[[agent-learning|Agent learning]]",
+      "[[agent-learning]] [[missing-note]] [[agent-learning|Explicit]]",
+      {
+        resolveWikilinkTitle: (slug) =>
+          slug === "agent-learning" ? "Agent learning" : undefined,
+      },
     )
     expect(html).toContain(
       '<a href="/posts/agent-learning">Agent learning</a>',
     )
+    expect(html).toContain('<a href="/posts/missing-note">missing-note</a>')
+    expect(html).toContain('<a href="/posts/agent-learning">Explicit</a>')
   })
 })
 

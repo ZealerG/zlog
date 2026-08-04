@@ -10,6 +10,7 @@ import {
   getAllGlimpses,
   getAllPages,
   getPostBySlug,
+  getPostTitleBySlug,
   getTimelineEntries,
   loadContentGraph,
 } from "@/lib/content/load"
@@ -129,6 +130,8 @@ describe("content load", () => {
     const post = getPostBySlug("hello-world", root)
     expect(post?.title).toBe("Hello")
     expect(post?.body).toContain("first post")
+    expect(getPostTitleBySlug("hello-world", root)).toBe("Hello")
+    expect(getPostTitleBySlug("missing", root)).toBeUndefined()
   })
 
   it("loads updates and glimpses and pages", () => {

@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { ArrowLeft, ArrowUpRight } from "lucide-react"
-import { getAllProjects } from "@/lib/content/load"
+import { getAllProjects, getPostTitleBySlug } from "@/lib/content/load"
 import { getSiteConfig } from "@/lib/content/site"
 import { MarkdownBody } from "@/components/markdown/MarkdownBody"
 import { markdownToHtml } from "@/lib/content/markdown"
@@ -16,7 +16,13 @@ export default async function ProjectsPage() {
   const withHtml = await Promise.all(
     projects.map(async (p) => ({
       ...p,
-      html: p.body ? (await markdownToHtml(p.body)).html : "",
+      html: p.body
+        ? (
+            await markdownToHtml(p.body, {
+              resolveWikilinkTitle: getPostTitleBySlug,
+            })
+          ).html
+        : "",
     })),
   )
 
