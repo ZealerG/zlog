@@ -5,6 +5,12 @@ export function plainTextSnippet(input: string, max = 72): string {
     .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
     // obsidian embed images ![[file]]
     .replace(/!\[\[[^\]]*\]\]/g, " ")
+    // obsidian wiki links [[target|alias]] -> alias or target
+    .replace(
+      /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g,
+      (_match, target: string, alias?: string) =>
+        alias?.trim() || target.trim(),
+    )
     // markdown links [text](url) -> text
     .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
     // bare urls

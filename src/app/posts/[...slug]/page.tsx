@@ -116,12 +116,18 @@ export default async function PostDetailPage({
             </div>
 
             <AdjacentPosts prev={prev} next={next} />
-            <Backlinks backlinks={post.backlinks ?? []} />
+            <div className="lg:hidden">
+              <Backlinks backlinks={post.backlinks ?? []} />
+            </div>
           </article>
 
           <aside className="sticky top-28 hidden max-h-[calc(100vh-8rem)] min-h-0 overflow-y-auto pl-5 text-sm lg:flex lg:w-64 lg:flex-col">
             <ReadingProgressRail />
             <TableOfContents headings={headings} />
+            <Backlinks
+              backlinks={post.backlinks ?? []}
+              variant="sidebar"
+            />
             <PostSidebarActions title={post.title} />
           </aside>
         </div>

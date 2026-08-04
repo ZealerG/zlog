@@ -14,6 +14,11 @@ import type {
   Update,
 } from "./types"
 import { parseContentDate } from "@/lib/datetime"
+import {
+  matchWikilinks,
+  normalizeSlugPath,
+  parseWikilinkTarget,
+} from "./wikilink"
 
 type ParsedMarkdownFile = ReturnType<typeof matter>
 
@@ -58,21 +63,8 @@ function normalizeDate(value: unknown): string | null {
   return parseContentDate(value)
 }
 
-function normalizeSlugPath(value: string): string {
-  return value
-    .replace(/\\/g, "/")
-    .replace(/\.mdx?$/i, "")
-    .replace(/&/g, "and")
-    .replace(/\s+/g, "-")
-}
-
 function slugFromRelative(relativePath: string): string {
   return normalizeSlugPath(relativePath)
-}
-
-function wikilinkTargetSlug(target: string): string | null {
-  const pathPart = target.split("#", 1)[0].trim()
-  return pathPart ? normalizeSlugPath(pathPart) : null
 }
 
 function asStringArray(value: unknown): string[] {
@@ -127,9 +119,6 @@ export function normalizeMarkdownBody(body: string): string {
       const file = String(name).trim()
       return `*[本地附件未发布: ${file}]*`
     })
-    .replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_m, target: string, alias?: string) => {
-      return alias?.trim() || String(target).trim()
-    })
     .replace(/<aside>\s*💡?/gi, "> ")
     .replace(/<\/aside>/gi, "")
     .trim()
@@ -149,12 +138,9 @@ export function extractWikilinks(body: string): string[] {
   const tree = unified().use(remarkParse).parse(body)
 
   visit(tree, "text", (node) => {
-    const matches = node.value.matchAll(
-      /(?<!!)\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g,
-    )
-    for (const match of matches) {
-      const slug = wikilinkTargetSlug(match[1])
-      if (slug) targets.add(slug)
+    for (const match of matchWikilinks(node.value)) {
+      const target = parseWikilinkTarget(match[1])
+      if (target?.slug) targets.add(target.slug)
     }
   })
 

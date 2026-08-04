@@ -12,12 +12,98 @@ import rehypeStringify from "rehype-stringify"
 import { visit, SKIP } from "unist-util-visit"
 import { toString } from "hast-util-to-string"
 import type { Root, Element, ElementContent, Properties } from "hast"
+import type { Link as MdastLink, Root as MdastRoot, Text as MdastText } from "mdast"
+import type { Node as UnistNode, Parent as UnistParent } from "unist"
 import { startTimer } from "@/lib/perf"
+import { matchWikilinks, parseWikilinkTarget } from "./wikilink"
 
 export type MarkdownHeading = {
   id: string
   text: string
   depth: number
+}
+
+function headingFragment(value: string): string {
+  const heading: Element = {
+    type: "element",
+    tagName: "h2",
+    properties: {},
+    children: [{ type: "text", value }],
+  }
+  const tree: Root = { type: "root", children: [heading] }
+  rehypeSlug()(tree)
+  return typeof heading.properties.id === "string" ? heading.properties.id : ""
+}
+
+function wikilinkHref(rawTarget: string): string | null {
+  const target = parseWikilinkTarget(rawTarget)
+  if (!target) return null
+  if (
+    target.slug?.split("/").some((segment) => segment === "." || segment === "..")
+  ) {
+    return null
+  }
+
+  const base = target.slug ? `/posts/${target.slug}` : ""
+  const fragment = target.heading ? headingFragment(target.heading) : ""
+  if (!base && !fragment) return null
+  return fragment ? `${base}#${fragment}` : base
+}
+
+function splitWikilinkText(node: MdastText): UnistNode[] {
+  const matches = [...matchWikilinks(node.value)]
+  if (matches.length === 0) return [node]
+
+  const out: Array<MdastText | MdastLink> = []
+  let cursor = 0
+  for (const match of matches) {
+    const start = match.index ?? 0
+    if (start > cursor) {
+      out.push({ type: "text", value: node.value.slice(cursor, start) })
+    }
+
+    const href = wikilinkHref(match[1])
+    const label = match[2]?.trim() || match[1].trim()
+    if (href) {
+      out.push({
+        type: "link",
+        url: href,
+        children: [{ type: "text", value: label }],
+      })
+    } else {
+      out.push({ type: "text", value: match[0] })
+    }
+    cursor = start + match[0].length
+  }
+
+  if (cursor < node.value.length) {
+    out.push({ type: "text", value: node.value.slice(cursor) })
+  }
+  return out
+}
+
+function isUnistParent(node: UnistNode): node is UnistParent {
+  return "children" in node && Array.isArray(node.children)
+}
+
+function transformWikilinks(parent: UnistParent, insideLink = false): void {
+  const children: UnistNode[] = []
+  for (const child of parent.children) {
+    if (child.type === "text" && !insideLink) {
+      children.push(...splitWikilinkText(child as MdastText))
+      continue
+    }
+
+    const childInsideLink =
+      insideLink || child.type === "link" || child.type === "linkReference"
+    if (isUnistParent(child)) transformWikilinks(child, childInsideLink)
+    children.push(child)
+  }
+  parent.children = children
+}
+
+function remarkWikilinks() {
+  return (tree: MdastRoot) => transformWikilinks(tree)
 }
 
 function asClassList(value: Properties[string] | undefined): string[] {
@@ -652,6 +738,7 @@ export async function markdownToHtml(md: string): Promise<MarkdownHtmlResult> {
   const file = await unified()
     .use(remarkParse)
     .use(remarkGfm, { singleTilde: false })
+    .use(remarkWikilinks)
     // Obsidian-like: single newlines become <br> (esp. inside blockquotes)
     .use(remarkBreaks)
     .use(remarkSmartypants)
@@ -723,6 +810,7 @@ export async function markdownToHtmlLite(
   const file = await unified()
     .use(remarkParse)
     .use(remarkGfm, { singleTilde: false })
+    .use(remarkWikilinks)
     .use(remarkBreaks)
     .use(remarkSmartypants)
     .use(remarkRehype, { allowDangerousHtml: false })

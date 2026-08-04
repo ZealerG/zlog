@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest"
 import { markdownToHtml, markdownToHtmlLite } from "@/lib/content/markdown"
+import { plainTextSnippet } from "@/lib/content/plain-text"
 
 describe("markdownToHtml", () => {
   it("renders gfm, code shell, headings and anchors", async () => {
@@ -62,6 +63,29 @@ describe("markdownToHtml", () => {
     const { html } = await markdownToHtml("[site](https://example.com)")
     expect(html).toContain('target="_blank"')
     expect(html).toContain("noopener")
+  })
+
+  it("renders Wiki links as internal article and heading links", async () => {
+    const markdown = [
+      "[[Folder/My Note.md|Read target]]",
+      "[[CaseSensitive.mdx#Deep Heading]]",
+      "[[#Local Heading]]",
+      "`[[inline-code]]`",
+      "```md",
+      "[[fenced-code]]",
+      "```",
+      "![[embed.png]]",
+    ].join("\n\n")
+    const { html } = await markdownToHtml(markdown)
+
+    expect(html).toContain('<a href="/posts/Folder/My-Note">Read target</a>')
+    expect(html).toContain(
+      '<a href="/posts/CaseSensitive#deep-heading">CaseSensitive.mdx#Deep Heading</a>',
+    )
+    expect(html).toContain('<a href="#local-heading">#Local Heading</a>')
+    expect(html).not.toContain("/posts/inline-code")
+    expect(html).not.toContain("/posts/fenced-code")
+    expect(html).not.toContain("/posts/embed.png")
   })
 
   it("preserves soft line breaks as <br> (Obsidian-like, incl. blockquotes)", async () => {
@@ -137,5 +161,22 @@ describe("markdownToHtmlLite", () => {
     const b = await markdownToHtmlLite(md)
     // cached second call returns same string identity path
     expect(a.html).toBe(b.html)
+  })
+
+  it("renders Wiki links with the same internal hrefs as the full pipeline", async () => {
+    const { html } = await markdownToHtmlLite(
+      "[[agent-learning|Agent learning]]",
+    )
+    expect(html).toContain(
+      '<a href="/posts/agent-learning">Agent learning</a>',
+    )
+  })
+})
+
+describe("plainTextSnippet", () => {
+  it("uses Wiki-link aliases without leaking Obsidian syntax", () => {
+    expect(
+      plainTextSnippet("Read [[Folder/My Note|the note]] next"),
+    ).toBe("Read the note next")
   })
 })

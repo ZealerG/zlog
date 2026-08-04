@@ -486,6 +486,9 @@ after
     expect(getPostBySlug("Folder/My-Note", root)?.backlinks).toEqual([
       { slug: "SourceNote", title: "Source" },
     ])
+    expect(getPostBySlug("SourceNote", root)?.body).toContain(
+      "[[Folder/My Note.md#Details]]",
+    )
   })
 
   it("normalizes explicit post slugs consistently with Wiki links", () => {
