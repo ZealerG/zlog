@@ -12,6 +12,7 @@ import rehypeStringify from "rehype-stringify"
 import { visit, SKIP } from "unist-util-visit"
 import { toString } from "hast-util-to-string"
 import type { Root, Element, ElementContent, Properties } from "hast"
+import { startTimer } from "@/lib/perf"
 
 export type MarkdownHeading = {
   id: string
@@ -143,6 +144,8 @@ function enhanceImages() {
         ...node.properties,
         loading: "lazy",
         decoding: "async",
+        // 标记用于 CSS 软加载占位(淡入,避免空白闪烁)
+        "data-img-placeholder": "",
       }
       // prevent huge layout shift defaults where possible
       if (!node.properties.alt) node.properties.alt = ""
@@ -645,6 +648,7 @@ export async function markdownToHtml(md: string): Promise<MarkdownHtmlResult> {
   const cached = cacheGet(key)
   if (cached) return cached
 
+  const timer = startTimer("markdownToHtml(full) miss")
   const file = await unified()
     .use(remarkParse)
     .use(remarkGfm, { singleTilde: false })
@@ -698,6 +702,7 @@ export async function markdownToHtml(md: string): Promise<MarkdownHtmlResult> {
     html: String(file),
     headings: (file.data.headings as MarkdownHeading[] | undefined) ?? [],
   }
+  timer.end()
   cacheSet(key, result)
   return result
 }
@@ -714,6 +719,7 @@ export async function markdownToHtmlLite(
   const cached = cacheGet(key)
   if (cached) return cached
 
+  const timer = startTimer("markdownToHtmlLite(lite) miss")
   const file = await unified()
     .use(remarkParse)
     .use(remarkGfm, { singleTilde: false })
@@ -734,6 +740,7 @@ export async function markdownToHtmlLite(
     html: String(file),
     headings: [],
   }
+  timer.end()
   cacheSet(key, result)
   return result
 }

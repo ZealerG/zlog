@@ -204,6 +204,25 @@
   display: block;
 }
 
+/* Soft loading placeholder: background tint + fade-in, no network dependency */
+.post-prose img[data-img-placeholder] {
+  background: var(--img-placeholder-bg, #e5e7eb);
+  animation: img-placeholder-fadein 0.5s ease-out;
+}
+
+.dark .post-prose img[data-img-placeholder] {
+  background: var(--img-placeholder-bg-dark, #1e293b);
+}
+
+@keyframes img-placeholder-fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .post-prose img.md-zoomable {
   cursor: zoom-in;
   transition:

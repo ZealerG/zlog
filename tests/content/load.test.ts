@@ -1,9 +1,10 @@
-import { describe, it, expect, afterEach } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import fs from "node:fs"
 import os from "node:os"
 import path from "node:path"
 import {
   clearContentGraphCache,
+  contentFingerprint,
   getAllPosts,
   getAllUpdates,
   getAllGlimpses,
@@ -15,22 +16,63 @@ import {
 import {
   clearMarkdownFileCache,
   extractMarkdownImages,
+  extractWikilinks,
 } from "@/lib/content/parse"
+import { clearCacheMeta } from "@/lib/content/cache-meta"
+import {
+  GRAPH_OUTPUT_RELATIVE_PATH,
+  serializeContentGraph,
+} from "@/lib/content/serialize"
 
 const contentRoot = path.join(process.cwd(), "content")
-const tmpRoots: string[] = []
+const tmpDirs: string[] = []
 
 function makeTempContentRoot(): string {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "zlog-content-"))
-  tmpRoots.push(root)
+  const base = fs.mkdtempSync(path.join(os.tmpdir(), "zlog-content-"))
+  const root = path.join(base, "content")
+  tmpDirs.push(base)
   fs.mkdirSync(path.join(root, "posts"), { recursive: true })
   return root
 }
 
+function writePost(
+  root: string,
+  relativePath: string,
+  {
+    title,
+    slug,
+    published = true,
+    body = "body",
+  }: {
+    title: string
+    slug?: string
+    published?: boolean
+    body?: string
+  },
+): string {
+  const filePath = path.join(root, "posts", relativePath)
+  fs.mkdirSync(path.dirname(filePath), { recursive: true })
+  const slugLine = slug ? `slug: ${slug}\n` : ""
+  fs.writeFileSync(
+    filePath,
+    `---
+title: ${title}
+${slugLine}date: 2026-08-04
+published: ${published}
+---
+
+${body}
+`,
+  )
+  return filePath
+}
+
 afterEach(() => {
-  while (tmpRoots.length > 0) {
-    const root = tmpRoots.pop()
-    if (root) fs.rmSync(root, { recursive: true, force: true })
+  vi.restoreAllMocks()
+  vi.unstubAllEnvs()
+  while (tmpDirs.length > 0) {
+    const dir = tmpDirs.pop()
+    if (dir) fs.rmSync(dir, { recursive: true, force: true })
   }
   clearContentGraphCache()
   clearMarkdownFileCache()
@@ -38,19 +80,38 @@ afterEach(() => {
 
 describe("content load", () => {
   it("returns only published posts", () => {
-    // vitest runs with NODE_ENV=test → drafts stay hidden
-    expect(process.env.NODE_ENV).not.toBe("development")
-    const posts = getAllPosts(contentRoot)
-    expect(posts.some((p) => p.slug === "hello-world")).toBe(true)
-    expect(posts.some((p) => p.title === "草稿不该出现")).toBe(false)
+    const root = makeTempContentRoot()
+    writePost(root, "published.md", {
+      title: "Published",
+      slug: "published",
+    })
+    writePost(root, "draft.md", {
+      title: "Draft",
+      slug: "draft",
+      published: false,
+    })
+
+    expect(getAllPosts(root).map((post) => post.slug)).toEqual(["published"])
   })
 
   it("includes drafts when SHOW_DRAFTS=1", () => {
+    const root = makeTempContentRoot()
+    writePost(root, "published.md", {
+      title: "Published",
+      slug: "published",
+    })
+    writePost(root, "draft.md", {
+      title: "Draft",
+      slug: "draft",
+      published: false,
+    })
     const prev = process.env.SHOW_DRAFTS
     process.env.SHOW_DRAFTS = "1"
     try {
-      const posts = getAllPosts(contentRoot)
-      expect(posts.some((p) => p.title === "草稿不该出现")).toBe(true)
+      expect(getAllPosts(root).map((post) => post.slug).sort()).toEqual([
+        "draft",
+        "published",
+      ])
     } finally {
       if (prev === undefined) delete process.env.SHOW_DRAFTS
       else process.env.SHOW_DRAFTS = prev
@@ -58,9 +119,16 @@ describe("content load", () => {
   })
 
   it("loads post by slug", () => {
-    const post = getPostBySlug("hello-world", contentRoot)
-    expect(post?.title).toBe("你好，世界")
-    expect(post?.body).toContain("第一篇")
+    const root = makeTempContentRoot()
+    writePost(root, "hello.md", {
+      title: "Hello",
+      slug: "hello-world",
+      body: "first post",
+    })
+
+    const post = getPostBySlug("hello-world", root)
+    expect(post?.title).toBe("Hello")
+    expect(post?.body).toContain("first post")
   })
 
   it("loads updates and glimpses and pages", () => {
@@ -274,12 +342,166 @@ after
     expect(getPostBySlug("alpha", root)?.title).toBe("After")
   })
 
+  it("loads the private production snapshot before scanning content", () => {
+    const root = makeTempContentRoot()
+    const base = path.dirname(root)
+    writePost(root, "snapshot.md", {
+      title: "Snapshot",
+      slug: "snapshot",
+    })
+    vi.stubEnv("SHOW_DRAFTS", "0")
+
+    const liveGraph = loadContentGraph(root, { preferSnapshot: false })
+    const snapshotPath = path.join(base, GRAPH_OUTPUT_RELATIVE_PATH)
+    fs.mkdirSync(path.dirname(snapshotPath), { recursive: true })
+    fs.writeFileSync(snapshotPath, serializeContentGraph(liveGraph))
+
+    clearContentGraphCache()
+    clearMarkdownFileCache()
+    clearCacheMeta(root)
+    fs.rmSync(root, { recursive: true, force: true })
+    vi.spyOn(process, "cwd").mockReturnValue(base)
+    vi.stubEnv("NODE_ENV", "production")
+
+    const graph = loadContentGraph(path.join(base, "content"))
+    expect(graph.posts.map((post) => post.slug)).toEqual(["snapshot"])
+    expect(fs.existsSync(path.join(base, ".content-cache"))).toBe(false)
+  })
+
+  it("does not use the default production snapshot for a custom root", () => {
+    const defaultRoot = makeTempContentRoot()
+    const base = path.dirname(defaultRoot)
+    writePost(defaultRoot, "default.md", {
+      title: "Default",
+      slug: "default",
+    })
+    vi.stubEnv("SHOW_DRAFTS", "0")
+    const defaultGraph = loadContentGraph(defaultRoot, {
+      preferSnapshot: false,
+    })
+    const snapshotPath = path.join(base, GRAPH_OUTPUT_RELATIVE_PATH)
+    fs.mkdirSync(path.dirname(snapshotPath), { recursive: true })
+    fs.writeFileSync(snapshotPath, serializeContentGraph(defaultGraph))
+
+    const customRoot = path.join(base, "custom-content")
+    writePost(customRoot, "sentinel.md", {
+      title: "Sentinel",
+      slug: "sentinel",
+    })
+    clearContentGraphCache()
+    clearMarkdownFileCache()
+    clearCacheMeta(customRoot)
+    vi.spyOn(process, "cwd").mockReturnValue(base)
+    vi.stubEnv("NODE_ENV", "production")
+
+    const graph = loadContentGraph(customRoot)
+    expect(graph.posts.map((post) => post.slug)).toEqual(["sentinel"])
+  })
+
+  it("can force a live rebuild when a production snapshot exists", () => {
+    const root = makeTempContentRoot()
+    const base = path.dirname(root)
+    const file = writePost(root, "post.md", {
+      title: "Stale",
+      slug: "post",
+    })
+    vi.stubEnv("SHOW_DRAFTS", "0")
+    const staleGraph = loadContentGraph(root, { preferSnapshot: false })
+    const snapshotPath = path.join(base, GRAPH_OUTPUT_RELATIVE_PATH)
+    fs.mkdirSync(path.dirname(snapshotPath), { recursive: true })
+    fs.writeFileSync(snapshotPath, serializeContentGraph(staleGraph))
+
+    writePost(root, "post.md", {
+      title: "Fresh",
+      slug: "post",
+    })
+    const future = new Date(Date.now() + 2000)
+    fs.utimesSync(file, future, future)
+    clearContentGraphCache()
+    clearMarkdownFileCache()
+    vi.spyOn(process, "cwd").mockReturnValue(base)
+    vi.stubEnv("NODE_ENV", "production")
+
+    expect(
+      loadContentGraph(root, { preferSnapshot: false }).posts[0]?.title,
+    ).toBe("Fresh")
+  })
+
+  it("continues when fingerprint metadata cannot be written", () => {
+    const root = makeTempContentRoot()
+    writePost(root, "post.md", {
+      title: "Read only",
+      slug: "read-only",
+    })
+    clearCacheMeta(root)
+    vi.spyOn(fs, "writeFileSync").mockImplementationOnce(() => {
+      throw Object.assign(new Error("read only"), { code: "EROFS" })
+    })
+
+    expect(() => contentFingerprint(root)).not.toThrow()
+  })
+
   it("extractMarkdownImages preserves order and uniques", () => {
     expect(
       extractMarkdownImages(
         "![a](https://a.com/1.jpg)![b](https://a.com/2.jpg)![c](https://a.com/1.jpg)",
       ),
     ).toEqual(["https://a.com/1.jpg", "https://a.com/2.jpg"])
+  })
+
+  it("extracts Wiki links without changing slug case or nested paths", () => {
+    const markdown = [
+      "[[Folder/My Note.md#Heading|Alias]]",
+      "[[CaseSensitive.mdx]]",
+      "[[#local-heading]]",
+      "![[embed.png]]",
+      "`[[inline-code]]`",
+      "```md",
+      "[[fenced-code]]",
+      "```",
+    ].join("\n")
+
+    expect(extractWikilinks(markdown)).toEqual([
+      "Folder/My-Note",
+      "CaseSensitive",
+    ])
+  })
+
+  it("builds backlinks without duplicates or self references", () => {
+    const root = makeTempContentRoot()
+    writePost(root, "Folder/My Note.md", {
+      title: "Target",
+      body: "[[Folder/My Note]]",
+    })
+    writePost(root, "Source.md", {
+      title: "Source",
+      slug: "SourceNote",
+      body: [
+        "[[Folder/My Note.md#Details]]",
+        "[[Folder/My Note|Again]]",
+        "`[[Folder/My Note]]`",
+      ].join("\n"),
+    })
+
+    expect(getPostBySlug("Folder/My-Note", root)?.backlinks).toEqual([
+      { slug: "SourceNote", title: "Source" },
+    ])
+  })
+
+  it("normalizes explicit post slugs consistently with Wiki links", () => {
+    const root = makeTempContentRoot()
+    writePost(root, "target.md", {
+      title: "Target",
+      slug: "Folder/Custom Note.md",
+    })
+    writePost(root, "source.md", {
+      title: "Source",
+      body: "[[Folder/Custom Note.md]]",
+    })
+
+    expect(getPostBySlug("Folder/Custom-Note", root)?.backlinks).toEqual([
+      { slug: "source", title: "Source" },
+    ])
   })
 
   it("getTimelineEntries uses one graph (posts + updates + glimpses)", () => {

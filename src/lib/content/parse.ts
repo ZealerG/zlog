@@ -1,6 +1,9 @@
 import fs from "node:fs"
 import path from "node:path"
 import matter from "gray-matter"
+import remarkParse from "remark-parse"
+import { unified } from "unified"
+import { visit } from "unist-util-visit"
 import type {
   Bookmark,
   Friend,
@@ -28,7 +31,7 @@ export function clearMarkdownFileCache() {
 }
 
 export function readMarkdownFile(filePath: string): ParsedMarkdownFile {
-  const stat = fs.statSync(filePath)
+  const stat = fs.statSync(/* turbopackIgnore: true */ filePath)
   const hit = markdownFileCache.get(filePath)
   if (
     hit &&
@@ -38,7 +41,7 @@ export function readMarkdownFile(filePath: string): ParsedMarkdownFile {
     return hit.result
   }
 
-  let raw = fs.readFileSync(filePath, "utf8")
+  let raw = fs.readFileSync(/* turbopackIgnore: true */ filePath, "utf8")
   // strip BOM + leading blank lines so Obsidian exports still parse
   raw = raw.replace(/^\uFEFF/, "").replace(/^\s+/, "")
   const result = matter(raw)
@@ -55,12 +58,21 @@ function normalizeDate(value: unknown): string | null {
   return parseContentDate(value)
 }
 
-function slugFromRelative(relativePath: string): string {
-  return relativePath
+function normalizeSlugPath(value: string): string {
+  return value
     .replace(/\\/g, "/")
     .replace(/\.mdx?$/i, "")
     .replace(/&/g, "and")
     .replace(/\s+/g, "-")
+}
+
+function slugFromRelative(relativePath: string): string {
+  return normalizeSlugPath(relativePath)
+}
+
+function wikilinkTargetSlug(target: string): string | null {
+  const pathPart = target.split("#", 1)[0].trim()
+  return pathPart ? normalizeSlugPath(pathPart) : null
 }
 
 function asStringArray(value: unknown): string[] {
@@ -131,6 +143,24 @@ export function extractMarkdownImages(body: string): string[] {
   return [...new Set(urls)]
 }
 
+/** Extract Wiki-link targets from Markdown text nodes, excluding code and embeds. */
+export function extractWikilinks(body: string): string[] {
+  const targets = new Set<string>()
+  const tree = unified().use(remarkParse).parse(body)
+
+  visit(tree, "text", (node) => {
+    const matches = node.value.matchAll(
+      /(?<!!)\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g,
+    )
+    for (const match of matches) {
+      const slug = wikilinkTargetSlug(match[1])
+      if (slug) targets.add(slug)
+    }
+  })
+
+  return [...targets]
+}
+
 export function parsePost(
   filePath: string,
   relativePath: string,
@@ -145,10 +175,10 @@ export function parsePost(
     return null
   }
 
-  const slug =
-    typeof data.slug === "string" && data.slug.length > 0
-      ? data.slug
-      : slugFromRelative(relativePath)
+  const explicitSlug = typeof data.slug === "string" ? data.slug.trim() : ""
+  const slug = explicitSlug
+    ? normalizeSlugPath(explicitSlug)
+    : slugFromRelative(relativePath)
 
   return {
     title,
@@ -162,6 +192,7 @@ export function parsePost(
     published,
     body: normalizeMarkdownBody(content),
     filePath,
+    wikilinks: extractWikilinks(content),
   }
 }
 
@@ -482,13 +513,16 @@ export function assertNoDuplicateSlugs(
 }
 
 export function listMarkdownFiles(dir: string): string[] {
-  if (!fs.existsSync(dir)) return []
+  if (!fs.existsSync(/* turbopackIgnore: true */ dir)) return []
   const results: string[] = []
 
   function walk(current: string) {
-    for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+    for (const entry of fs.readdirSync(
+      /* turbopackIgnore: true */ current,
+      { withFileTypes: true },
+    )) {
       if (entry.name.startsWith(".")) continue
-      const full = path.join(current, entry.name)
+      const full = path.join(/* turbopackIgnore: true */ current, entry.name)
       if (entry.isDirectory()) {
         walk(full)
       } else if (entry.isFile() && /\.mdx?$/i.test(entry.name)) {

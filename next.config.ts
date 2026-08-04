@@ -1,6 +1,9 @@
 import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
+  outputFileTracingIncludes: {
+    "/*": ["./.content-graph/content-graph.json"],
+  },
   turbopack: {
     root: process.cwd(),
   },

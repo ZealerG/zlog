@@ -25,6 +25,12 @@ import {
   readMarkdownFile,
 } from "./parse"
 import { plainTextSnippet } from "./plain-text"
+import { computeIncrementalFingerprint } from "./cache-meta"
+import {
+  GRAPH_OUTPUT_RELATIVE_PATH,
+  deserializeContentGraph,
+} from "./serialize"
+import { perfEnabled } from "@/lib/perf"
 
 function relativeSlugPath(filePath: string, kindDir: string): string {
   return path.relative(kindDir, filePath)
@@ -55,8 +61,8 @@ export function includeDrafts(): boolean {
   return process.env.NODE_ENV === "development"
 }
 
-function isVisible(published: boolean): boolean {
-  return published === true || includeDrafts()
+function isVisible(published: boolean, draftsIncluded: boolean): boolean {
+  return published === true || draftsIncluded
 }
 
 const CONTENT_KINDS = [
@@ -69,26 +75,38 @@ const CONTENT_KINDS = [
   "bookmarks",
 ] as const
 
-/** Cheap fingerprint: path + mtime + size for every markdown file + draft flag. */
+/** Path + mtime + size fingerprint for live content loading.
+ * Change detection remains O(n); production snapshots bypass this scan. */
 export function contentFingerprint(contentRoot: string): string {
-  const parts: string[] = [`drafts=${includeDrafts() ? 1 : 0}`]
+  const allFiles: string[] = []
   for (const kind of CONTENT_KINDS) {
-    const dir = path.join(contentRoot, kind)
-    for (const filePath of listMarkdownFiles(dir)) {
-      try {
-        const st = fs.statSync(filePath)
-        parts.push(`${filePath}:${st.mtimeMs}:${st.size}`)
-      } catch {
-        parts.push(`${filePath}:missing`)
-      }
+    const dir = path.join(/* turbopackIgnore: true */ contentRoot, kind)
+    allFiles.push(...listMarkdownFiles(dir))
+  }
+
+  const { fingerprint, changed } = computeIncrementalFingerprint(
+    contentRoot,
+    allFiles,
+  )
+
+  // verbose logging in dev
+  if (
+    process.env.NODE_ENV === "development" &&
+    changed.length > 0 &&
+    process.env.DEBUG_CONTENT
+  ) {
+    for (const f of changed) {
+      console.log(`[content] changed: ${path.relative(contentRoot, f)}`)
     }
   }
-  return parts.sort().join("\n")
+
+  return fingerprint
 }
 
 export type ContentGraph = {
   contentRoot: string
   fingerprint: string
+  draftsIncluded: boolean
   posts: Post[]
   postsBySlug: Map<string, Post>
   updates: Update[]
@@ -102,6 +120,7 @@ export type ContentGraph = {
 type GraphCacheEntry = {
   fingerprint: string
   graph: ContentGraph
+  source: "live" | "snapshot"
 }
 
 /** Process-level graph cache keyed by content root. Invalidates via fingerprint. */
@@ -118,13 +137,15 @@ function sortByDateDesc<T extends { date: string }>(items: T[]): T[] {
 }
 
 function buildContentGraph(contentRoot: string, fingerprint: string): ContentGraph {
-  const postsDir = path.join(contentRoot, "posts")
-  const updatesDir = path.join(contentRoot, "updates")
-  const glimpsesDir = path.join(contentRoot, "glimpses")
-  const pagesDir = path.join(contentRoot, "pages")
-  const projectsDir = path.join(contentRoot, "projects")
-  const friendsDir = path.join(contentRoot, "friends")
-  const bookmarksDir = path.join(contentRoot, "bookmarks")
+  const perfStart = performance.now()
+  const draftsIncluded = includeDrafts()
+  const postsDir = path.join(/* turbopackIgnore: true */ contentRoot, "posts")
+  const updatesDir = path.join(/* turbopackIgnore: true */ contentRoot, "updates")
+  const glimpsesDir = path.join(/* turbopackIgnore: true */ contentRoot, "glimpses")
+  const pagesDir = path.join(/* turbopackIgnore: true */ contentRoot, "pages")
+  const projectsDir = path.join(/* turbopackIgnore: true */ contentRoot, "projects")
+  const friendsDir = path.join(/* turbopackIgnore: true */ contentRoot, "friends")
+  const bookmarksDir = path.join(/* turbopackIgnore: true */ contentRoot, "bookmarks")
 
   // --- posts ---
   const postFiles = listMarkdownFiles(postsDir)
@@ -132,8 +153,31 @@ function buildContentGraph(contentRoot: string, fingerprint: string): ContentGra
     .map((filePath) => parsePost(filePath, relativeSlugPath(filePath, postsDir)))
     .filter((p): p is Post => p !== null)
   assertNoDuplicateSlugs(postsRaw, "post")
-  const posts = sortByDateDesc(postsRaw.filter((p) => isVisible(p.published)))
+  const posts = sortByDateDesc(
+    postsRaw.filter((p) => isVisible(p.published, draftsIncluded)),
+  )
   const postsBySlug = new Map(posts.map((p) => [p.slug, p]))
+
+  // --- build backlinks index ---
+  const backlinksIndex = new Map<string, { slug: string; title: string }[]>()
+  for (const post of posts) {
+    for (const target of post.wikilinks ?? []) {
+      if (target === post.slug) continue
+      if (!backlinksIndex.has(target)) {
+        backlinksIndex.set(target, [])
+      }
+      backlinksIndex.get(target)!.push({
+        slug: post.slug,
+        title: post.title,
+      })
+    }
+  }
+  for (const post of posts) {
+    const refs = backlinksIndex.get(post.slug)
+    if (refs && refs.length > 0) {
+      post.backlinks = refs.sort((a, b) => a.slug.localeCompare(b.slug))
+    }
+  }
 
   // --- updates + glimpses: each directory listed once; memo dumps classified once ---
   const glimpseFiles = listMarkdownFiles(glimpsesDir)
@@ -159,7 +203,7 @@ function buildContentGraph(contentRoot: string, fingerprint: string): ContentGra
   const updatesRaw = [...fromUpdates, ...fromGlimpsesMemos]
   assertNoDuplicateSlugs(updatesRaw, "update")
   const updates = sortByDateDesc(
-    updatesRaw.filter((u) => isVisible(u.published)),
+    updatesRaw.filter((u) => isVisible(u.published, draftsIncluded)),
   )
 
   const glimpsesRaw = glimpseClassified
@@ -170,7 +214,9 @@ function buildContentGraph(contentRoot: string, fingerprint: string): ContentGra
     .filter((g): g is Glimpse => g !== null)
   assertNoDuplicateSlugs(glimpsesRaw, "glimpse")
   const glimpses = sortByDateDesc(
-    glimpsesRaw.filter((g) => isVisible(g.published) && g.images.length > 0),
+    glimpsesRaw.filter(
+      (g) => isVisible(g.published, draftsIncluded) && g.images.length > 0,
+    ),
   )
 
   // --- other kinds ---
@@ -179,7 +225,7 @@ function buildContentGraph(contentRoot: string, fingerprint: string): ContentGra
     .filter((p): p is PageDoc => p !== null)
   assertNoDuplicateSlugs(pagesRaw, "page")
   const pages = pagesRaw
-    .filter((p) => isVisible(p.published))
+    .filter((p) => isVisible(p.published, draftsIncluded))
     .sort((a, b) => a.order - b.order)
 
   const projectsRaw = listMarkdownFiles(projectsDir)
@@ -189,7 +235,7 @@ function buildContentGraph(contentRoot: string, fingerprint: string): ContentGra
     .filter((p): p is Project => p !== null)
   assertNoDuplicateSlugs(projectsRaw, "project")
   const projects = projectsRaw
-    .filter((p) => isVisible(p.published))
+    .filter((p) => isVisible(p.published, draftsIncluded))
     .sort((a, b) => a.order - b.order || a.title.localeCompare(b.title))
 
   const friendsRaw = listMarkdownFiles(friendsDir)
@@ -199,7 +245,7 @@ function buildContentGraph(contentRoot: string, fingerprint: string): ContentGra
     .filter((p): p is Friend => p !== null)
   assertNoDuplicateSlugs(friendsRaw, "friend")
   const friends = friendsRaw
-    .filter((p) => isVisible(p.published))
+    .filter((p) => isVisible(p.published, draftsIncluded))
     .sort((a, b) => a.order - b.order || a.title.localeCompare(b.title))
 
   const bookmarksRaw = listMarkdownFiles(bookmarksDir)
@@ -209,12 +255,13 @@ function buildContentGraph(contentRoot: string, fingerprint: string): ContentGra
     .filter((p): p is Bookmark => p !== null)
   assertNoDuplicateSlugs(bookmarksRaw, "bookmark")
   const bookmarks = bookmarksRaw
-    .filter((p) => isVisible(p.published))
+    .filter((p) => isVisible(p.published, draftsIncluded))
     .sort((a, b) => a.order - b.order || a.title.localeCompare(b.title))
 
-  return {
+  const graph = {
     contentRoot,
     fingerprint,
+    draftsIncluded,
     posts,
     postsBySlug,
     updates,
@@ -224,22 +271,88 @@ function buildContentGraph(contentRoot: string, fingerprint: string): ContentGra
     friends,
     bookmarks,
   }
+  if (perfEnabled()) {
+    console.log(
+      `[perf] buildContentGraph: ${(performance.now() - perfStart).toFixed(1)}ms`,
+    )
+  }
+  return graph
 }
 
 /**
  * Load full content graph once per contentRoot fingerprint.
  * Safe for tests (unique temp roots) and dev (mtime fingerprint invalidates).
+ *
+ * Production uses the immutable build-time snapshot for the default content
+ * root. Set `ZLOG_LIVE_GRAPH=1` or `preferSnapshot: false` for live content.
  */
+export type LoadContentGraphOptions = {
+  preferSnapshot?: boolean
+}
+
 export function loadContentGraph(
   contentRoot = defaultContentRoot(),
+  options: LoadContentGraphOptions = {},
 ): ContentGraph {
+  const cacheKey = path.resolve(/* turbopackIgnore: true */ contentRoot)
+  const defaultRoot = path.resolve(
+    /* turbopackIgnore: true */ defaultContentRoot(),
+  )
+  const liveGraphRequested =
+    process.env.ZLOG_LIVE_GRAPH === "1" ||
+    process.env.ZLOG_LIVE_GRAPH === "true"
+  const useSnapshot =
+    options.preferSnapshot !== false &&
+    process.env.NODE_ENV === "production" &&
+    !liveGraphRequested &&
+    cacheKey === defaultRoot
+
+  if (useSnapshot) {
+    const hit = graphCacheByRoot.get(cacheKey)
+    if (hit) return hit.graph
+
+    try {
+      const snapshotPath = path.join(
+        /* turbopackIgnore: true */ process.cwd(),
+        GRAPH_OUTPUT_RELATIVE_PATH,
+      )
+      const json = fs.readFileSync(
+        /* turbopackIgnore: true */ snapshotPath,
+        "utf8",
+      )
+      const graph = deserializeContentGraph(json, contentRoot)
+      if (graph && graph.draftsIncluded === includeDrafts()) {
+        graphCacheByRoot.set(cacheKey, {
+          fingerprint: graph.fingerprint,
+          graph,
+          source: "snapshot",
+        })
+        return graph
+      }
+      console.warn(
+        "[content] content graph snapshot invalid, falling back to live scan",
+      )
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+        console.warn(
+          "[content] content graph snapshot unreadable, falling back to live scan",
+        )
+      }
+    }
+  }
+
   const fingerprint = contentFingerprint(contentRoot)
-  const hit = graphCacheByRoot.get(contentRoot)
-  if (hit && hit.fingerprint === fingerprint) {
+  const hit = graphCacheByRoot.get(cacheKey)
+  if (
+    hit &&
+    hit.source === "live" &&
+    hit.fingerprint === fingerprint
+  ) {
     return hit.graph
   }
+
   const graph = buildContentGraph(contentRoot, fingerprint)
-  graphCacheByRoot.set(contentRoot, { fingerprint, graph })
+  graphCacheByRoot.set(cacheKey, { fingerprint, graph, source: "live" })
   return graph
 }
 

@@ -55,6 +55,12 @@ tmp/
 .cursor/skills/
 skills-lock.json
 
+# content cache (fingerprint metadata)
+.content-cache/
+
+# private build-time content graph snapshot (regenerated on each build)
+.content-graph/
+
 # Content is tracked (single personal repo). Keep junk out of content/.
 content/.DS_Store
 content/**/.DS_Store

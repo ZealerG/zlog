@@ -29,12 +29,10 @@ describe("content graph smoke", () => {
     expect(g.fingerprint.length).toBeGreaterThan(0)
   })
 
-  it("resolves hello-world by slug map", () => {
-    const post = getPostBySlug("hello-world", contentRoot)
-    expect(post?.title).toBeTruthy()
-    expect(getAllPosts(contentRoot).some((p) => p.slug === "hello-world")).toBe(
-      true,
-    )
+  it("resolves a loaded post by slug map", () => {
+    const first = getAllPosts(contentRoot)[0]
+    expect(first).toBeTruthy()
+    expect(getPostBySlug(first.slug, contentRoot)).toBe(first)
   })
 
   it("timeline entries only use known kinds", () => {

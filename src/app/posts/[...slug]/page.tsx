@@ -9,6 +9,7 @@ import {
   ReadingProgressRail,
 } from "@/components/posts/ReadingProgress"
 import { TableOfContents } from "@/components/posts/TableOfContents"
+import { Backlinks } from "@/components/posts/Backlinks"
 import { MarkdownBody } from "@/components/markdown/MarkdownBody"
 import { getAllPosts, getPostBySlug } from "@/lib/content/load"
 import { markdownToHtml } from "@/lib/content/markdown"
@@ -115,6 +116,7 @@ export default async function PostDetailPage({
             </div>
 
             <AdjacentPosts prev={prev} next={next} />
+            <Backlinks backlinks={post.backlinks ?? []} />
           </article>
 
           <aside className="sticky top-28 hidden max-h-[calc(100vh-8rem)] min-h-0 overflow-y-auto pl-5 text-sm lg:flex lg:w-64 lg:flex-col">

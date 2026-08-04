@@ -10,6 +10,10 @@ export type Post = {
   published: boolean
   body: string
   filePath: string
+  /** [[Wiki 链接]] 目标 slug 列表(解析时提取) */
+  wikilinks?: string[]
+  /** 反向链接(谁引用了这篇文章,运行时构建) */
+  backlinks?: { slug: string; title: string }[]
 }
 
 export type Update = {

@@ -121,7 +121,7 @@ function checkGraphLoads() {
   try {
     clearContentGraphCache()
     clearMarkdownFileCache()
-    const graph = loadContentGraph(contentRoot)
+    const graph = loadContentGraph(contentRoot, { preferSnapshot: false })
     if (graph.posts.length === 0) {
       push("warn", contentRoot, "no visible posts (check drafts / SHOW_DRAFTS)")
     }
