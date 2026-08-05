@@ -10,7 +10,6 @@ cover:
 draft: false
 ---
 # π的三层架构
-[[agent-learning]]
 > - Pi 分三层：pi-ai（管模型）→ pi-agent-core（管循环）→ pi-coding-agent（管业务）
 > - 分层的核心规则是**依赖方向单向向上**，底层对上层一无所知
 > - 类型从底层到顶层逐步扩展：`Tool` → `AgentTool` → `ToolDefinition`
@@ -40,3 +39,5 @@ draft: false
 4. 每一层只加自己关心的事
 底层可以独立发布或者被复用，其余层可以引入底层而无需引入整个 agent 框架
 
+# π的 Agent Loop
+[[agent-learning#十一、Loop Engineering]] 
