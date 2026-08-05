@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { ScrollReveal } from "@/components/effects/ScrollReveal"
-import { PostGraph } from "@/components/graph/PostGraph"
+import { CompactPostGraph } from "@/components/graph/CompactPostGraph"
 import { PostFilters, type PostFilterState } from "@/components/posts/PostFilters"
 import { PostList } from "@/components/posts/PostList"
 import { PostSearch } from "@/components/posts/PostSearch"
@@ -218,7 +218,7 @@ export default async function PostsPage({
               </div>
             ) : null}
 
-            <PostGraph data={graph} variant="compact" />
+            <CompactPostGraph data={graph} />
           </aside>
         </ScrollReveal>
       </div>

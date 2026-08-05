@@ -1,7 +1,7 @@
 /**
  * 增量内容编译缓存元数据管理。
  *
- * 维护 `.content-cache/meta.json` 记录每个文件的 mtime+size。
+ * 维护 `.content-cache/meta.json` 记录每个文件的 mtime+ctime+size。
  * 变更检测仍需 O(n) stat；缓存用于复用已计算的指纹，避免重复解析 Markdown。
  *
  * 约定:
@@ -10,7 +10,7 @@
  *   {
  *     "draftFlag": "0"|"1",
  *     "fingerprint": "完整指纹字符串",
- *     "files": { [relativePath]: { mtimeMs, size } }
+ *     "files": { [relativePath]: { mtimeMs, ctimeMs, size } }
  *   }
  * - 当所有文件未变更且 draftFlag 一致时,直接复用缓存的 fingerprint
  */
@@ -19,6 +19,7 @@ import path from "node:path"
 
 export type CacheMetaEntry = {
   mtimeMs: number
+  ctimeMs: number
   size: number
 }
 
@@ -108,7 +109,7 @@ function currentDraftFlag(): string {
  *
  * 逻辑:
  * 1. 读取缓存的 meta.json
- * 2. stat 每个文件,与缓存对比 mtime+size
+ * 2. stat 每个文件,与缓存对比 mtime+ctime+size
  * 3. 全量未变更且 draftFlag 一致 → 复用缓存的 fingerprint
  * 4. 有变更 → 完整计算新 fingerprint,写回 meta
  *
@@ -132,9 +133,18 @@ export function computeIncrementalFingerprint(
     const rel = path.relative(contentRoot, filePath)
     try {
       const st = fs.statSync(/* turbopackIgnore: true */ filePath)
-      currentFiles[rel] = { mtimeMs: st.mtimeMs, size: st.size }
+      currentFiles[rel] = {
+        mtimeMs: st.mtimeMs,
+        ctimeMs: st.ctimeMs,
+        size: st.size,
+      }
       const prev = cached.files[rel]
-      if (prev && prev.mtimeMs === st.mtimeMs && prev.size === st.size) {
+      if (
+        prev &&
+        prev.mtimeMs === st.mtimeMs &&
+        prev.ctimeMs === st.ctimeMs &&
+        prev.size === st.size
+      ) {
         unchanged.push(filePath)
       } else {
         changed.push(filePath)
@@ -142,7 +152,7 @@ export function computeIncrementalFingerprint(
       }
     } catch {
       changed.push(filePath)
-      currentFiles[rel] = { mtimeMs: 0, size: 0 }
+      currentFiles[rel] = { mtimeMs: 0, ctimeMs: 0, size: 0 }
       allUnchanged = false
     }
   }
@@ -163,13 +173,13 @@ export function computeIncrementalFingerprint(
     return { fingerprint: cached.fingerprint, changed, unchanged }
   }
 
-  // 有变更 → 计算完整 fingerprint(与原始格式兼容:全路径 mtime+size)
+  // 有变更 → 计算完整 fingerprint(全路径 mtime+ctime+size)
   const parts: string[] = [`drafts=${draftFlag}`]
   for (const filePath of allFiles) {
     const rel = path.relative(contentRoot, filePath)
     const meta = currentFiles[rel]
     if (meta) {
-      parts.push(`${filePath}:${meta.mtimeMs}:${meta.size}`)
+      parts.push(`${filePath}:${meta.mtimeMs}:${meta.ctimeMs}:${meta.size}`)
     }
   }
   const fingerprint = parts.sort().join("\n")

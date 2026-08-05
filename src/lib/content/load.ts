@@ -75,7 +75,7 @@ const CONTENT_KINDS = [
   "bookmarks",
 ] as const
 
-/** Path + mtime + size fingerprint for live content loading.
+/** Path + mtime + ctime + size fingerprint for live content loading.
  * Change detection remains O(n); production snapshots bypass this scan. */
 export function contentFingerprint(contentRoot: string): string {
   const allFiles: string[] = []

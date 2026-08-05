@@ -234,6 +234,9 @@ export function PostGraph({ data, variant = "full" }: PostGraphProps) {
   const canvasRef = useRef<HTMLDivElement>(null)
   const graphRef = useRef<ForceGraphMethods | undefined>(undefined)
   const fittedRef = useRef(false)
+  const userInteractedRef = useRef(false)
+  const pendingFocusRef = useRef<string | null>(null)
+  const focusRetryFrameRef = useRef<number | null>(null)
   const size = useElementSize(canvasRef)
   const reducedMotion = usePrefersReducedMotion()
   const palette = useGraphPalette()
@@ -276,6 +279,20 @@ export function PostGraph({ data, variant = "full" }: PostGraphProps) {
         .slice(0, 6),
     [data.nodes],
   )
+  const labelNodeIds = useMemo(
+    () =>
+      new Set(
+        [...data.nodes]
+          .sort(
+            (a, b) =>
+              b.degree - a.degree ||
+              (a.title < b.title ? -1 : a.title > b.title ? 1 : 0),
+          )
+          .slice(0, compact ? 12 : 64)
+          .map((node) => node.id),
+      ),
+    [compact, data.nodes],
+  )
   const searchResults = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase()
     if (!normalized) return []
@@ -311,32 +328,82 @@ export function PostGraph({ data, variant = "full" }: PostGraphProps) {
 
   useEffect(() => {
     fittedRef.current = false
+    userInteractedRef.current = false
+    pendingFocusRef.current = null
+    if (focusRetryFrameRef.current !== null) {
+      cancelAnimationFrame(focusRetryFrameRef.current)
+      focusRetryFrameRef.current = null
+    }
+
+    return () => {
+      if (focusRetryFrameRef.current !== null) {
+        cancelAnimationFrame(focusRetryFrameRef.current)
+        focusRetryFrameRef.current = null
+      }
+    }
   }, [graphData])
 
   const fitGraph = useCallback(() => {
     graphRef.current?.zoomToFit(reducedMotion ? 0 : 420, compact ? 18 : 44)
   }, [compact, reducedMotion])
 
-  const focusNode = useCallback(
-    (id: string) => {
-      setSelectedId(id)
-      setSearchOpen(false)
+  const markUserInteraction = useCallback(() => {
+    userInteractedRef.current = true
+    fittedRef.current = true
+  }, [])
+
+  const applyNodeFocus = useCallback(
+    (id: string): boolean => {
       const node = graphData.nodes.find((candidate) => candidate.id === id)
       if (!node || typeof node.x !== "number" || typeof node.y !== "number") {
-        return
+        return false
       }
+
+      pendingFocusRef.current = null
+      fittedRef.current = true
       const duration = reducedMotion ? 0 : 360
       graphRef.current?.centerAt(node.x, node.y, duration)
       graphRef.current?.zoom(compact ? 2.6 : 2.2, duration)
+      return true
     },
     [compact, graphData.nodes, reducedMotion],
   )
 
+  const focusNode = useCallback(
+    (id: string) => {
+      setSelectedId(id)
+      setSearchOpen(false)
+      pendingFocusRef.current = id
+      markUserInteraction()
+      applyNodeFocus(id)
+    },
+    [applyNodeFocus, markUserInteraction],
+  )
+
   const handleEngineStop = useCallback(() => {
-    if (fittedRef.current) return
+    const pendingId = pendingFocusRef.current
+    if (pendingId) {
+      const retryFocus = (attemptsLeft: number) => {
+        if (pendingFocusRef.current !== pendingId || applyNodeFocus(pendingId)) {
+          focusRetryFrameRef.current = null
+          return
+        }
+        if (attemptsLeft <= 0) {
+          focusRetryFrameRef.current = null
+          return
+        }
+        focusRetryFrameRef.current = requestAnimationFrame(() => {
+          retryFocus(attemptsLeft - 1)
+        })
+      }
+      retryFocus(4)
+      return
+    }
+
+    if (fittedRef.current || userInteractedRef.current) return
     fittedRef.current = true
     fitGraph()
-  }, [fitGraph])
+  }, [applyNodeFocus, fitGraph])
 
   const handleSearch = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -354,6 +421,8 @@ export function PostGraph({ data, variant = "full" }: PostGraphProps) {
       }
       role="img"
       aria-label={`文章关系图，共 ${data.nodes.length} 篇文章和 ${data.links.length} 条链接`}
+      onPointerDown={markUserInteraction}
+      onWheel={markUserInteraction}
     >
       {size.width > 0 && size.height > 0 ? (
         <GraphErrorBoundary>
@@ -384,11 +453,13 @@ export function PostGraph({ data, variant = "full" }: PostGraphProps) {
             nodeCanvasObjectMode={() => "after"}
             nodeCanvasObject={(rawNode, context, globalScale) => {
               const node = rawNode as MutableGraphNode
-              if (
-                compact &&
-                node.id !== activeId &&
-                globalScale < 1.35
-              ) {
+              const activeOrRelated =
+                node.id === activeId ||
+                Boolean(activeId && activeNodeIds.has(node.id))
+              if (!activeOrRelated && !labelNodeIds.has(node.id)) {
+                return
+              }
+              if (!activeOrRelated && globalScale < (compact ? 1.35 : 0.7)) {
                 return
               }
 
@@ -447,7 +518,10 @@ export function PostGraph({ data, variant = "full" }: PostGraphProps) {
               else focusNode(id)
             }}
             onBackgroundClick={() => {
-              if (!compact) setSelectedId(null)
+              if (!compact) {
+                pendingFocusRef.current = null
+                setSelectedId(null)
+              }
             }}
             showPointerCursor={(object) => Boolean(object)}
           />
@@ -563,18 +637,26 @@ export function PostGraph({ data, variant = "full" }: PostGraphProps) {
           <IconButton
             label="缩小图谱"
             onClick={() => {
+              markUserInteraction()
               const current = graphRef.current?.zoom() ?? 1
               graphRef.current?.zoom(Math.max(0.45, current / 1.35), reducedMotion ? 0 : 220)
             }}
           >
             <ZoomOut className="size-4" aria-hidden />
           </IconButton>
-          <IconButton label="适应画布" onClick={fitGraph}>
+          <IconButton
+            label="适应画布"
+            onClick={() => {
+              markUserInteraction()
+              fitGraph()
+            }}
+          >
             <Maximize2 className="size-4" aria-hidden />
           </IconButton>
           <IconButton
             label="放大图谱"
             onClick={() => {
+              markUserInteraction()
               const current = graphRef.current?.zoom() ?? 1
               graphRef.current?.zoom(Math.min(8, current * 1.35), reducedMotion ? 0 : 220)
             }}

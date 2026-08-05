@@ -24,11 +24,12 @@ type ParsedMarkdownFile = ReturnType<typeof matter>
 
 type MarkdownFileCacheEntry = {
   mtimeMs: number
+  ctimeMs: number
   size: number
   result: ParsedMarkdownFile
 }
 
-/** Process-local path+mtime cache — parse once per file revision. */
+/** Process-local stat cache — parse once per file revision. */
 const markdownFileCache = new Map<string, MarkdownFileCacheEntry>()
 
 export function clearMarkdownFileCache() {
@@ -41,6 +42,7 @@ export function readMarkdownFile(filePath: string): ParsedMarkdownFile {
   if (
     hit &&
     hit.mtimeMs === stat.mtimeMs &&
+    hit.ctimeMs === stat.ctimeMs &&
     hit.size === stat.size
   ) {
     return hit.result
@@ -52,6 +54,7 @@ export function readMarkdownFile(filePath: string): ParsedMarkdownFile {
   const result = matter(raw)
   markdownFileCache.set(filePath, {
     mtimeMs: stat.mtimeMs,
+    ctimeMs: stat.ctimeMs,
     size: stat.size,
     result,
   })

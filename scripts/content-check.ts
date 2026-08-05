@@ -125,6 +125,13 @@ function checkGraphLoads() {
     if (graph.posts.length === 0) {
       push("warn", contentRoot, "no visible posts (check drafts / SHOW_DRAFTS)")
     }
+    for (const post of graph.posts) {
+      for (const target of post.wikilinks ?? []) {
+        if (!graph.postsBySlug.has(target)) {
+          push("warn", post.filePath, `Wiki-link target is not published: ${target}`)
+        }
+      }
+    }
     // update slugs uniqueness already asserted in loadContentGraph
     const updateSlugs = new Set(graph.updates.map((u) => u.slug))
     if (updateSlugs.size !== graph.updates.length) {

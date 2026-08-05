@@ -4,9 +4,9 @@
   "private": true,
   "packageManager": "pnpm@10.21.0",
   "scripts": {
-    "predev": "SHOW_DRAFTS=1 tsx scripts/generate-content-graph.ts && SHOW_DRAFTS=1 tsx scripts/generate-search-index.ts",
+    "predev": "SHOW_DRAFTS=1 tsx scripts/generate-content-graph.ts",
     "dev": "next dev",
-    "prebuild": "pnpm content:check && SHOW_DRAFTS=0 tsx scripts/generate-content-graph.ts && SHOW_DRAFTS=0 tsx scripts/generate-search-index.ts",
+    "prebuild": "pnpm content:check && SHOW_DRAFTS=0 tsx scripts/generate-content-graph.ts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

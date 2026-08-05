@@ -345,6 +345,34 @@ after
     expect(getPostBySlug("alpha", root)?.title).toBe("After")
   })
 
+  it("invalidates caches when ctime changes but mtime and size stay stable", async () => {
+    const root = makeTempContentRoot()
+    const file = writePost(root, "stable-stat.md", {
+      title: "Before",
+      slug: "stable-stat",
+      body: "first!",
+    })
+    const stableTime = new Date("2026-01-02T03:04:05.000Z")
+    fs.utimesSync(file, stableTime, stableTime)
+
+    expect(getPostBySlug("stable-stat", root)?.title).toBe("Before")
+    const before = fs.statSync(file)
+
+    await new Promise((resolve) => setTimeout(resolve, 5))
+    writePost(root, "stable-stat.md", {
+      title: "After!",
+      slug: "stable-stat",
+      body: "second",
+    })
+    fs.utimesSync(file, stableTime, stableTime)
+    const after = fs.statSync(file)
+
+    expect(after.size).toBe(before.size)
+    expect(after.mtimeMs).toBe(before.mtimeMs)
+    expect(after.ctimeMs).not.toBe(before.ctimeMs)
+    expect(getPostBySlug("stable-stat", root)?.title).toBe("After!")
+  })
+
   it("loads the private production snapshot before scanning content", () => {
     const root = makeTempContentRoot()
     const base = path.dirname(root)

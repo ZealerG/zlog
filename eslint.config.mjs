@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Local Obsidian plugins and generated content artifacts are not source.
+    ".obsidian/**",
+    ".content-cache/**",
+    ".content-graph/**",
+    "public/search-index.json",
   ]),
 ]);
 
