@@ -1,10 +1,12 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { ScrollReveal } from "@/components/effects/ScrollReveal"
+import { PostGraph } from "@/components/graph/PostGraph"
 import { PostFilters, type PostFilterState } from "@/components/posts/PostFilters"
 import { PostList } from "@/components/posts/PostList"
 import { PostSearch } from "@/components/posts/PostSearch"
 import { getAllPosts } from "@/lib/content/load"
+import { buildPostGraph } from "@/lib/content/post-graph"
 import { getSiteConfig } from "@/lib/content/site"
 import type { Post } from "@/lib/content/types"
 
@@ -91,6 +93,7 @@ export default async function PostsPage({
   const site = getSiteConfig()
   const all = getAllPosts()
   const posts = filterAndSortPosts(all, state)
+  const graph = buildPostGraph(all)
 
   const categories = [
     ...new Set(
@@ -214,6 +217,8 @@ export default async function PostsPage({
                 </div>
               </div>
             ) : null}
+
+            <PostGraph data={graph} variant="compact" />
           </aside>
         </ScrollReveal>
       </div>
