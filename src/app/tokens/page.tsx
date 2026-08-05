@@ -1,10 +1,10 @@
-import type { Metadata } from "next"
 import type { ReactNode } from "react"
 import Link from "next/link"
 import { ArrowLeft, ArrowUpRight, Activity } from "lucide-react"
 import { ScrollReveal } from "@/components/effects/ScrollReveal"
 import { formatSiteDateTime } from "@/lib/datetime"
 import { getSiteConfig } from "@/lib/content/site"
+import { createPageMetadata } from "@/lib/seo"
 import {
   TOKSCALE_PERIODS,
   buildHeatmapWeeks,
@@ -21,14 +21,23 @@ import {
   type TokscalePeriod,
 } from "@/lib/tokscale"
 
-export const metadata: Metadata = {
-  title: "Tokens",
-  description: "AI coding token usage, live from Tokscale.",
-}
-
 export const revalidate = 3600
 
 type SearchParams = Promise<{ period?: string }>
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: SearchParams
+}) {
+  const sp = await searchParams
+  return createPageMetadata({
+    path: "/tokens",
+    title: "Tokens",
+    description: "来自 Tokscale 的 AI 编程用量统计。",
+    noIndex: Boolean(sp.period),
+  })
+}
 
 export default async function TokensPage({
   searchParams,

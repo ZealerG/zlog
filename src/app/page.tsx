@@ -10,9 +10,18 @@ import {
   getAllUpdates,
 } from "@/lib/content/load"
 import { getSiteConfig } from "@/lib/content/site"
+import { createPageMetadata } from "@/lib/seo"
+
+const site = getSiteConfig()
+
+export const metadata = createPageMetadata({
+  path: "/",
+  title: site.title,
+  description: site.description,
+  absoluteTitle: true,
+})
 
 export default function Home() {
-  const site = getSiteConfig()
   const posts = getAllPosts().slice(0, 5)
   const updates = getAllUpdates().slice(0, 5)
   const glimpses = getAllGlimpses().slice(0, 6)

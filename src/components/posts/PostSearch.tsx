@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { Search, X } from "lucide-react"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import {
   filterSearchIndex,
   type SearchIndexEntry,
@@ -15,28 +15,40 @@ export function PostSearch() {
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">(
     "idle",
   )
+  const requestStartedRef = useRef(false)
+  const loadedRef = useRef(false)
 
   useEffect(() => {
+    if (!open || requestStartedRef.current || loadedRef.current) return
+
+    requestStartedRef.current = true
     let cancelled = false
+    const controller = new AbortController()
     setStatus("loading")
-    fetch("/search-index.json")
+    fetch("/search-index.json", { signal: controller.signal })
       .then((res) => {
         if (!res.ok) throw new Error("failed to load search index")
         return res.json() as Promise<SearchIndexEntry[]>
       })
       .then((data) => {
         if (!cancelled) {
+          loadedRef.current = true
           setEntries(data)
           setStatus("ready")
         }
       })
-      .catch(() => {
-        if (!cancelled) setStatus("error")
+      .catch((error: unknown) => {
+        if (!cancelled && !(error instanceof DOMException && error.name === "AbortError")) {
+          requestStartedRef.current = false
+          setStatus("error")
+        }
       })
     return () => {
       cancelled = true
+      controller.abort()
+      requestStartedRef.current = false
     }
-  }, [])
+  }, [open])
 
   const results = useMemo(
     () => filterSearchIndex(entries, query),
@@ -52,7 +64,7 @@ export function PostSearch() {
       >
         <span className="inline-flex items-center gap-2">
           <Search className="h-4 w-4" strokeWidth={1.9} aria-hidden />
-          <span>Search posts</span>
+          <span>搜索文章</span>
         </span>
         {open ? <X className="h-3.5 w-3.5 opacity-60" /> : null}
       </button>
@@ -72,7 +84,11 @@ export function PostSearch() {
             <p className="site-meta mt-3 text-n-5">搜索索引暂不可用</p>
           ) : null}
 
-          {query.trim() ? (
+          {status === "loading" ? (
+            <p className="site-meta mt-3 text-n-4">正在载入搜索索引</p>
+          ) : null}
+
+          {status === "ready" && query.trim() ? (
             results.length === 0 ? (
               <p className="site-meta mt-3 text-n-5">无匹配结果</p>
             ) : (
@@ -96,9 +112,9 @@ export function PostSearch() {
                 ))}
               </ul>
             )
-          ) : (
+          ) : status === "ready" ? (
             <p className="site-meta mt-3 text-n-4">输入关键词筛选篇章</p>
-          )}
+          ) : null}
         </div>
       ) : null}
     </div>

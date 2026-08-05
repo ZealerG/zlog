@@ -68,6 +68,12 @@ export function NavLinks({
         setNavHover(true)
       }}
       onMouseLeave={scheduleLeave}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+          setHovered(null)
+          setNavHover(false)
+        }
+      }}
     >
       <nav
         className={
@@ -83,7 +89,6 @@ export function NavLinks({
           return (
             <Link
               key={item.href}
-              tabIndex={-1}
               href={item.href}
               data-active={active ? "true" : "false"}
               onMouseEnter={() => {
@@ -93,8 +98,8 @@ export function NavLinks({
               onFocus={() => setHovered(item.href)}
               className={
                 emphasized
-                  ? "relative z-10 flex items-center gap-2 overflow-hidden rounded-none px-4 py-2 font-semibold text-primary transition-colors duration-300 first:rounded-l-full last:rounded-r-full"
-                  : "relative z-10 flex items-center gap-2 overflow-hidden rounded-none px-4 py-2 text-n-5 transition-colors duration-300 first:rounded-l-full last:rounded-r-full hover:text-primary dark:text-n-5"
+                  ? "relative z-10 flex items-center gap-2 overflow-hidden rounded-none px-4 py-2 font-semibold text-primary outline-none transition-colors duration-300 first:rounded-l-full last:rounded-r-full focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-inset"
+                  : "relative z-10 flex items-center gap-2 overflow-hidden rounded-none px-4 py-2 text-n-5 outline-none transition-colors duration-300 first:rounded-l-full last:rounded-r-full hover:text-primary focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-inset dark:text-n-5"
               }
             >
               <span className="relative z-10 flex items-center justify-center">

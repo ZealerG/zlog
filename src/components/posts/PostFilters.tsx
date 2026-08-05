@@ -18,9 +18,9 @@ function buildHref(state: PostFilterState): string {
 }
 
 const SORTS: { value: PostFilterState["sort"]; label: string }[] = [
-  { value: "latest", label: "Latest" },
-  { value: "earliest", label: "Earliest" },
-  { value: "updated", label: "Recently updated" },
+  { value: "latest", label: "最新" },
+  { value: "earliest", label: "最早" },
+  { value: "updated", label: "最近更新" },
 ]
 
 export function PostFilters({

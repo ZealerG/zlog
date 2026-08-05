@@ -1,4 +1,3 @@
-import type { Metadata } from "next"
 import Link from "next/link"
 import {
   ArrowUpRight,
@@ -8,10 +7,13 @@ import {
   Sparkles,
 } from "lucide-react"
 import { ScrollReveal } from "@/components/effects/ScrollReveal"
+import { createPageMetadata } from "@/lib/seo"
 
-export const metadata: Metadata = {
+export const metadata = createPageMetadata({
+  path: "/more",
   title: "远方",
-}
+  description: "项目、友链、书签与个人工具入口。",
+})
 
 const HUB = [
   {

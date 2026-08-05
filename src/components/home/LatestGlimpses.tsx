@@ -32,7 +32,7 @@ export function LatestGlimpses({ glimpses }: { glimpses: Glimpse[] }) {
         <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="home-feed-eyebrow font-normal uppercase text-n-5">
-              Glimpses Along the Way
+              拾光
             </p>
             <p className="home-feed-title mt-1 font-bold text-n-6">沿途拾光</p>
           </div>
@@ -44,7 +44,7 @@ export function LatestGlimpses({ glimpses }: { glimpses: Glimpse[] }) {
               href="/timeline?type=glimpse"
               className="group/all inline-flex items-center gap-1.5 site-meta text-n-5 transition-colors hover:text-primary"
             >
-              View all
+              查看全部
               <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-n-1/80 text-n-5 transition duration-300 group-hover/all:bg-primary/12 group-hover/all:text-primary dark:bg-white/6">
                 <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover/all:translate-x-0.5 group-hover/all:-translate-y-0.5" />
               </span>

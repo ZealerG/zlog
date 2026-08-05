@@ -54,8 +54,6 @@ export function FriendFloatPool({ friends }: { friends: Friend[] }) {
     vy: 0,
     active: false,
   })
-  const scrollRef = useRef({ y: 0, vy: 0, lag: 0 })
-
   useEffect(() => {
     const container = containerRef.current
     if (!container || friends.length === 0) return
@@ -66,7 +64,11 @@ export function FriendFloatPool({ friends }: { friends: Friend[] }) {
     let engine: Matter.Engine | null = null
     let items: PoolItem[] = []
     let cleanupPointer = () => {}
+    let pageVisible = document.visibilityState === "visible"
+    let inViewport = false
+    let resumeAnimation = () => {}
     const nodeMap = nodeMapRef.current
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)")
 
     const teardown = () => {
       if (raf) cancelAnimationFrame(raf)
@@ -79,6 +81,7 @@ export function FriendFloatPool({ friends }: { friends: Friend[] }) {
         engine = null
       }
       items = []
+      resumeAnimation = () => {}
     }
 
     const setup = () => {
@@ -337,21 +340,9 @@ export function FriendFloatPool({ friends }: { friends: Friend[] }) {
         }
       }
 
-      const onScroll = () => {
-        const y = window.scrollY
-        const prevY = scrollRef.current.y
-        scrollRef.current = {
-          y,
-          vy: y - prevY,
-          lag: clamp(scrollRef.current.lag + (y - prevY) * 0.65, -64, 64),
-        }
-      }
-
       container.addEventListener("pointermove", onPointerMove)
       container.addEventListener("pointerleave", onPointerLeave)
       window.addEventListener("pointerup", onPointerUp)
-      window.addEventListener("scroll", onScroll, { passive: true })
-      onScroll()
 
       const prevCleanup = cleanupPointer
       cleanupPointer = () => {
@@ -359,15 +350,22 @@ export function FriendFloatPool({ friends }: { friends: Friend[] }) {
         container.removeEventListener("pointermove", onPointerMove)
         container.removeEventListener("pointerleave", onPointerLeave)
         window.removeEventListener("pointerup", onPointerUp)
-        window.removeEventListener("scroll", onScroll)
       }
 
       let last = performance.now()
       const tick = (now: number) => {
-        if (disposed || !engine) return
+        raf = 0
+        if (
+          disposed ||
+          !engine ||
+          motionQuery.matches ||
+          !pageVisible ||
+          !inViewport
+        ) {
+          return
+        }
         const t = (now - last) / 1000
         const hNow = parseFloat(container.style.height) || height
-        const lag = scrollRef.current.lag
         const ptr = pointerRef.current
 
         for (const item of items) {
@@ -415,9 +413,6 @@ export function FriendFloatPool({ friends }: { friends: Friend[] }) {
           })
         }
 
-        scrollRef.current.vy *= 0.94
-        scrollRef.current.lag *= 0.9
-
         // soft separation
         for (let i = 0; i < items.length; i++) {
           for (let j = i + 1; j < items.length; j++) {
@@ -449,21 +444,32 @@ export function FriendFloatPool({ friends }: { friends: Friend[] }) {
           const y = item.body.position.y - item.height / 2
           const bob = 4.5 * Math.sin(1.02 * t + 0.9 * item.driftSeed)
           const rot = 2 * Math.sin(0.64 * t + item.driftSeed)
-          const lagY =
-            lag * (0.22 + ((item.driftSeed % 1) + 1) * 0.04)
-          const jx = 0.04 * lag * Math.sin(1.7 * item.driftSeed)
-          const jr = 0.02 * lag * Math.cos(1.3 * item.driftSeed)
-          item.element.style.transform = `translate3d(${x + jx}px, ${y + bob + lagY}px, 0) rotate(${rot + jr}deg)`
+          item.element.style.transform = `translate3d(${x}px, ${y + bob}px, 0) rotate(${rot}deg)`
           item.element.style.opacity = "1"
         }
 
         raf = requestAnimationFrame(tick)
       }
-      last = performance.now()
-      raf = requestAnimationFrame(tick)
+
+      resumeAnimation = () => {
+        if (
+          raf ||
+          disposed ||
+          !engine ||
+          motionQuery.matches ||
+          !pageVisible ||
+          !inViewport
+        ) {
+          return
+        }
+        last = performance.now()
+        raf = requestAnimationFrame(tick)
+      }
+      resumeAnimation()
     }
 
     const scheduleSetup = () => {
+      if (motionQuery.matches) return
       if (resizeRaf) cancelAnimationFrame(resizeRaf)
       resizeRaf = requestAnimationFrame(() => {
         // wait one frame so cards measure correctly
@@ -471,7 +477,47 @@ export function FriendFloatPool({ friends }: { friends: Friend[] }) {
       })
     }
 
-    scheduleSetup()
+    const showStaticLayout = () => {
+      teardown()
+      container.dataset.motion = "reduced"
+      container.style.height = ""
+      for (const element of nodeMap.values()) {
+        element.style.opacity = "1"
+        element.style.transform = "none"
+      }
+    }
+
+    const showAnimatedLayout = () => {
+      container.dataset.motion = "active"
+      for (const element of nodeMap.values()) {
+        element.style.opacity = "0"
+        element.style.transform = ""
+      }
+      scheduleSetup()
+    }
+
+    const applyMotionPreference = () => {
+      if (motionQuery.matches) showStaticLayout()
+      else showAnimatedLayout()
+    }
+
+    const onVisibilityChange = () => {
+      pageVisible = document.visibilityState === "visible"
+      resumeAnimation()
+    }
+
+    const viewportObserver = new IntersectionObserver(
+      ([entry]) => {
+        inViewport = entry.isIntersecting
+        resumeAnimation()
+      },
+      { rootMargin: "160px 0px" },
+    )
+
+    motionQuery.addEventListener("change", applyMotionPreference)
+    document.addEventListener("visibilitychange", onVisibilityChange)
+    viewportObserver.observe(container)
+    applyMotionPreference()
     const ro = new ResizeObserver(scheduleSetup)
     ro.observe(container)
     for (const el of nodeMap.values()) ro.observe(el)
@@ -479,6 +525,9 @@ export function FriendFloatPool({ friends }: { friends: Friend[] }) {
     return () => {
       disposed = true
       if (resizeRaf) cancelAnimationFrame(resizeRaf)
+      motionQuery.removeEventListener("change", applyMotionPreference)
+      document.removeEventListener("visibilitychange", onVisibilityChange)
+      viewportObserver.disconnect()
       ro.disconnect()
       teardown()
     }
@@ -499,7 +548,8 @@ export function FriendFloatPool({ friends }: { friends: Friend[] }) {
     <section className="mt-0">
       <div
         ref={containerRef}
-        className="relative min-h-[28rem] overflow-hidden rounded-[2rem] bg-transparent sm:min-h-[34rem] lg:min-h-[38rem]"
+        data-motion="active"
+        className="friend-float-pool relative min-h-[28rem] overflow-hidden rounded-[2rem] bg-transparent sm:min-h-[34rem] lg:min-h-[38rem]"
       >
         {friends.map((friend) => (
           <Link

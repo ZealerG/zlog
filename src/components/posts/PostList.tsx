@@ -9,17 +9,26 @@ function formatDate(iso: string) {
 export function PostList({
   posts,
   author,
+  hasActiveFilter = false,
 }: {
   posts: Post[]
   author?: string
+  hasActiveFilter?: boolean
 }) {
   if (posts.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-n-2 px-6 py-12 text-center">
-        <p className="site-meta text-n-5">暂无文章</p>
-        <p className="site-meta mt-2 text-n-4">
-          在 <code>content/posts/</code> 新增 Markdown 即可。
+        <p className="site-meta text-n-5">
+          {hasActiveFilter ? "没有符合当前筛选的文章" : "暂时还没有公开文章"}
         </p>
+        {hasActiveFilter ? (
+          <Link
+            href="/posts"
+            className="site-meta mt-3 inline-flex text-primary transition hover:opacity-80"
+          >
+            清除筛选
+          </Link>
+        ) : null}
       </div>
     )
   }
@@ -34,7 +43,7 @@ export function PostList({
         >
           <Link
             href={`/posts/${post.slug}`}
-            aria-label={`Open ${post.title}`}
+            aria-label={`打开《${post.title}》`}
             className="absolute inset-0 rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           />
           <div className="pointer-events-none relative">
@@ -42,7 +51,7 @@ export function PostList({
               {post.title}
               {!post.published ? (
                 <span className="ml-2 align-middle rounded-full border border-primary/40 px-2 py-0.5 text-[11px] font-medium text-primary">
-                  Draft
+                  草稿
                 </span>
               ) : null}
             </h2>

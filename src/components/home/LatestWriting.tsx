@@ -14,7 +14,7 @@ export function LatestWriting({ posts }: { posts: Post[] }) {
         <div className="mb-4 flex items-end justify-between gap-4">
           <div>
             <p className="home-feed-eyebrow font-normal uppercase text-n-5">
-              Latest writing
+              篇章
             </p>
             <p className="home-feed-title mt-1 font-bold text-n-6">最近写作</p>
           </div>
@@ -22,7 +22,7 @@ export function LatestWriting({ posts }: { posts: Post[] }) {
             href="/posts"
             className="group/all inline-flex items-center gap-1.5 site-meta text-n-5 transition-colors hover:text-primary"
           >
-            View all
+            查看全部
             <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-n-1/80 text-n-5 transition duration-300 group-hover/all:bg-primary/12 group-hover/all:text-primary dark:bg-white/6">
               <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover/all:translate-x-0.5 group-hover/all:-translate-y-0.5" />
             </span>
@@ -42,14 +42,14 @@ export function LatestWriting({ posts }: { posts: Post[] }) {
                 <article className="home-feed-row group relative -mx-3 rounded-xl border-b border-n-2 px-3 py-4 last:border-b-0 dark:border-n-2">
                   <Link
                     href={`/posts/${post.slug}`}
-                    aria-label={`Open ${post.title}`}
+                    aria-label={`打开《${post.title}》`}
                     className="absolute inset-0 rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                   />
                   <div className="pointer-events-none relative flex items-start justify-between gap-x-6 gap-y-2">
                     <p className="home-feed-item-title min-w-0 flex-1 text-pretty text-n-6 transition duration-200 group-hover:text-primary dark:text-n-6">
                       {post.title}
                       {!post.published ? (
-                        <span className="ml-2 text-xs text-primary">Draft</span>
+                        <span className="ml-2 text-xs text-primary">草稿</span>
                       ) : null}
                     </p>
                     <p className="home-feed-date shrink-0 pt-0.5 text-n-5 transition duration-200 group-hover:text-n-4">

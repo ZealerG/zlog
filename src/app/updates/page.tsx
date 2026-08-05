@@ -1,16 +1,26 @@
-import type { Metadata } from "next"
 import Link from "next/link"
 import { ScrollReveal } from "@/components/effects/ScrollReveal"
 import { UpdateTimeline } from "@/components/updates/UpdateTimeline"
 import { getAllUpdates, getPostTitleBySlug } from "@/lib/content/load"
 import { markdownToHtmlLite } from "@/lib/content/markdown"
 import { getSiteConfig } from "@/lib/content/site"
-
-export const metadata: Metadata = {
-  title: "足迹",
-}
+import { createPageMetadata } from "@/lib/seo"
 
 type SearchParams = Promise<{ sort?: string }>
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: SearchParams
+}) {
+  const sp = await searchParams
+  return createPageMetadata({
+    path: "/updates",
+    title: "足迹",
+    description: "记录最近的动态、想法与短笔记。",
+    noIndex: Boolean(sp.sort),
+  })
+}
 
 export default async function UpdatesPage({
   searchParams,
@@ -48,7 +58,7 @@ export default async function UpdatesPage({
       <ScrollReveal y={14}>
         <header>
           <p className="site-eyebrow uppercase tracking-[0.28em] text-n-5">
-            Updates
+            动态
           </p>
           <h1 className="site-title-page mt-4 flex flex-wrap items-baseline gap-3 tracking-tight text-n-6">
             <span>足迹</span>
@@ -62,8 +72,7 @@ export default async function UpdatesPage({
         <ScrollReveal y={12} delay={40}>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="site-meta text-n-5">
-              <span className="font-medium text-n-6">{items.length}</span> updates
-              total
+              <span className="font-medium text-n-6">{items.length}</span> 条动态
             </p>
             <div className="glass-chip flex flex-wrap items-center gap-1 rounded-full p-1">
               <Link
@@ -74,7 +83,7 @@ export default async function UpdatesPage({
                     : "rounded-full px-3 py-1.5 text-xs text-n-5 transition hover:text-primary"
                 }
               >
-                Latest
+                最新
               </Link>
               <Link
                 href="/updates?sort=earliest"
@@ -84,7 +93,7 @@ export default async function UpdatesPage({
                     : "rounded-full px-3 py-1.5 text-xs text-n-5 transition hover:text-primary"
                 }
               >
-                Earliest
+                最早
               </Link>
             </div>
           </div>

@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useState, type CSSProperties } from "react"
+import { useEffect, useRef, useState, type CSSProperties } from "react"
 import type { SiteConfig } from "@/lib/content/types"
 import type { NavPreviewData } from "@/lib/content/nav-preview"
 import { ThemeToggle } from "@/components/theme/ThemeToggle"
@@ -16,18 +16,29 @@ export function SiteHeader({
   previewData?: NavPreviewData
 }) {
   const [scrolled, setScrolled] = useState(false)
+  const scrollSentinelRef = useRef<HTMLSpanElement>(null)
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 18)
-    onScroll()
-    window.addEventListener("scroll", onScroll, { passive: true })
-    return () => window.removeEventListener("scroll", onScroll)
+    const sentinel = scrollSentinelRef.current
+    if (!sentinel) return
+
+    const observer = new IntersectionObserver(([entry]) => {
+      setScrolled(!entry.isIntersecting)
+    })
+    observer.observe(sentinel)
+    return () => observer.disconnect()
   }, [])
 
   const brand = site.brand ?? site.name
 
   return (
-    <header className="site-header-mobile-frame pointer-events-none fixed inset-x-0 top-0 z-50 px-3 py-3 sm:px-6">
+    <>
+      <span
+        ref={scrollSentinelRef}
+        className="pointer-events-none absolute left-0 top-[18px] h-px w-px"
+        aria-hidden
+      />
+      <header className="site-header-mobile-frame pointer-events-none fixed inset-x-0 top-0 z-50 px-3 py-3 sm:px-6">
       {/*
         xiami: outer row never paints a full rectangle.
         Glass only on nav capsule + theme control.
@@ -47,9 +58,8 @@ export function SiteHeader({
         <MobileNav items={site.nav} brand={brand} />
 
         <Link
-          tabIndex={-1}
           href="/"
-          className="pointer-events-auto absolute left-1/2 translate-x-[-50%] rounded-2xl border border-transparent bg-transparent px-3 py-1.5 text-lg font-semibold tracking-tight text-primary opacity-100 transition-[opacity,transform,color] duration-300 hover:opacity-90 md:static md:translate-x-0 md:translate-y-0 md:justify-self-start"
+          className="pointer-events-auto absolute left-1/2 translate-x-[-50%] rounded-2xl border border-transparent bg-transparent px-3 py-1.5 text-lg font-semibold tracking-tight text-primary opacity-100 outline-none transition-[opacity,transform,color] duration-300 hover:opacity-90 focus-visible:ring-2 focus-visible:ring-primary/60 md:static md:translate-x-0 md:translate-y-0 md:justify-self-start"
         >
           <span className="inline-block origin-left transition-transform duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] md:scale-[var(--site-header-brand-scale)]">
             {brand}
@@ -90,6 +100,7 @@ export function SiteHeader({
           </div>
         </div>
       </div>
-    </header>
+      </header>
+    </>
   )
 }

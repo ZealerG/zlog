@@ -13,6 +13,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/updates`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${base}/timeline`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${base}/more`, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${base}/projects`, changeFrequency: "monthly", priority: 0.65 },
+    { url: `${base}/friends`, changeFrequency: "monthly", priority: 0.45 },
+    { url: `${base}/bookmarks`, changeFrequency: "monthly", priority: 0.5 },
     { url: `${base}/tokens`, changeFrequency: "daily", priority: 0.55 },
   ]
 

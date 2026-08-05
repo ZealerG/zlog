@@ -1,16 +1,26 @@
-import type { Metadata } from "next"
 import { ScrollReveal } from "@/components/effects/ScrollReveal"
 import {
   SiteTimeline,
   type TimelineKindFilter,
 } from "@/components/timeline/SiteTimeline"
 import { getTimelineEntries } from "@/lib/content/load"
-
-export const metadata: Metadata = {
-  title: "拾光",
-}
+import { createPageMetadata } from "@/lib/seo"
 
 type SearchParams = Promise<{ type?: string; year?: string }>
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: SearchParams
+}) {
+  const sp = await searchParams
+  return createPageMetadata({
+    path: "/timeline",
+    title: "拾光",
+    description: "沿时间浏览文章、动态与影像记录。",
+    noIndex: Boolean(sp.type || sp.year),
+  })
+}
 
 function parseKind(type?: string): TimelineKindFilter {
   if (type === "posts") return "post"
@@ -36,7 +46,7 @@ export default async function TimelinePage({
       <ScrollReveal y={14}>
         <header>
           <p className="site-eyebrow uppercase tracking-[0.28em] text-n-5">
-            Timeline
+            时间线
           </p>
           <h1 className="site-title-page mt-4 flex flex-wrap items-baseline gap-3 tracking-tight text-n-6">
             <span>拾光</span>

@@ -1,11 +1,13 @@
-import type { Metadata } from "next"
 import Link from "next/link"
 import { ArrowLeft, ArrowUpRight, Layers } from "lucide-react"
 import { getBookmarksByCategory } from "@/lib/content/load"
+import { createPageMetadata } from "@/lib/seo"
 
-export const metadata: Metadata = {
+export const metadata = createPageMetadata({
+  path: "/bookmarks",
   title: "书签",
-}
+  description: "收藏的文章、工具与资源。",
+})
 
 function hostname(url: string) {
   try {

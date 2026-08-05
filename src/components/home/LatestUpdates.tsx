@@ -19,7 +19,7 @@ export function LatestUpdates({ updates }: { updates: Update[] }) {
         <div className="mb-4 flex items-end justify-between gap-4">
           <div>
             <p className="home-feed-eyebrow font-normal uppercase text-n-5">
-              Field notes
+              足迹
             </p>
             <p className="home-feed-title mt-1 font-bold text-n-6">最近动态</p>
           </div>
@@ -27,7 +27,7 @@ export function LatestUpdates({ updates }: { updates: Update[] }) {
             href="/updates"
             className="group/all inline-flex items-center gap-1.5 site-meta text-n-5 transition-colors hover:text-primary"
           >
-            View all
+            查看全部
             <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-n-1/80 text-n-5 transition duration-300 group-hover/all:bg-primary/12 group-hover/all:text-primary dark:bg-white/6">
               <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover/all:translate-x-0.5 group-hover/all:-translate-y-0.5" />
             </span>
@@ -47,7 +47,7 @@ export function LatestUpdates({ updates }: { updates: Update[] }) {
                 <article className="home-feed-row group relative -mx-3 rounded-xl border-b border-n-2 px-3 py-4 last:border-b-0 dark:border-n-2">
                   <Link
                     href={`/updates#${update.slug}`}
-                    aria-label="Open update"
+                    aria-label="打开动态"
                     className="absolute inset-0 rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                   />
                   <div className="pointer-events-none relative flex items-start justify-between gap-x-6 gap-y-2">

@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
+import { JsonLd } from "@/components/seo/JsonLd"
 import { AdjacentPosts } from "@/components/posts/AdjacentPosts"
 import { PostMeta } from "@/components/posts/PostMeta"
 import { PostSidebarActions } from "@/components/posts/PostSidebarActions"
@@ -17,6 +18,7 @@ import {
   getPostTitleBySlug,
 } from "@/lib/content/load"
 import { markdownToHtml } from "@/lib/content/markdown"
+import { createArticleJsonLd, createArticleMetadata } from "@/lib/seo"
 
 type Params = Promise<{ slug: string[] }>
 
@@ -32,10 +34,7 @@ export async function generateMetadata({
   const { slug } = await params
   const post = getPostBySlug(slug.join("/"))
   if (!post) return { title: "未找到" }
-  return {
-    title: post.title,
-    description: post.summary,
-  }
+  return createArticleMetadata(post)
 }
 
 export default async function PostDetailPage({
@@ -58,6 +57,7 @@ export default async function PostDetailPage({
 
   return (
     <>
+      <JsonLd data={createArticleJsonLd(post)} />
       <ReadingProgressBar />
       <main className="mx-auto min-h-screen w-full max-w-7xl px-6 py-16 sm:px-10">
         <div className="grid gap-12 lg:grid-cols-[minmax(0,48rem)_16rem] lg:items-start lg:justify-end">
@@ -66,7 +66,7 @@ export default async function PostDetailPage({
               {post.title}
               {!post.published ? (
                 <span className="ml-3 align-middle rounded-full border border-primary/40 px-2.5 py-0.5 text-sm font-medium text-primary">
-                  Draft
+                  草稿
                 </span>
               ) : null}
             </h1>

@@ -35,7 +35,7 @@ export async function TokensActivity() {
   const perDay =
     stats.activeDays > 0 ? stats.totalTokens / stats.activeDays : null
 
-  const yearCaption = `${formatYearLabel(yearRange.start)} – ${formatYearLabel(yearRange.end)}`
+  const yearCaption = `${formatYearLabel(yearRange.start)} - ${formatYearLabel(yearRange.end)}`
 
   return (
     <section className="home-feed-block" aria-label="Token activity">
@@ -50,7 +50,7 @@ export async function TokensActivity() {
           href="/tokens"
           className="group/all inline-flex items-center gap-1.5 site-meta text-n-5 transition-colors hover:text-primary"
         >
-          View all
+          查看全部
           <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-n-1/80 text-n-5 transition duration-300 group-hover/all:bg-primary/12 group-hover/all:text-primary dark:bg-white/6">
             <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover/all:translate-x-0.5 group-hover/all:-translate-y-0.5" />
           </span>

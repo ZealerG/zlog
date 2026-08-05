@@ -110,7 +110,7 @@ export function NavPreviewPanel({
             onClick={onNavigate}
             className="site-meta shrink-0 text-xs text-primary transition hover:opacity-80"
           >
-            View all
+            查看全部
           </Link>
         </div>
 

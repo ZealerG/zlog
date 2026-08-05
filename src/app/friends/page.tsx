@@ -1,12 +1,14 @@
-import type { Metadata } from "next"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { FriendFloatPool } from "@/components/friends/FriendFloatPool"
 import { getAllFriends } from "@/lib/content/load"
+import { createPageMetadata } from "@/lib/seo"
 
-export const metadata: Metadata = {
+export const metadata = createPageMetadata({
+  path: "/friends",
   title: "友链",
-}
+  description: "朋友、同行者与喜欢的网站。",
+})
 
 export default function FriendsPage() {
   const friends = getAllFriends()

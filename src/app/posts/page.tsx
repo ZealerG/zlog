@@ -1,4 +1,3 @@
-import type { Metadata } from "next"
 import Link from "next/link"
 import { ScrollReveal } from "@/components/effects/ScrollReveal"
 import { CompactPostGraph } from "@/components/graph/CompactPostGraph"
@@ -9,16 +8,27 @@ import { getAllPosts } from "@/lib/content/load"
 import { buildPostGraph } from "@/lib/content/post-graph"
 import { getSiteConfig } from "@/lib/content/site"
 import type { Post } from "@/lib/content/types"
-
-export const metadata: Metadata = {
-  title: "篇章",
-}
+import { createPageMetadata } from "@/lib/seo"
 
 type SearchParams = Promise<{
   sort?: string
   category?: string
   tag?: string
 }>
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: SearchParams
+}) {
+  const sp = await searchParams
+  return createPageMetadata({
+    path: "/posts",
+    title: "篇章",
+    description: "按时间、分类和标签浏览全部文章。",
+    noIndex: Boolean(sp.sort || sp.category || sp.tag),
+  })
+}
 
 function parseSort(value?: string): PostFilterState["sort"] {
   if (value === "earliest" || value === "updated") return value
@@ -119,7 +129,7 @@ export default async function PostsPage({
       <ScrollReveal y={14}>
         <header>
           <p className="site-eyebrow uppercase tracking-[0.28em] text-n-5">
-            posts
+            文章
           </p>
           <h1 className="site-title-page mt-4 flex flex-wrap items-baseline gap-3 tracking-tight text-n-6">
             <span>篇章</span>
@@ -144,28 +154,31 @@ export default async function PostsPage({
       </ScrollReveal>
 
       <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start lg:gap-12">
-        <div className="order-2 grid gap-5 lg:order-1">
+        <div className="grid gap-5">
           <ScrollReveal y={12} delay={40}>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="site-meta text-n-5">
-                <span className="font-medium text-n-6">{posts.length}</span> posts
-                total
+                <span className="font-medium text-n-6">{posts.length}</span> 篇文章
               </p>
               <PostFilters state={state} />
             </div>
           </ScrollReveal>
           {/* Tall list: CSS post-list-item animation only */}
-          <PostList posts={posts} author={site.author} />
+          <PostList
+            posts={posts}
+            author={site.author}
+            hasActiveFilter={hasFilter}
+          />
         </div>
 
-        <ScrollReveal className="order-1 space-y-4 lg:order-2 lg:sticky lg:top-28" y={16} delay={100}>
+        <ScrollReveal className="space-y-4 lg:sticky lg:top-28" y={16} delay={100}>
           <aside className="space-y-4">
             <PostSearch />
 
             {tags.length > 0 ? (
               <div className="posts-sidebar-card">
                 <p className="site-eyebrow uppercase tracking-[0.18em] text-n-4">
-                  Tags
+                  标签
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {tags.map(([tag, count]) => {
@@ -192,7 +205,7 @@ export default async function PostsPage({
             {categories.length > 0 ? (
               <div className="posts-sidebar-card">
                 <p className="site-eyebrow uppercase tracking-[0.18em] text-n-4">
-                  Categories
+                  分类
                 </p>
                 <div className="mt-3 grid gap-0.5">
                   {categories.map((category) => {

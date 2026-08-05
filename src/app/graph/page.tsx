@@ -1,14 +1,15 @@
-import type { Metadata } from "next"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { PostGraph } from "@/components/graph/PostGraph"
 import { getAllPosts } from "@/lib/content/load"
 import { buildPostGraph } from "@/lib/content/post-graph"
+import { createPageMetadata } from "@/lib/seo"
 
-export const metadata: Metadata = {
+export const metadata = createPageMetadata({
+  path: "/graph",
   title: "文章关系图谱",
   description: "浏览文章之间由 Wiki-link 构成的引用关系。",
-}
+})
 
 export default function GraphPage() {
   const graph = buildPostGraph(getAllPosts())

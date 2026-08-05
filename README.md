@@ -62,7 +62,6 @@ docs/                         # 巩固期基线等工程笔记
 | `/projects` · `/friends` · `/bookmarks` | 项目 / 友链 / 书签 |
 | `/feed` | RSS |
 | `/sitemap.xml` | 站点地图 |
-| `/admin` | 可选：改 `site.json`（需密码，见环境变量） |
 
 ---
 
@@ -111,7 +110,6 @@ pnpm smoke               # HTTP 冒烟（需先 pnpm dev / start）
 | 变量 | 是否必填 | 说明 |
 |------|----------|------|
 | `NEXT_PUBLIC_SITE_URL` | **生产强烈建议** | 站点绝对地址，**无尾斜杠**。用于 RSS、sitemap 等绝对链接。例：`https://blog.example.com`。本地可写 `http://localhost:3000`。未设置时，在 Vercel 上会回退到 `https://$VERCEL_URL`。 |
-| `ADMIN_PASSWORD` | 否 | 开启 `/admin` 的口令。不设则管理接口一律 401。**仅适合本地可写盘**；Vercel 只读，生产请直接改仓库 `content/site.json` 后 push。 |
 | `SHOW_DRAFTS` | 否 | `1` / `true` 强制显示草稿；`0` / `false` 强制隐藏。不设时：开发显示、生产隐藏。一般不用改。 |
 
 ### `.env.example` 模板
@@ -119,9 +117,6 @@ pnpm smoke               # HTTP 冒烟（需先 pnpm dev / start）
 ```bash
 # 站点 canonical URL（无尾斜杠）— 生产必配
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
-
-# 可选：/admin 改 site.json 的密码（本地/可写盘环境）
-# ADMIN_PASSWORD=change-me
 
 # 可选：强制显示/隐藏草稿（通常留给脚本默认）
 # SHOW_DRAFTS=1
@@ -132,10 +127,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 | 环境 | 变量 | 值示例 |
 |------|------|--------|
 | Production | `NEXT_PUBLIC_SITE_URL` | `https://你的域名` |
-| Production | `ADMIN_PASSWORD` | （可选，且注意 Vercel 文件系统只读，见下） |
 | Preview | `NEXT_PUBLIC_SITE_URL` | 可不设，自动用 Preview URL |
-
-> **注意**：`ADMIN_PASSWORD` 在 Vercel 等 **只读文件系统** 上，即使登录成功也可能 **无法写入** `content/site.json`。生产环境推荐直接改仓库里的 `site.json` 后 `git push`。Admin 更适合本地开发。
 
 ---
 
@@ -266,8 +258,6 @@ published: true
 
 可改：站点名、品牌字、`avatar`（本地路径或图床 URL）、简介、社交链接、导航等。
 
-本地也可打开 **http://localhost:3000/admin**（需配置 `ADMIN_PASSWORD`）编辑后写回该文件。
-
 ### 3. 图片
 
 - 使用 PicGo / Cloudflare R2 / 任意图床，得到 **HTTPS 外链**。
@@ -314,19 +304,6 @@ pnpm start
 - [ ] 已发布文章可打开  
 - [ ] `/feed`、`/sitemap.xml` 中的链接域名正确  
 - [ ] 图床图片可显示  
-
----
-
-## 可选：管理后台 `/admin`
-
-用于改 **站点元信息**（不是改文章）：
-
-1. `.env.local` 设置 `ADMIN_PASSWORD=你的密码`
-2. `pnpm dev` 后访问 `/admin`
-3. 输入密码，编辑并保存 → 写入 `content/site.json`
-4. 记得把变更 **commit + push**，线上才会更新
-
-文章、足迹、书签等仍请用 Obsidian / Markdown。
 
 ---
 

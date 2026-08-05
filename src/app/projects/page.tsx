@@ -1,14 +1,16 @@
-import type { Metadata } from "next"
 import Link from "next/link"
 import { ArrowLeft, ArrowUpRight } from "lucide-react"
 import { getAllProjects, getPostTitleBySlug } from "@/lib/content/load"
 import { getSiteConfig } from "@/lib/content/site"
 import { MarkdownBody } from "@/components/markdown/MarkdownBody"
 import { markdownToHtml } from "@/lib/content/markdown"
+import { createPageMetadata } from "@/lib/seo"
 
-export const metadata: Metadata = {
+export const metadata = createPageMetadata({
+  path: "/projects",
   title: "项目",
-}
+  description: "正在进行的项目、实验与长期计划。",
+})
 
 export default async function ProjectsPage() {
   const site = getSiteConfig()

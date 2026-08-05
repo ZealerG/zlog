@@ -76,6 +76,22 @@ html[data-theme="dark"] .more-hub-card:hover {
     0 0 0 1px rgb(var(--primary-rgb) / 0.12);
 }
 
+.friend-float-pool[data-motion="reduced"] {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr));
+  gap: 0.75rem;
+  min-height: 0;
+  padding: 1rem;
+}
+
+.friend-float-pool[data-motion="reduced"] .friend-bubble {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  max-width: none;
+  transform: none !important;
+}
+
 .bookmark-card:hover {
   transform: translateY(-2px);
 }
@@ -129,4 +145,3 @@ html[data-theme="dark"] .more-hub-card:hover {
   line-clamp: 2;
   overflow: hidden;
 }
-
