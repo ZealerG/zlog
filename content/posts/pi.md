@@ -41,3 +41,7 @@ draft: false
 
 # π的 Agent Loop
 [[agent-learning#十一、Loop Engineering]] 
+**Trace，一次完整的运行**
+- 从用户发送消息按下↩︎到 Agent 停止输出的整个过程，而一次 Trace 里包含多个 Turn
+**Turn，一个轮次**
+- 一次模型调用，及这次调用所触发的所有工具执行
