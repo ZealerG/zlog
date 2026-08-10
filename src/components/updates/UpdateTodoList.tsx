@@ -1,11 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { WiseElephantCheckboxMark } from "@/components/ui/WiseElephantCheckboxMark"
 import type { TodoItem } from "@/lib/content/types"
-
-const STORAGE_KEY = "zlog-todos-v1"
-const LEGACY_STORAGE_KEY = "zlog-home-todos-v1"
 
 function defaultTodoState(todos: TodoItem[]) {
   return Object.fromEntries(
@@ -13,71 +10,15 @@ function defaultTodoState(todos: TodoItem[]) {
   )
 }
 
-function readStoredTodoState(raw: string | null, todos: TodoItem[]) {
-  if (!raw) return null
-  try {
-    const stored = JSON.parse(raw) as Record<string, unknown>
-    return Object.fromEntries(
-      todos.map((todo) => [
-        todo.id,
-        typeof stored[todo.id] === "boolean"
-          ? stored[todo.id]
-          : Boolean(todo.completed),
-      ]),
-    ) as Record<string, boolean>
-  } catch {
-    return null
-  }
-}
-
-function getPersistedTodoState(todos: TodoItem[]) {
-  try {
-    return readStoredTodoState(
-      window.localStorage.getItem(STORAGE_KEY) ??
-        window.localStorage.getItem(LEGACY_STORAGE_KEY),
-      todos,
-    )
-  } catch {
-    return null
-  }
-}
-
 export function UpdateTodoList({ todos }: { todos: TodoItem[] }) {
   const [completed, setCompleted] = useState<Record<string, boolean>>(() =>
     defaultTodoState(todos),
   )
 
-  useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
-      const stored = getPersistedTodoState(todos)
-      setCompleted(stored ?? defaultTodoState(todos))
-    })
-
-    const syncAcrossTabs = (event: StorageEvent) => {
-      if (event.key !== STORAGE_KEY) return
-      setCompleted(
-        readStoredTodoState(event.newValue, todos) ?? defaultTodoState(todos),
-      )
-    }
-    window.addEventListener("storage", syncAcrossTabs)
-    return () => {
-      window.cancelAnimationFrame(frame)
-      window.removeEventListener("storage", syncAcrossTabs)
-    }
-  }, [todos])
-
   if (todos.length === 0) return null
 
   const updateTodo = (todoId: string, checked: boolean) => {
-    setCompleted((current) => {
-      const next = { ...current, [todoId]: checked }
-      try {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-      } catch {
-        // Storage may be unavailable under private browsing policies.
-      }
-      return next
-    })
+    setCompleted((current) => ({ ...current, [todoId]: checked }))
   }
 
   return (
