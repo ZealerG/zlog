@@ -45,3 +45,42 @@ draft: false
 - 从用户发送消息按下↩︎到 Agent 停止输出的整个过程，而一次 Trace 里包含多个 Turn
 **Turn，一个轮次**
 - 一次模型调用，及这次调用所触发的所有工具执行
+## 最简 Agent Loop（内核）
+```typescript
+// 最简 Agent Loop（伪代码）
+async function simpleLoop(messages, model, tools) {
+    while (true) {
+        // ① 调模型
+        const response = await callModel(model, messages, tools);
+        messages.push(response);
+
+        // ② 没有工具调用 → 结束
+        if (response.stopReason !== "toolUse") {
+            return messages;
+        }
+
+        // ③ 有工具调用 → 执行，把结果喂回去
+        for (const toolCall of response.toolCalls) {
+            const result = await executeTool(toolCall);
+            messages.push(result);
+        }
+    }
+}
+```
+而 pi coding agent 在极简内核的基础上，加上了“产品功能的按需选择”
+- **steering 消息注入**：用户在 agent 工作时输入了新指令——这些消息不能等任务跑完，得在下一圈开头紧急注入，所以其内层循环条件就多了 `||pendingMessage.length > 0`
+- **followUp 循环**：Agent 自然停止后，系统可能还想追加任务，外层循环让这些追加任务在同一个 Trace 内继续跑，不用重新走一个 loop
+
+| 维度   | Steering             | FollowUp                |
+| ---- | -------------------- | ----------------------- |
+| 检查时机 | RunLoop 开始前，内层循环每圈结尾 | 内层循环全部结束后               |
+| 语义   | 紧急插入，在工具执行间隙插入       | 排队等叫号——当前任务全部完成后        |
+| 经典场景 | 用户在 agent 工作中输入了新指令  | 系统在 agent 完成后追加“顺便跑个测试” |
+# π的分层模型调用
+![](https://dg-ai-notes.pages.dev/assets/260702-ch04-provider-formats.svg)
+怎么去抹平不同 provider 之间的差异
+```
+第一层 · 统一入口    →  "接收请求，查出该找谁处理"
+第二层 · 事件协议    →  "约定输出格式——不管谁处理，交回来的都是这个样子"
+第三层 · 翻译器      →  "真正干活的人——每个翻译器精通一种 Provider 的方言"
+```
