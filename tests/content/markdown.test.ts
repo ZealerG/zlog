@@ -5,6 +5,7 @@ import {
   markdownToHtmlLite,
 } from "@/lib/content/markdown"
 import { plainTextSnippet } from "@/lib/content/plain-text"
+import { WISE_ELEPHANT_CHECK_PATH } from "@/lib/ui/wise-elephant"
 
 describe("markdownToHtml", () => {
   it("renders gfm, code shell, headings and anchors", async () => {
@@ -57,6 +58,15 @@ describe("markdownToHtml", () => {
     expect(html).toContain('type="checkbox"')
     expect(html).toContain("task-list-item")
     expect(html).toContain("task-list-content")
+    expect(html).toContain("wise-checkbox-input")
+    expect(html).toContain("wise-checkbox-box")
+    expect(html).toContain("wise-checkbox-fill")
+    expect(html).toContain("wise-checkbox-checkmark")
+    expect(html).toContain("wise-checkbox-ripple")
+    expect(html).toContain(WISE_ELEPHANT_CHECK_PATH)
+    expect(html).toMatch(
+      /wise-checkbox-input[^>]*>\s*<span[^>]*wise-checkbox-box[\s\S]*task-list-content/,
+    )
     expect(html).toContain("nested")
     expect(html).toContain("content-callout")
     expect(html).toContain("content-callout-note")

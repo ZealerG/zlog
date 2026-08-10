@@ -1,6 +1,134 @@
 /* Extracted from globals.css — Phase 4 consolidation */
 
 /* updates / 足迹 */
+.updates-todo-card {
+  position: relative;
+  width: 100%;
+  padding: 0.3rem 0;
+  border-top: 1px solid color-mix(in oklab, var(--n-2) 88%, transparent);
+  border-bottom: 1px solid color-mix(in oklab, var(--n-2) 88%, transparent);
+  color: var(--n-6);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(var(--primary-rgb) / 0.025) 16%,
+    rgb(var(--primary-rgb) / 0.025) 84%,
+    transparent
+  );
+}
+
+.updates-todo-card::before {
+  content: "";
+  position: absolute;
+  top: 0.9rem;
+  bottom: 0.9rem;
+  left: 0;
+  width: 1px;
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgb(var(--primary-rgb) / 0.58) 24%,
+    rgb(var(--primary-rgb) / 0.58) 76%,
+    transparent
+  );
+}
+
+.dark .updates-todo-card,
+html[data-theme="dark"] .updates-todo-card {
+  border-color: color-mix(in oklab, var(--n-2) 82%, transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(var(--primary-rgb) / 0.035) 16%,
+    rgb(var(--primary-rgb) / 0.035) 84%,
+    transparent
+  );
+}
+
+.updates-todo-list {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.updates-todo-item {
+  position: relative;
+  display: flex;
+  min-height: 3rem;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 1rem 0.7rem 1.1rem;
+  border-bottom: 1px solid color-mix(in oklab, var(--n-2) 64%, transparent);
+  cursor: pointer;
+  transition:
+    color 0.28s ease,
+    background 0.28s ease;
+}
+
+.updates-todo-list > li:last-child .updates-todo-item {
+  border-bottom: 0;
+}
+
+.updates-todo-item:hover {
+  background: linear-gradient(
+    90deg,
+    rgb(var(--primary-rgb) / 0.055),
+    rgb(var(--primary-rgb) / 0.025) 72%,
+    transparent
+  );
+}
+
+.updates-todo-item:active {
+  background: linear-gradient(
+    90deg,
+    rgb(var(--primary-rgb) / 0.085),
+    rgb(var(--primary-rgb) / 0.035) 72%,
+    transparent
+  );
+}
+
+.updates-todo-text {
+  position: relative;
+  min-width: 0;
+  color: var(--n-6);
+  font-size: 0.95rem;
+  font-weight: 480;
+  line-height: 1.55;
+  transition:
+    color 0.3s ease,
+    opacity 0.3s ease;
+}
+
+.updates-todo-text::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--n-5) 72%, transparent);
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition:
+    transform 0.42s var(--ease-out-expo),
+    opacity 0.12s ease;
+}
+
+.updates-todo-item[data-completed="true"] .updates-todo-text {
+  color: var(--n-5);
+  opacity: 0.7;
+}
+
+.updates-todo-item[data-completed="true"] .updates-todo-text::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
 .update-row {
   animation: home-feed-item-reveal 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
   transition: background-color 0.2s ease;
@@ -127,8 +255,18 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .updates-todo-item,
+  .updates-todo-text,
+  .updates-todo-text::after {
+    transition: none;
+  }
+
+  .updates-todo-item:hover,
+  .updates-todo-item:active {
+    transform: none;
+  }
+
   .update-row {
     animation: none;
   }
 }
-

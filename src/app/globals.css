@@ -11,7 +11,9 @@
 @import "../styles/tokens-page.css";
 @import "../styles/home.css";
 @import "../styles/effects.css";
+@import "../styles/graph.css";
 @import "../styles/nav.css";
 @import "../styles/prose.css";
 @import "../styles/gallery.css";
 @import "../styles/code-callouts.css";
+@import "../styles/wise-checkbox.css";

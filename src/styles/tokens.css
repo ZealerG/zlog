@@ -114,6 +114,7 @@ html[data-theme-transition-ready="true"] .site-shell-surface,
 html[data-theme-transition-ready="true"] .site-layout-content,
 html[data-theme-transition-ready="true"] .site-nav-capsule,
 html[data-theme-transition-ready="true"] .surface-shell,
+html[data-theme-transition-ready="true"] .updates-todo-card,
 html[data-theme-transition-ready="true"] .posts-sidebar-card {
   transition:
     background-color 0.35s var(--ease-premium),
@@ -176,4 +177,3 @@ a {
   outline: 2px solid rgb(var(--primary-rgb) / 0.55);
   outline-offset: 2px;
 }
-

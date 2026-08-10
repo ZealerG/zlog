@@ -96,6 +96,38 @@ html[data-theme="dark"] .more-hub-card:hover {
   transform: translateY(-2px);
 }
 
+.resource-card {
+  isolation: isolate;
+}
+
+.resource-card::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  top: -1px;
+  right: 1rem;
+  left: 1rem;
+  z-index: 2;
+  height: 1px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(var(--primary-rgb) / 0.5),
+    transparent
+  );
+  opacity: 0;
+  transform: scaleX(0.28);
+  transition:
+    opacity 0.35s var(--ease-premium),
+    transform 0.45s var(--ease-premium);
+}
+
+.resource-card:is(:hover, :focus-visible, :focus-within)::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .more-hub-card,
   .projects-aside + section article {
@@ -104,6 +136,9 @@ html[data-theme="dark"] .more-hub-card:hover {
   .more-hub-card:hover,
   .bookmark-card:hover {
     transform: none;
+  }
+  .resource-card::after {
+    transition: none;
   }
 }
 

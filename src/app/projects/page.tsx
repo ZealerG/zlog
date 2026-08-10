@@ -97,7 +97,7 @@ export default async function ProjectsPage() {
             withHtml.map((project, index) => (
               <article
                 key={project.slug}
-                className="surface-shell surface-shell-hover group relative rounded-2xl p-5 sm:p-6"
+                className="resource-card surface-shell surface-shell-hover group relative rounded-2xl p-5 sm:p-6"
                 style={{ animationDelay: `${index * 0.05}s` }}
               >
                 {project.url ? (
@@ -105,7 +105,7 @@ export default async function ProjectsPage() {
                     href={project.url}
                     target="_blank"
                     rel="noreferrer noopener"
-                    aria-label={`Open ${project.title}`}
+                    aria-label={`打开项目：${project.title}`}
                     className="absolute inset-0 rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                   />
                 ) : null}
@@ -113,7 +113,7 @@ export default async function ProjectsPage() {
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2.5">
-                        <h3 className="site-title-h3 text-n-6 transition duration-200 group-hover:text-primary">
+                        <h3 className="site-title-h3 text-n-6 transition duration-200 group-hover:text-primary group-focus-within:text-primary">
                           {project.title}
                         </h3>
                         {project.status ? (
@@ -129,7 +129,7 @@ export default async function ProjectsPage() {
                       ) : null}
                     </div>
                     {project.url ? (
-                      <ArrowUpRight className="h-4 w-4 shrink-0 text-n-4 transition duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-primary" />
+                      <ArrowUpRight className="h-4 w-4 shrink-0 text-n-4 transition duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-primary group-focus-within:translate-x-0.5 group-focus-within:-translate-y-0.5 group-focus-within:text-primary" />
                     ) : null}
                   </div>
                   {project.tags.length > 0 ? (

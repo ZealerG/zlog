@@ -30,6 +30,7 @@ import type {
   PostGraphLink,
   PostGraphNode,
 } from "@/lib/content/post-graph"
+import { GraphLoadingMark } from "./GraphLoadingMark"
 
 const ForceGraph2D = dynamic(
   () => import("react-force-graph-2d").then((module) => module.default),
@@ -59,7 +60,6 @@ type MutableGraphLink = Omit<PostGraphLink, "source" | "target"> & {
 }
 
 type GraphPalette = {
-  background: string
   line: string
   muted: string
   primary: string
@@ -69,7 +69,6 @@ type GraphPalette = {
 }
 
 const DEFAULT_PALETTE: GraphPalette = {
-  background: "#09090b",
   line: "#3f3f46",
   muted: "#a1a1aa",
   primary: "rgb(56, 189, 248)",
@@ -80,14 +79,11 @@ const DEFAULT_PALETTE: GraphPalette = {
 
 function GraphLoading() {
   return (
-    <div className="grid h-full min-h-40 place-items-center bg-n-1/35" aria-live="polite">
-      <div className="relative h-14 w-20" aria-hidden>
-        <span className="absolute left-1 top-6 size-2 rounded-full bg-n-3" />
-        <span className="absolute left-8 top-1 size-2.5 rounded-full bg-primary/55" />
-        <span className="absolute right-1 top-7 size-2 rounded-full bg-n-4" />
-        <span className="absolute bottom-1 left-10 size-2 rounded-full bg-n-3" />
-      </div>
-      <span className="sr-only">正在加载文章关系图谱</span>
+    <div
+      className="grid h-full min-h-40 place-items-center bg-n-1/20"
+      aria-busy="true"
+    >
+      <GraphLoadingMark />
     </div>
   )
 }
@@ -176,7 +172,6 @@ function useGraphPalette() {
         primaryParts.length === 3 ? primaryParts.join(", ") : "56, 189, 248"
 
       setPalette({
-        background: style.getPropertyValue("--n-0").trim() || "#09090b",
         line: style.getPropertyValue("--n-3").trim() || "#3f3f46",
         muted: style.getPropertyValue("--n-5").trim() || "#a1a1aa",
         primary: `rgb(${primaryRgb})`,
@@ -257,6 +252,7 @@ export function PostGraph({ data, variant = "full" }: PostGraphProps) {
     [data.nodes],
   )
   const selectedNode = selectedId ? nodesById.get(selectedId) : undefined
+  const hoveredNode = hoveredId ? nodesById.get(hoveredId) : undefined
   const activeId = hoveredId ?? selectedId
   const activeNodeIds = useMemo(() => {
     const ids = new Set<string>()
@@ -416,14 +412,15 @@ export function PostGraph({ data, variant = "full" }: PostGraphProps) {
       ref={canvasRef}
       className={
         compact
-          ? "relative h-52 min-w-0 overflow-hidden bg-n-0"
-          : "relative h-[30rem] min-w-0 overflow-hidden bg-n-0 md:h-[min(68dvh,42rem)]"
+          ? "post-graph-canvas relative h-52 min-w-0 overflow-hidden"
+          : "post-graph-canvas relative h-[30rem] min-w-0 overflow-hidden md:h-[min(68dvh,42rem)]"
       }
       role="img"
       aria-label={`文章关系图，共 ${data.nodes.length} 篇文章和 ${data.links.length} 条链接`}
       onPointerDown={markUserInteraction}
       onWheel={markUserInteraction}
     >
+      <div className="post-graph-grid" aria-hidden />
       {size.width > 0 && size.height > 0 ? (
         <GraphErrorBoundary>
           <ForceGraph2D
@@ -431,12 +428,9 @@ export function PostGraph({ data, variant = "full" }: PostGraphProps) {
             graphData={graphData}
             width={size.width}
             height={size.height}
-            backgroundColor={palette.background}
+            backgroundColor="rgba(0, 0, 0, 0)"
             nodeId="id"
-            nodeLabel={(rawNode) => {
-              const node = rawNode as MutableGraphNode
-              return `${node.title} (${node.degree})`
-            }}
+            nodeLabel={() => ""}
             nodeVal={(rawNode) => {
               const node = rawNode as MutableGraphNode
               return 2.2 + Math.min(5, node.degree * 0.9)
@@ -529,6 +523,20 @@ export function PostGraph({ data, variant = "full" }: PostGraphProps) {
       ) : (
         <GraphLoading />
       )}
+      {hoveredNode ? (
+        <div className="post-graph-tooltip" aria-hidden>
+          <p className="truncate text-sm font-medium text-n-6">
+            {hoveredNode.title}
+          </p>
+          <p className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-n-4">
+            <span>{hoveredNode.category ?? "未分类"}</span>
+            <span>{hoveredNode.degree} 条连接</span>
+          </p>
+          <p className="mt-1.5 text-[11px] text-n-5">
+            {compact ? "点击打开文章" : "点击查看引用关系"}
+          </p>
+        </div>
+      ) : null}
     </div>
   )
 

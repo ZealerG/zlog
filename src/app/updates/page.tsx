@@ -1,9 +1,15 @@
 import Link from "next/link"
 import { ScrollReveal } from "@/components/effects/ScrollReveal"
+import { UpdateTodoList } from "@/components/updates/UpdateTodoList"
 import { UpdateTimeline } from "@/components/updates/UpdateTimeline"
-import { getAllUpdates, getPostTitleBySlug } from "@/lib/content/load"
+import {
+  getAllPages,
+  getAllUpdates,
+  getPostTitleBySlug,
+} from "@/lib/content/load"
 import { markdownToHtmlLite } from "@/lib/content/markdown"
 import { getSiteConfig } from "@/lib/content/site"
+import { parseTodoItems } from "@/lib/content/todos"
 import { createPageMetadata } from "@/lib/seo"
 
 type SearchParams = Promise<{ sort?: string }>
@@ -30,6 +36,8 @@ export default async function UpdatesPage({
   const sp = await searchParams
   const sort = sp.sort === "earliest" ? "earliest" : "latest"
   const site = getSiteConfig()
+  const todoPage = getAllPages().find((page) => page.slug === "todo")
+  const todos = parseTodoItems(todoPage?.body ?? "")
 
   const updates = getAllUpdates()
   const ordered =
@@ -68,8 +76,16 @@ export default async function UpdatesPage({
         </header>
       </ScrollReveal>
 
-      <div className="mt-8">
+      {todos.length > 0 ? (
         <ScrollReveal y={12} delay={40}>
+          <div className="mt-10">
+            <UpdateTodoList todos={todos} />
+          </div>
+        </ScrollReveal>
+      ) : null}
+
+      <div className="mt-8">
+        <ScrollReveal y={12} delay={todos.length > 0 ? 80 : 40}>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="site-meta text-n-5">
               <span className="font-medium text-n-6">{items.length}</span> 条动态

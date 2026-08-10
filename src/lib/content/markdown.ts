@@ -15,6 +15,7 @@ import type { Root, Element, ElementContent, Properties } from "hast"
 import type { Link as MdastLink, Root as MdastRoot, Text as MdastText } from "mdast"
 import type { Node as UnistNode, Parent as UnistParent } from "unist"
 import { startTimer } from "@/lib/perf"
+import { WISE_ELEPHANT_CHECK_PATH } from "@/lib/ui/wise-elephant"
 import { matchWikilinks, parseWikilinkTarget } from "./wikilink"
 
 export type MarkdownHeading = {
@@ -557,7 +558,8 @@ function wrapImageGalleries() {
 
 /**
  * Task list polish:
- * wrap non-checkbox children so nested lists stack correctly under content.
+ * use the shared wise-elephant checkbox mark and wrap remaining children so
+ * nested lists stack correctly under content.
  */
 function enhanceTaskLists() {
   return (tree: Root) => {
@@ -594,6 +596,16 @@ function enhanceTaskLists() {
         return
       }
 
+      checkbox.properties = {
+        ...checkbox.properties,
+        className: [
+          ...new Set([
+            ...asClassList(checkbox.properties?.className),
+            "wise-checkbox-input",
+          ]),
+        ],
+      }
+
       const rest = node.children.filter((c) => c !== checkbox)
       const cleaned = rest.filter((c, i) => {
         if (i === 0 && c.type === "text" && /^\s+$/.test(c.value)) return false
@@ -602,6 +614,54 @@ function enhanceTaskLists() {
 
       node.children = [
         checkbox,
+        {
+          type: "element",
+          tagName: "span",
+          properties: {
+            className: ["wise-checkbox-box"],
+            ariaHidden: "true",
+          },
+          children: [
+            {
+              type: "element",
+              tagName: "span",
+              properties: {
+                className: ["wise-checkbox-fill"],
+              },
+              children: [],
+            },
+            {
+              type: "element",
+              tagName: "span",
+              properties: { className: ["wise-checkbox-checkmark"] },
+              children: [
+                {
+                  type: "element",
+                  tagName: "svg",
+                  properties: {
+                    className: ["wise-checkbox-icon"],
+                    viewBox: "0 0 24 24",
+                    focusable: "false",
+                  },
+                  children: [
+                    {
+                      type: "element",
+                      tagName: "path",
+                      properties: { d: WISE_ELEPHANT_CHECK_PATH },
+                      children: [],
+                    },
+                  ],
+                },
+              ],
+            },
+            {
+              type: "element",
+              tagName: "span",
+              properties: { className: ["wise-checkbox-ripple"] },
+              children: [],
+            },
+          ],
+        },
         {
           type: "element",
           tagName: "div",

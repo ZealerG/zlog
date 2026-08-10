@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Maximize2, Network } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import type { PostGraphData } from "@/lib/content/post-graph"
+import { GraphLoadingMark } from "./GraphLoadingMark"
 
 const DeferredPostGraph = dynamic(
   () => import("./PostGraph").then((module) => module.PostGraph),
@@ -26,9 +27,9 @@ function CompactGraphLoading() {
       aria-busy="true"
     >
       <h2 className="text-sm font-medium text-n-6">文章关系</h2>
-      <div className="-mx-4 mt-3 grid h-52 place-items-center border-y border-n-2 bg-n-0">
-        <Network className="size-5 text-n-3" aria-hidden />
-        <span className="sr-only">正在加载文章关系图谱</span>
+      <div className="post-graph-canvas -mx-4 mt-3 grid h-52 place-items-center border-y border-n-2">
+        <div className="post-graph-grid" aria-hidden />
+        <GraphLoadingMark />
       </div>
     </section>
   )
@@ -90,9 +91,10 @@ export function CompactPostGraph({ data }: CompactPostGraphProps) {
       </div>
 
       <div
-        className="-mx-4 mt-3 grid h-52 place-items-center border-y border-n-2 bg-n-0"
+        className="post-graph-canvas -mx-4 mt-3 grid h-52 place-items-center border-y border-n-2"
         aria-hidden
       >
+        <div className="post-graph-grid" />
         <Network className="size-5 text-n-3" />
       </div>
 

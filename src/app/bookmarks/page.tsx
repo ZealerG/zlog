@@ -91,7 +91,7 @@ export default function BookmarksPage() {
                     href={item.url}
                     target="_blank"
                     rel="noreferrer noopener"
-                    className="bookmark-card surface-shell surface-shell-hover group grid gap-3 rounded-2xl p-5 transition-all duration-200"
+                    className="bookmark-card resource-card surface-shell surface-shell-hover group grid gap-3 rounded-2xl p-5 transition-all duration-200"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -104,10 +104,10 @@ export default function BookmarksPage() {
                           {hostname(item.url)}
                         </span>
                       </div>
-                      <ArrowUpRight className="h-4 w-4 shrink-0 text-n-4 transition duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-primary" />
+                      <ArrowUpRight className="h-4 w-4 shrink-0 text-n-4 transition duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-primary group-focus-within:translate-x-0.5 group-focus-within:-translate-y-0.5 group-focus-within:text-primary" />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="text-base font-medium tracking-tight text-n-6 transition duration-200 group-hover:text-primary">
+                      <h3 className="text-base font-medium tracking-tight text-n-6 transition duration-200 group-hover:text-primary group-focus-within:text-primary">
                         {item.title}
                       </h3>
                       {item.description ? (
