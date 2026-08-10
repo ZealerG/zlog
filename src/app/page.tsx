@@ -28,11 +28,6 @@ export default function Home() {
 
   return (
     <main className="relative w-full max-w-full overflow-x-hidden px-6 sm:px-12 lg:px-24">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute left-1/2 top-3 z-20 hidden h-16 w-[min(42rem,calc(100vw-1.5rem))] -translate-x-1/2 rounded-full bg-[rgba(2,6,23,0.26)] opacity-90 blur-xl dark:block sm:top-4 sm:w-[min(44rem,calc(100vw-3rem))]"
-      />
-
       <Hero site={site} />
 
       <div className="home-feed-rule mx-auto w-full max-w-5xl" aria-hidden />
