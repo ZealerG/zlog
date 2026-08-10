@@ -111,6 +111,9 @@ pnpm smoke               # HTTP 冒烟（需先 pnpm dev / start）
 |------|----------|------|
 | `NEXT_PUBLIC_SITE_URL` | **生产强烈建议** | 站点绝对地址，**无尾斜杠**。用于 RSS、sitemap 等绝对链接。例：`https://blog.example.com`。本地可写 `http://localhost:3000`。未设置时，在 Vercel 上会回退到 `https://$VERCEL_URL`。 |
 | `SHOW_DRAFTS` | 否 | `1` / `true` 强制显示草稿；`0` / `false` 强制隐藏。不设时：开发显示、生产隐藏。一般不用改。 |
+| `WEBHTV_PLAYBACK_URL` | 否 | WebHTV 观影同步接口。默认使用 `https://webhtv.zealerg.top/api/playback/sync`。 |
+| `WEBHTV_PLAYBACK_TOKEN` | 最近在看栏目必填 | WebHTV “远端同步 / Webhook 上报”所使用的 Token。仅服务端读取，不要添加 `NEXT_PUBLIC_` 前缀。 |
+| `WEBHTV_PLAYBACK_CONFIG_KEY` | 最近在看栏目必填 | 当前影视配置的 `configKey`。可从同步数据中的同名字段取得。 |
 
 ### `.env.example` 模板
 
@@ -120,6 +123,11 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 
 # 可选：强制显示/隐藏草稿（通常留给脚本默认）
 # SHOW_DRAFTS=1
+
+# 可选：首页“最近在看”
+WEBHTV_PLAYBACK_URL=https://webhtv.zealerg.top/api/playback/sync
+# WEBHTV_PLAYBACK_TOKEN=
+# WEBHTV_PLAYBACK_CONFIG_KEY=
 ```
 
 ### Vercel 上建议配置
