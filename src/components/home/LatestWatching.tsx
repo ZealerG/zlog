@@ -31,9 +31,6 @@ export function LatestWatching({
               />
               <figcaption className="home-watching-caption">
                 <span className="home-watching-title">{item.title}</span>
-                {item.episode ? (
-                  <span className="home-watching-episode">{item.episode}</span>
-                ) : null}
               </figcaption>
             </figure>
           </li>

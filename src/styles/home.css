@@ -319,29 +319,18 @@ html[data-theme="dark"] .hero-social-btn {
   position: absolute;
   inset-inline: 0;
   bottom: 0;
-  display: grid;
-  gap: 0.15rem;
   padding: 3rem 0.8rem 0.75rem;
   color: #fafafa;
   background: linear-gradient(180deg, transparent, rgb(9 9 11 / 0.82));
 }
 
-.home-watching-title,
-.home-watching-episode {
+.home-watching-title {
+  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.home-watching-title {
   font-size: 0.82rem;
   font-weight: 650;
-  line-height: 1.3;
-}
-
-.home-watching-episode {
-  color: rgb(250 250 250 / 0.72);
-  font-size: 0.68rem;
   line-height: 1.3;
 }
 
