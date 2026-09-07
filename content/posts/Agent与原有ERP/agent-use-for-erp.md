@@ -8,7 +8,7 @@ tags:
   - 笔记
 summary:
 cover:
-draft: true
+draft: false
 ---
 > 核心问题就是“怎样让一个不确定性的 LLM 或者说大模型，安全地操作一个确定性的企业业务系统？”
 
