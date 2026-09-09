@@ -70,3 +70,7 @@ Agent 发起写操作后，不是直接执行，而是先走 prepare，由后端
 用户确认的是后端算出来的真实业务影响，而不是模型自己描述的结果。确认之后执行阶段也不会让模型重新生成参数，而是校验 opHash 和一次性 claim，做 Reentry Validate，确认业务状态没有发生不可接受的漂移，然后 replay 之前冻结的 Payload，最终复用原有业务 Service 完成操作。
 
 所以整体上就是 **LLM 负责意图和决策，确定性程序负责参数收敛和执行，服务端负责权限、状态、幂等和副作用安全边界。**
+
+Frozen Payload 可以理解为用户当初确认了什么，而 Reentry 则是复核之前已经确认的操作现在还有哪些是合法的
+
+> Frozen Payload 和 opHash 只能保证操作意图和参数本身没有变化，但企业业务状态是动态的。prepare 和 execute 中间还隔着人工确认窗口，在这个过程中员工状态、权限记录、审批单状态等都可能发生变化，所以 execute 前还需要 Reentry Validate，基于当前真实业务状态重新验证 Frozen Payload 是否仍然可执行。这解决的是典型的 TOCTOU（Time Of Check To Time Of Use） 问题，而不是参数完整性问题
