@@ -10,7 +10,7 @@ published: true
  
 > 卡比暴论：Skill将死，方法论永生！
 
-说得有点道理，因为在最开始接触 AI Coding 的时候，Superpowers 是很好用的，但随着模型能力的增强，Superpowers 反而会让模型变得啰嗦降智，取而代之的就是 Grill Me，简简单单几句话而不是像 Superpowers 有千行技能说明
+说得有点道理，因为在最开始接触 AI Coding 的时候，Superpowers 是很好用的，但随着模型能力的增强，Superpowers 反而会让模型变得啰嗦降智，取而代之的就是 Grill Me，简简单单几句话而不是像 Superpowers 有千行技能说明 ^638af1
 
 因为大部分比较好用或者说比较有预训练意义的 Skill 都会被放到模型的 Pre-train 里了，只需要给出一定提示，让模型激发出对应的流程或者思维方式即可，方法论就是其中的一部分
 ![image.png](https://pub-f0ec440a5c1b4b63a1d2c9eaaf0c6b3a.r2.dev/{year}/{month}/{md5}.{extName}/20260908163530175.png)
